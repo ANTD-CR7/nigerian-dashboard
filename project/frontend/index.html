@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nigeria Economic Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">🇳🇬 Nigeria Economic Dashboard</a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Dashboard</a></li>
+    <li><a href="gdp.html">GDP</a></li>
+    <li><a href="inflation.html">Inflation</a></li>
+    <li><a href="exchange_rate.html">Exchange Rate</a></li>
+    <li><a href="interest_rate.html">Interest Rate</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h1>Nigeria Economic Dashboard (2020–2024)</h1>
+    <p>Key macroeconomic indicators sourced from the CBN, NBS, and World Bank</p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="summary-card gdp">
+      <div class="label">Latest GDP Growth Rate</div>
+      <div class="value" id="val-gdp">—</div>
+      <div class="sub" id="sub-gdp">Loading...</div>
+    </div>
+    <div class="summary-card inf">
+      <div class="label">Latest Inflation Rate</div>
+      <div class="value" id="val-inf">—</div>
+      <div class="sub" id="sub-inf">Loading...</div>
+    </div>
+    <div class="summary-card fx">
+      <div class="label">Latest Exchange Rate</div>
+      <div class="value" id="val-fx">—</div>
+      <div class="sub" id="sub-fx">Loading...</div>
+    </div>
+    <div class="summary-card mpr">
+      <div class="label">Current MPR</div>
+      <div class="value" id="val-mpr">—</div>
+      <div class="sub" id="sub-mpr">Loading...</div>
+    </div>
+  </div>
+
+  <!-- Mini charts grid -->
+  <div class="mini-grid">
+    <div class="card">
+      <h2>GDP Growth Rate (%)</h2>
+      <div class="chart-container-sm"><canvas id="chart-gdp"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Inflation Rate (%)</h2>
+      <div class="chart-container-sm"><canvas id="chart-inf"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Exchange Rate (NGN/USD)</h2>
+      <div class="chart-container-sm"><canvas id="chart-fx"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Monetary Policy Rate (%)</h2>
+      <div class="chart-container-sm"><canvas id="chart-mpr"></canvas></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>Data sources: Central Bank of Nigeria (CBN) &bull; National Bureau of Statistics (NBS) &bull; World Bank &bull;
+  For informational and educational purposes only &bull; Not financial advice</p>
+</footer>
+
+<script>
+const API = 'http://localhost:8000';
+
+// Chart colour palette
+const COLORS = {
+  gdp:  '#1A7A4A',
+  inf:  '#C0392B',
+  fx:   '#2E5090',
+  mpr:  '#E8A020',
+};
+
+function fmt(date) {
+  // Format date string for display
+  const d = new Date(date);
+  return d.toLocaleDateString('en-NG', { year: 'numeric', month: 'short' });
+}
+
+function makeChart(id, labels, data, color, label) {
+  return new Chart(document.getElementById(id), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label,
+        data,
+        borderColor: color,
+        backgroundColor: color + '18',
+        borderWidth: 2,
+        pointRadius: 2,
+        fill: true,
+        tension: 0.3,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { maxTicksLimit: 6, font: { size: 10 } } },
+        y: { ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+}
+
+async function loadDashboard() {
+  try {
+    // Load summary cards
+    const sum = await fetch(`${API}/api/summary`).then(r => r.json());
+
+    if (sum.gdp_growth) {
+      document.getElementById('val-gdp').textContent = sum.gdp_growth.value + '%';
+      document.getElementById('sub-gdp').textContent = fmt(sum.gdp_growth.obs_date) + ' | Source: NBS';
+    }
+    if (sum.inflation) {
+      document.getElementById('val-inf').textContent = sum.inflation.value + '%';
+      document.getElementById('sub-inf').textContent = fmt(sum.inflation.obs_date) + ' | Source: NBS';
+    }
+    if (sum.exchange_rate) {
+      document.getElementById('val-fx').textContent = '₦' + Number(sum.exchange_rate.value).toFixed(0);
+      document.getElementById('sub-fx').textContent = fmt(sum.exchange_rate.obs_date) + ' | Source: CBN';
+    }
+    if (sum.mpr) {
+      document.getElementById('val-mpr').textContent = sum.mpr.value + '%';
+      document.getElementById('sub-mpr').textContent = fmt(sum.mpr.obs_date) + ' | Source: CBN';
+    }
+
+    // Load GDP chart
+    const gdp = await fetch(`${API}/api/gdp`).then(r => r.json());
+    makeChart(
+      'chart-gdp',
+      gdp.gdp_growth.map(d => fmt(d.obs_date)),
+      gdp.gdp_growth.map(d => d.value),
+      COLORS.gdp, 'GDP Growth %'
+    );
+
+    // Load Inflation chart
+    const inf = await fetch(`${API}/api/inflation`).then(r => r.json());
+    makeChart(
+      'chart-inf',
+      inf.data.map(d => fmt(d.obs_date)),
+      inf.data.map(d => d.value),
+      COLORS.inf, 'Inflation %'
+    );
+
+    // Load Exchange Rate chart
+    const fx = await fetch(`${API}/api/exchange-rate`).then(r => r.json());
+    makeChart(
+      'chart-fx',
+      fx.data.map(d => fmt(d.obs_date)),
+      fx.data.map(d => d.value),
+      COLORS.fx, 'NGN/USD'
+    );
+
+    // Load MPR chart
+    const mpr = await fetch(`${API}/api/interest-rate`).then(r => r.json());
+    makeChart(
+      'chart-mpr',
+      mpr.data.map(d => fmt(d.obs_date)),
+      mpr.data.map(d => d.value),
+      COLORS.mpr, 'MPR %'
+    );
+
+  } catch (err) {
+    console.error('Failed to load data:', err);
+    document.querySelectorAll('.value').forEach(el => el.textContent = 'Error');
+    document.querySelectorAll('.sub').forEach(el => el.textContent = 'Could not reach API. Is the server running?');
+  }
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

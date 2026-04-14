@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interest Rate — Nigeria Economic Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">🇳🇬 Nigeria Economic Dashboard</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="gdp.html">GDP</a></li>
+    <li><a href="inflation.html">Inflation</a></li>
+    <li><a href="exchange_rate.html">Exchange Rate</a></li>
+    <li><a href="interest_rate.html" class="active">Interest Rate</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h1>Monetary Policy Rate (MPR)</h1>
+    <p>CBN benchmark interest rate at each Monetary Policy Committee (MPC) decision &bull; Source: CBN &bull; 2020–2024</p>
+  </div>
+
+  <div class="card">
+    <h2>CBN Monetary Policy Rate (%) — MPC Decision Dates</h2>
+    <div class="chart-container"><canvas id="chart-mpr"></canvas></div>
+    <p class="source-note">Source: CBN Monetary Policy Committee communiques &bull; Each point represents an MPC rate decision</p>
+  </div>
+
+  <div class="card">
+    <h2>MPR Decision History</h2>
+    <div id="loading" class="loading">Loading data...</div>
+    <table class="data-table" id="mpr-table" style="display:none">
+      <thead>
+        <tr>
+          <th>MPC Decision Date</th>
+          <th class="num">MPR (%)</th>
+          <th>Change</th>
+        </tr>
+      </thead>
+      <tbody id="mpr-tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<footer>
+  <p>Data source: Central Bank of Nigeria (CBN) &bull; For informational and educational purposes only &bull; Not financial advice</p>
+</footer>
+
+<script>
+const API = 'http://localhost:8000';
+
+function fmt(date) {
+  return new Date(date).toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+async function load() {
+  const res  = await fetch(`${API}/api/interest-rate`).then(r => r.json());
+  const data = res.data;
+
+  // Chart — stepped line because rate stays flat between MPC meetings
+  new Chart(document.getElementById('chart-mpr'), {
+    type: 'line',
+    data: {
+      labels: data.map(d => fmt(d.obs_date)),
+      datasets: [{
+        label: 'MPR (%)',
+        data: data.map(d => d.value),
+        borderColor: '#E8A020',
+        backgroundColor: '#E8A02018',
+        borderWidth: 2.5,
+        pointRadius: 5,
+        pointBackgroundColor: '#E8A020',
+        fill: true,
+        stepped: true,   // flat line between decisions — accurate representation
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        tooltip: {
+          callbacks: { label: ctx => ` MPR: ${ctx.parsed.y.toFixed(2)}%` }
+        }
+      },
+      scales: {
+        y: {
+          title: { display: true, text: 'Rate (%)' },
+          grid: { color: '#DDEAF5' },
+          min: 10,
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Table
+  const tbody = document.getElementById('mpr-tbody');
+  data.forEach((d, i) => {
+    const prev = i > 0 ? data[i - 1].value : null;
+    const diff = prev !== null ? d.value - prev : 0;
+    let change = '—';
+    if (i > 0) {
+      if (diff > 0) change = `<span class="badge badge-red">▲ +${diff.toFixed(2)}%</span>`;
+      else if (diff < 0) change = `<span class="badge badge-green">▼ ${diff.toFixed(2)}%</span>`;
+      else change = '<span class="badge badge-blue">Held</span>';
+    }
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${fmt(d.obs_date)}</td>
+        <td class="num">${Number(d.value).toFixed(2)}%</td>
+        <td>${change}</td>
+      </tr>`;
+  });
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('mpr-table').style.display = 'table';
+}
+
+load().catch(err => {
+  document.getElementById('loading').textContent = 'Error loading data. Is the server running?';
+  console.error(err);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Nigeria Economic Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">🇳🇬 Nigeria Economic Dashboard</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="gdp.html">GDP</a></li>
+    <li><a href="inflation.html">Inflation</a></li>
+    <li><a href="exchange_rate.html">Exchange Rate</a></li>
+    <li><a href="interest_rate.html">Interest Rate</a></li>
+    <li><a href="about.html" class="active">About</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h1>About This System</h1>
+    <p>Design and Implementation of a Web-Based Financial Data Aggregation System Using Nigerian Public Economic Data</p>
+  </div>
+
+  <div class="card">
+    <h2>System Overview</h2>
+    <p>This system aggregates four core Nigerian macroeconomic indicators from three official public data sources for the period January 2020 to December 2024. It presents the data through an interactive web dashboard with line charts and summary tables that any user can access through a standard web browser.</p>
+    <br>
+    <p>This project was developed as a Final Year Project at Caleb University, Imota, Lagos, in the Department of Computer Science. Its contribution is a free, open-source, and academically documented implementation built on a teachable technology stack that Nigerian computer science students can study, understand, and extend.</p>
+  </div>
+
+  <div class="card">
+    <h2>Data Sources</h2>
+    <table class="data-table">
+      <thead>
+        <tr><th>Institution</th><th>Indicator</th><th>Frequency</th><th>Website</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Central Bank of Nigeria (CBN)</td>
+          <td>Exchange Rate (NGN/USD)</td>
+          <td>Daily (averaged monthly)</td>
+          <td><a href="https://www.cbn.gov.ng" target="_blank">cbn.gov.ng</a></td>
+        </tr>
+        <tr>
+          <td>Central Bank of Nigeria (CBN)</td>
+          <td>Monetary Policy Rate (MPR)</td>
+          <td>Per MPC meeting (~bimonthly)</td>
+          <td><a href="https://www.cbn.gov.ng" target="_blank">cbn.gov.ng</a></td>
+        </tr>
+        <tr>
+          <td>National Bureau of Statistics (NBS)</td>
+          <td>GDP Growth Rate (%)</td>
+          <td>Quarterly</td>
+          <td><a href="https://nigerianstat.gov.ng" target="_blank">nigerianstat.gov.ng</a></td>
+        </tr>
+        <tr>
+          <td>National Bureau of Statistics (NBS)</td>
+          <td>Headline Inflation Rate (%)</td>
+          <td>Monthly</td>
+          <td><a href="https://nigerianstat.gov.ng" target="_blank">nigerianstat.gov.ng</a></td>
+        </tr>
+        <tr>
+          <td>World Bank Open Data</td>
+          <td>Nominal GDP (USD Billions)</td>
+          <td>Annual</td>
+          <td><a href="https://data.worldbank.org" target="_blank">data.worldbank.org</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Technology Stack</h2>
+    <table class="data-table">
+      <thead>
+        <tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Backend Language</td><td>Python 3.11</td><td>Server logic and data processing</td></tr>
+        <tr><td>Backend Framework</td><td>FastAPI</td><td>REST API with automatic documentation</td></tr>
+        <tr><td>Database</td><td>Supabase (PostgreSQL)</td><td>Stores all aggregated economic data</td></tr>
+        <tr><td>Data Processing</td><td>Python Pandas</td><td>ETL — clean and transform Excel files</td></tr>
+        <tr><td>Frontend Structure</td><td>HTML5</td><td>Web page structure</td></tr>
+        <tr><td>Frontend Styling</td><td>CSS3</td><td>Visual presentation and responsive layout</td></tr>
+        <tr><td>Frontend Logic</td><td>Vanilla JavaScript (ES6+)</td><td>Fetch API calls and dynamic rendering</td></tr>
+        <tr><td>Data Visualisation</td><td>Chart.js v4</td><td>Interactive line and bar charts</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Data Collection Method</h2>
+    <p>All data was collected by manually downloading publicly available Excel and CSV files from the official websites of the three source institutions. The data was then processed using Python and Pandas following the ETL (Extract, Transform, Load) framework:</p>
+    <br>
+    <p><strong>Extract:</strong> Excel and CSV files downloaded from CBN, NBS, and World Bank websites.</p>
+    <br>
+    <p><strong>Transform:</strong> Python Pandas used to extract relevant columns, standardise date formats to ISO 8601 (YYYY-MM-DD), convert strings to numeric values, and filter for the 2020–2024 date range. For exchange rate, daily CBN values were averaged to monthly. For GDP, the "GDP at 2010 constant price" row from the "real gdp growth rate %" sheet was extracted from each quarterly NBS report.</p>
+    <br>
+    <p><strong>Load:</strong> Cleaned data inserted into the Supabase PostgreSQL database using the Supabase Python client library.</p>
+  </div>
+
+  <div class="card" style="border-left: 4px solid #C0392B;">
+    <h2>⚠ Disclaimer</h2>
+    <p>This system is for <strong>informational and educational purposes only</strong>. Data is sourced from official institutions but the system cannot guarantee freedom from errors or omissions. Values may differ slightly from original publications due to rounding or data transformation.</p>
+    <br>
+    <p><strong>This system does not constitute financial advice or investment recommendations of any kind.</strong> For official and definitive economic data, always refer directly to the CBN, NBS, and World Bank websites.</p>
+  </div>
+</main>
+
+<footer>
+  <p>Developed as a Final Year Project &bull; Caleb University, Imota, Lagos &bull; Department of Computer Science &bull; 2026</p>
+</footer>
+
+</body>
+</html>

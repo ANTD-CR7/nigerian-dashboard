@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inflation — Nigeria Economic Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">🇳🇬 Nigeria Economic Dashboard</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="gdp.html">GDP</a></li>
+    <li><a href="inflation.html" class="active">Inflation</a></li>
+    <li><a href="exchange_rate.html">Exchange Rate</a></li>
+    <li><a href="interest_rate.html">Interest Rate</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h1>Headline Inflation Rate</h1>
+    <p>Monthly year-on-year Consumer Price Index (CPI) change &bull; Source: National Bureau of Statistics (NBS) &bull; 2020–2024</p>
+  </div>
+
+  <div class="card">
+    <h2>Headline Inflation Rate (%) — Monthly</h2>
+    <div class="chart-container"><canvas id="chart-inf"></canvas></div>
+    <p class="source-note">Source: NBS Consumer Price Index Report &bull; Column: allItemsYearOn (year-on-year headline inflation)</p>
+  </div>
+
+  <div class="card">
+    <h2>Inflation Data Table</h2>
+    <div id="loading" class="loading">Loading data...</div>
+    <table class="data-table" id="inf-table" style="display:none">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th class="num">Inflation Rate (%)</th>
+          <th>Level</th>
+        </tr>
+      </thead>
+      <tbody id="inf-tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<footer>
+  <p>Data source: National Bureau of Statistics (NBS) &bull; For informational and educational purposes only &bull; Not financial advice</p>
+</footer>
+
+<script>
+const API = 'http://localhost:8000';
+
+function fmt(date) {
+  return new Date(date).toLocaleDateString('en-NG', { year: 'numeric', month: 'short' });
+}
+
+function badge(val) {
+  if (val >= 30)  return '<span class="badge badge-red">Very High</span>';
+  if (val >= 20)  return '<span class="badge badge-red">High</span>';
+  if (val >= 10)  return '<span class="badge badge-orange">Moderate</span>';
+  return '<span class="badge badge-green">Low</span>';
+}
+
+async function load() {
+  const res  = await fetch(`${API}/api/inflation`).then(r => r.json());
+  const data = res.data;
+
+  // Chart
+  new Chart(document.getElementById('chart-inf'), {
+    type: 'line',
+    data: {
+      labels: data.map(d => fmt(d.obs_date)),
+      datasets: [{
+        label: 'Inflation Rate (%)',
+        data: data.map(d => d.value),
+        borderColor: '#C0392B',
+        backgroundColor: '#C0392B18',
+        borderWidth: 2,
+        pointRadius: 2,
+        fill: true,
+        tension: 0.3,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        tooltip: {
+          callbacks: { label: ctx => ` ${ctx.parsed.y.toFixed(2)}%` }
+        }
+      },
+      scales: {
+        y: {
+          title: { display: true, text: 'Inflation Rate (%)' },
+          grid: { color: '#DDEAF5' }
+        },
+        x: {
+          ticks: { maxTicksLimit: 12 },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+
+  // Table
+  const tbody = document.getElementById('inf-tbody');
+  data.forEach(d => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${fmt(d.obs_date)}</td>
+        <td class="num">${Number(d.value).toFixed(2)}%</td>
+        <td>${badge(d.value)}</td>
+      </tr>`;
+  });
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('inf-table').style.display = 'table';
+}
+
+load().catch(err => {
+  document.getElementById('loading').textContent = 'Error loading data. Is the server running?';
+  console.error(err);
+});
+</script>
+</body>
+</html>
