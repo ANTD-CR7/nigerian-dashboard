@@ -59,8 +59,8 @@ app.add_middleware(
 # STEP 3: Connect to Supabase
 # Replace these with your actual credentials
 # ============================================================
-SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co"
-SUPABASE_KEY = "YOUR_ANON_KEY_HERE"
+SUPABASE_URL = "https://fjsytcmcxapfbrwvawmu.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
