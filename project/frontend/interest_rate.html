@@ -59,10 +59,13 @@ const wakeText = document.getElementById('wake-text');
 function fmt(date) {
   return new Date(date).toLocaleDateString('en-NG', { year:'numeric', month:'short', day:'numeric' });
 }
+let seconds=0;
+const timer=setInterval(()=>{seconds++;document.getElementById('wake-text').textContent=`Connecting to data server... ${seconds}s`;},1000);
 async function load() {
   try {
     const res  = await fetchWithTimeout(`${API}/api/interest-rate`).then(r => r.json());
-    banner.classList.add('hidden');
+    clearInterval(timer);
+clearInterval(timer); banner.classList.add('hidden');
     const data = res.data;
 
     document.getElementById('sk-mpr').style.display = 'none';

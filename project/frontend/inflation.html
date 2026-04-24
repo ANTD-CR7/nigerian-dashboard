@@ -68,10 +68,13 @@ function badge(val) {
   return '<span class="badge badge-green">Low</span>';
 }
 
+let seconds=0;
+const timer=setInterval(()=>{seconds++;document.getElementById('wake-text').textContent=`Connecting to data server... ${seconds}s`;},1000);
 async function load() {
   try {
     const res  = await fetchWithTimeout(`${API}/api/inflation`).then(r => r.json());
-    banner.classList.add('hidden');
+    clearInterval(timer);
+clearInterval(timer); banner.classList.add('hidden');
     const data = res.data;
 
     document.getElementById('sk-inf').style.display = 'none';

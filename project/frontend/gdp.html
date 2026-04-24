@@ -108,10 +108,13 @@ function showChart(skId, canvasId) {
   document.getElementById(canvasId).style.display = 'block';
 }
 
+let seconds=0;
+const timer=setInterval(()=>{seconds++;document.getElementById('wake-text').textContent=`Connecting to data server... ${seconds}s`;},1000);
 async function load() {
   try {
     const res = await fetchWithTimeout(`${API}/api/gdp`).then(r => r.json());
-    banner.classList.add('hidden');
+    clearInterval(timer);
+clearInterval(timer); banner.classList.add('hidden');
 
     const growth = res.gdp_growth;
     const usd    = res.gdp_usd;
