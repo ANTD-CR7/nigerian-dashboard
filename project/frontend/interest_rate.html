@@ -61,7 +61,7 @@ function fmt(date) {
 }
 async function load() {
   try {
-    const res  = await fetch(`${API}/api/interest-rate`).then(r => r.json());
+    const res  = await fetchWithTimeout(`${API}/api/interest-rate`).then(r => r.json());
     banner.classList.add('hidden');
     const data = res.data;
 

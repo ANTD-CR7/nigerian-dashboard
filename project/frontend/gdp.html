@@ -110,7 +110,7 @@ function showChart(skId, canvasId) {
 
 async function load() {
   try {
-    const res = await fetch(`${API}/api/gdp`).then(r => r.json());
+    const res = await fetchWithTimeout(`${API}/api/gdp`).then(r => r.json());
     banner.classList.add('hidden');
 
     const growth = res.gdp_growth;

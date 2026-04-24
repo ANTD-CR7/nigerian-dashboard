@@ -70,7 +70,7 @@ function badge(val) {
 
 async function load() {
   try {
-    const res  = await fetch(`${API}/api/inflation`).then(r => r.json());
+    const res  = await fetchWithTimeout(`${API}/api/inflation`).then(r => r.json());
     banner.classList.add('hidden');
     const data = res.data;
 
