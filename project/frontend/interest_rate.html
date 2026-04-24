@@ -8,7 +8,10 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
+<div class="wake-banner" id="wake-banner">
+  <div class="spinner"></div>
+  <span id="wake-text">Connecting to data server...</span>
+</div>
 <nav>
   <a class="nav-brand" href="index.html">🇳🇬 Nigeria Economic Dashboard</a>
   <ul class="nav-links">
@@ -20,114 +23,99 @@
     <li><a href="about.html">About</a></li>
   </ul>
 </nav>
-
 <main>
   <div class="page-header">
     <h1>Monetary Policy Rate (MPR)</h1>
-    <p>CBN benchmark interest rate at each Monetary Policy Committee (MPC) decision &bull; Source: CBN &bull; 2020–2024</p>
+    <p>CBN benchmark interest rate at each MPC decision &bull; Source: CBN &bull; 2020–2024</p>
   </div>
-
   <div class="card">
-    <h2>CBN Monetary Policy Rate (%) — MPC Decision Dates</h2>
-    <div class="chart-container"><canvas id="chart-mpr"></canvas></div>
-    <p class="source-note">Source: CBN Monetary Policy Committee communiques &bull; Each point represents an MPC rate decision</p>
+    <h2>🏦 CBN Monetary Policy Rate (%) — MPC Decision Dates</h2>
+    <div class="chart-container-lg">
+      <span class="skeleton sk-chart" id="sk-mpr"></span>
+      <canvas id="chart-mpr" style="display:none"></canvas>
+    </div>
+    <p class="source-note">Source: CBN MPC communiques &bull; Stepped line = rate held constant between meetings</p>
   </div>
-
   <div class="card">
-    <h2>MPR Decision History</h2>
+    <h2>📋 MPR Decision History</h2>
     <div id="loading" class="loading">Loading data...</div>
     <table class="data-table" id="mpr-table" style="display:none">
-      <thead>
-        <tr>
-          <th>MPC Decision Date</th>
-          <th class="num">MPR (%)</th>
-          <th>Change</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th>MPC Decision Date</th>
+        <th class="num">MPR (%)</th>
+        <th>Change</th>
+      </tr></thead>
       <tbody id="mpr-tbody"></tbody>
     </table>
   </div>
 </main>
-
 <footer>
-  <p>Data source: Central Bank of Nigeria (CBN) &bull; For informational and educational purposes only &bull; Not financial advice</p>
+  <p>Data source: Central Bank of Nigeria (CBN) &bull; Not financial advice</p>
 </footer>
-
 <script>
-const API = 'https://nigerian-dashboard.onrender.com';
-
+const API = 'https://nigeria-dashboard.onrender.com';
+const banner = document.getElementById('wake-banner');
+const wakeText = document.getElementById('wake-text');
 function fmt(date) {
-  return new Date(date).toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric' });
+  return new Date(date).toLocaleDateString('en-NG', { year:'numeric', month:'short', day:'numeric' });
 }
-
 async function load() {
-  const res  = await fetch(`${API}/api/interest-rate`).then(r => r.json());
-  const data = res.data;
+  try {
+    const res  = await fetch(`${API}/api/interest-rate`).then(r => r.json());
+    banner.classList.add('hidden');
+    const data = res.data;
 
-  // Chart — stepped line because rate stays flat between MPC meetings
-  new Chart(document.getElementById('chart-mpr'), {
-    type: 'line',
-    data: {
-      labels: data.map(d => fmt(d.obs_date)),
-      datasets: [{
-        label: 'MPR (%)',
-        data: data.map(d => d.value),
-        borderColor: '#E8A020',
-        backgroundColor: '#E8A02018',
-        borderWidth: 2.5,
-        pointRadius: 5,
-        pointBackgroundColor: '#E8A020',
-        fill: true,
-        stepped: true,   // flat line between decisions — accurate representation
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        tooltip: {
-          callbacks: { label: ctx => ` MPR: ${ctx.parsed.y.toFixed(2)}%` }
-        }
+    document.getElementById('sk-mpr').style.display = 'none';
+    document.getElementById('chart-mpr').style.display = 'block';
+
+    new Chart(document.getElementById('chart-mpr'), {
+      type: 'line',
+      data: {
+        labels: data.map(d => fmt(d.obs_date)),
+        datasets: [{
+          label: 'MPR (%)',
+          data: data.map(d => d.value),
+          borderColor: '#E8A020', backgroundColor: '#E8A02018',
+          borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: '#E8A020',
+          fill: true, stepped: true,
+        }]
       },
-      scales: {
-        y: {
-          title: { display: true, text: 'Rate (%)' },
-          grid: { color: '#DDEAF5' },
-          min: 10,
-        },
-        x: { grid: { display: false } }
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { tooltip: { callbacks: { label: ctx => ` MPR: ${ctx.parsed.y.toFixed(2)}%` } } },
+        scales: {
+          y: { title:{ display:true, text:'Rate (%)' }, min:10, grid:{ color:'#E2EAF4' } },
+          x: { grid:{ display:false } }
+        }
       }
-    }
-  });
+    });
 
-  // Table
-  const tbody = document.getElementById('mpr-tbody');
-  data.forEach((d, i) => {
-    const prev = i > 0 ? data[i - 1].value : null;
-    const diff = prev !== null ? d.value - prev : 0;
-    let change = '—';
-    if (i > 0) {
-      if (diff > 0) change = `<span class="badge badge-red">▲ +${diff.toFixed(2)}%</span>`;
-      else if (diff < 0) change = `<span class="badge badge-green">▼ ${diff.toFixed(2)}%</span>`;
-      else change = '<span class="badge badge-blue">Held</span>';
-    }
-
-    tbody.innerHTML += `
-      <tr>
+    const tbody = document.getElementById('mpr-tbody');
+    data.forEach((d,i) => {
+      const prev = i > 0 ? data[i-1].value : null;
+      const diff = prev ? d.value - prev : 0;
+      let change = '—';
+      if (i > 0) {
+        if (diff > 0)      change = `<span class="badge badge-red">▲ +${diff.toFixed(2)}%</span>`;
+        else if (diff < 0) change = `<span class="badge badge-green">▼ ${diff.toFixed(2)}%</span>`;
+        else               change = '<span class="badge badge-blue">Held</span>';
+      }
+      tbody.innerHTML += `<tr>
         <td>${fmt(d.obs_date)}</td>
         <td class="num">${Number(d.value).toFixed(2)}%</td>
-        <td>${change}</td>
-      </tr>`;
-  });
+        <td>${change}</td></tr>`;
+    });
 
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('mpr-table').style.display = 'table';
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('mpr-table').style.display = 'table';
+  } catch(err) {
+    wakeText.textContent = '⚠ Could not load data. Try refreshing.';
+    banner.style.background = 'linear-gradient(90deg,#7B2020,#C0392B)';
+    document.getElementById('loading').textContent = 'Error loading data.';
+    console.error(err);
+  }
 }
-
-load().catch(err => {
-  document.getElementById('loading').textContent = 'Error loading data. Is the server running?';
-  console.error(err);
-});
+load();
 </script>
 </body>
 </html>

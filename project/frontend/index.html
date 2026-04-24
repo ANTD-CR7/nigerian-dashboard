@@ -9,6 +9,12 @@
 </head>
 <body>
 
+<!-- Wake banner: visible while Render server is starting up -->
+<div class="wake-banner" id="wake-banner">
+  <div class="spinner" id="wake-spinner"></div>
+  <span id="wake-text">Connecting to data server — please wait a moment...</span>
+</div>
+
 <nav>
   <a class="nav-brand" href="index.html">🇳🇬 Nigeria Economic Dashboard</a>
   <ul class="nav-links">
@@ -21,169 +27,318 @@
   </ul>
 </nav>
 
+<!-- HERO SECTION with live KPI cards -->
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Nigeria Economic Dashboard</h1>
+    <p>Key macroeconomic indicators for 2020–2024, sourced from the CBN, NBS, and World Bank.</p>
+    <div class="hero-badges">
+      <span class="hero-badge">📊 GDP Growth Rate</span>
+      <span class="hero-badge">📈 Headline Inflation</span>
+      <span class="hero-badge">💱 NGN/USD Exchange Rate</span>
+      <span class="hero-badge">🏦 Monetary Policy Rate</span>
+    </div>
+    <div class="hero-kpis">
+      <!-- GDP -->
+      <div class="hero-kpi">
+        <div class="hk-label">GDP Growth Rate</div>
+        <div class="hk-value" id="hk-gdp"><span class="skeleton sk-val"></span></div>
+        <div class="hk-sub" id="hk-gdp-sub"><span class="skeleton sk-text"></span></div>
+        <div id="hk-gdp-trend"></div>
+      </div>
+      <!-- Inflation -->
+      <div class="hero-kpi">
+        <div class="hk-label">Headline Inflation</div>
+        <div class="hk-value" id="hk-inf"><span class="skeleton sk-val"></span></div>
+        <div class="hk-sub" id="hk-inf-sub"><span class="skeleton sk-text"></span></div>
+        <div id="hk-inf-trend"></div>
+      </div>
+      <!-- FX -->
+      <div class="hero-kpi">
+        <div class="hk-label">Exchange Rate</div>
+        <div class="hk-value" id="hk-fx"><span class="skeleton sk-val"></span></div>
+        <div class="hk-sub" id="hk-fx-sub"><span class="skeleton sk-text"></span></div>
+        <div id="hk-fx-trend"></div>
+      </div>
+      <!-- MPR -->
+      <div class="hero-kpi">
+        <div class="hk-label">Monetary Policy Rate</div>
+        <div class="hk-value" id="hk-mpr"><span class="skeleton sk-val"></span></div>
+        <div class="hk-sub" id="hk-mpr-sub"><span class="skeleton sk-text"></span></div>
+        <div id="hk-mpr-trend"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <main>
-  <div class="page-header">
-    <h1>Nigeria Economic Dashboard (2020–2024)</h1>
-    <p>Key macroeconomic indicators sourced from the CBN, NBS, and World Bank</p>
+
+  <!-- Insight box -->
+  <div class="insight-box">
+    <h3>📌 Key Insight — 2020–2024</h3>
+    <p>Nigeria's economy contracted sharply in 2020 (COVID-19), recovered through 2021–2022, then faced surging inflation and a dramatic Naira depreciation following the June 2023 FX reform. The CBN responded with aggressive MPR hikes from 11.5% to 27.5% between 2022 and 2024.</p>
   </div>
 
-  <!-- Summary Cards -->
-  <div class="summary-grid">
-    <div class="summary-card gdp">
-      <div class="label">Latest GDP Growth Rate</div>
-      <div class="value" id="val-gdp">—</div>
-      <div class="sub" id="sub-gdp">Loading...</div>
+  <!-- Dual-axis hero chart: Inflation vs Exchange Rate -->
+  <div class="card">
+    <h2>📉 Inflation vs Exchange Rate — The 2023 Divergence</h2>
+    <div class="chart-container-lg"><canvas id="chart-dual"></canvas></div>
+    <div class="dual-legend">
+      <span><span class="dot" style="background:#C0392B"></span>Inflation Rate (%) — Left axis</span>
+      <span><span class="dot" style="background:#2E5090"></span>NGN/USD Exchange Rate — Right axis</span>
     </div>
-    <div class="summary-card inf">
-      <div class="label">Latest Inflation Rate</div>
-      <div class="value" id="val-inf">—</div>
-      <div class="sub" id="sub-inf">Loading...</div>
-    </div>
-    <div class="summary-card fx">
-      <div class="label">Latest Exchange Rate</div>
-      <div class="value" id="val-fx">—</div>
-      <div class="sub" id="sub-fx">Loading...</div>
-    </div>
-    <div class="summary-card mpr">
-      <div class="label">Current MPR</div>
-      <div class="value" id="val-mpr">—</div>
-      <div class="sub" id="sub-mpr">Loading...</div>
-    </div>
+    <p class="source-note">Source: NBS (inflation) &bull; CBN (exchange rate) &bull; Monthly averages 2020–2024</p>
   </div>
 
   <!-- Mini charts grid -->
   <div class="mini-grid">
     <div class="card">
       <h2>GDP Growth Rate (%)</h2>
-      <div class="chart-container-sm"><canvas id="chart-gdp"></canvas></div>
+      <div class="chart-container-sm">
+        <span class="skeleton sk-chart" id="sk-gdp"></span>
+        <canvas id="chart-gdp" style="display:none"></canvas>
+      </div>
     </div>
     <div class="card">
       <h2>Inflation Rate (%)</h2>
-      <div class="chart-container-sm"><canvas id="chart-inf"></canvas></div>
+      <div class="chart-container-sm">
+        <span class="skeleton sk-chart" id="sk-inf"></span>
+        <canvas id="chart-inf" style="display:none"></canvas>
+      </div>
     </div>
     <div class="card">
       <h2>Exchange Rate (NGN/USD)</h2>
-      <div class="chart-container-sm"><canvas id="chart-fx"></canvas></div>
+      <div class="chart-container-sm">
+        <span class="skeleton sk-chart" id="sk-fx"></span>
+        <canvas id="chart-fx" style="display:none"></canvas>
+      </div>
     </div>
     <div class="card">
       <h2>Monetary Policy Rate (%)</h2>
-      <div class="chart-container-sm"><canvas id="chart-mpr"></canvas></div>
+      <div class="chart-container-sm">
+        <span class="skeleton sk-chart" id="sk-mpr"></span>
+        <canvas id="chart-mpr" style="display:none"></canvas>
+      </div>
     </div>
   </div>
 </main>
 
 <footer>
-  <p>Data sources: Central Bank of Nigeria (CBN) &bull; National Bureau of Statistics (NBS) &bull; World Bank &bull;
-  For informational and educational purposes only &bull; Not financial advice</p>
+  <p>Data sources: Central Bank of Nigeria (CBN) &bull; National Bureau of Statistics (NBS) &bull; World Bank</p>
+  <p style="margin-top:0.3rem">For informational and educational purposes only &bull; Not financial advice &bull; Caleb University FYP 2026</p>
 </footer>
 
 <script>
-const API = 'https://nigerian-dashboard.onrender.com';
+const API = 'https://nigeria-dashboard.onrender.com';
 
-// Chart colour palette
-const COLORS = {
-  gdp:  '#1A7A4A',
-  inf:  '#C0392B',
-  fx:   '#2E5090',
-  mpr:  '#E8A020',
-};
+// ── WAKE-UP PING ──────────────────────────────────────────────────────────
+// Render free tier spins down after inactivity. This pings the server
+// immediately on page load and shows the banner until it responds.
+const banner  = document.getElementById('wake-banner');
+const wakeSpinner = document.getElementById('wake-spinner');
+const wakeText    = document.getElementById('wake-text');
+let serverReady = false;
+
+async function pingServer() {
+  const start = Date.now();
+  try {
+    await fetch(`${API}/`);
+    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+    serverReady = true;
+    wakeSpinner.style.display = 'none';
+    wakeText.textContent = `✓ Server connected in ${elapsed}s — loading data...`;
+    banner.classList.add('ready');
+    setTimeout(() => banner.classList.add('hidden'), 2500);
+  } catch (e) {
+    wakeText.textContent = '⚠ Could not reach server. Check your connection.';
+  }
+}
+pingServer();
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+const COLORS = { gdp:'#1A7A4A', inf:'#C0392B', fx:'#2E5090', mpr:'#E8A020' };
 
 function fmt(date) {
-  // Format date string for display
   const d = new Date(date);
-  return d.toLocaleDateString('en-NG', { year: 'numeric', month: 'short' });
+  return d.toLocaleDateString('en-NG', { year:'numeric', month:'short' });
 }
 
-function makeChart(id, labels, data, color, label) {
+function showChart(skId, canvasId) {
+  document.getElementById(skId).style.display = 'none';
+  document.getElementById(canvasId).style.display = 'block';
+}
+
+function makeChart(id, labels, data, color, label, type='line') {
   return new Chart(document.getElementById(id), {
-    type: 'line',
+    type,
     data: {
       labels,
       datasets: [{
         label,
         data,
         borderColor: color,
-        backgroundColor: color + '18',
+        backgroundColor: type === 'bar'
+          ? data.map(v => v >= 0 ? color + 'AA' : '#C0392BAA')
+          : color + '18',
         borderWidth: 2,
         pointRadius: 2,
-        fill: true,
+        fill: type === 'line',
         tension: 0.3,
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: { legend:{ display:false } },
       scales: {
-        x: { ticks: { maxTicksLimit: 6, font: { size: 10 } } },
-        y: { ticks: { font: { size: 10 } } }
+        x: { ticks:{ maxTicksLimit:6, font:{ size:9 } }, grid:{ display:false } },
+        y: { ticks:{ font:{ size:9 } }, grid:{ color:'#E2EAF4' } }
       }
     }
   });
 }
 
+function trendBadge(cur, prev, containerId, upIsBad=false) {
+  if (!prev) return;
+  const diff = cur - prev;
+  const pct  = ((diff / Math.abs(prev)) * 100).toFixed(1);
+  const up   = diff > 0;
+  const cls  = up ? (upIsBad ? 'trend-up' : 'trend-down') : (upIsBad ? 'trend-down' : 'trend-up');
+  const arrow = up ? '▲' : '▼';
+  document.getElementById(containerId).innerHTML =
+    `<span class="hk-trend ${cls}">${arrow} ${Math.abs(pct)}% from prev</span>`;
+}
+
+// ── LOAD ALL DATA ─────────────────────────────────────────────────────────
 async function loadDashboard() {
   try {
-    // Load summary cards
-    const sum = await fetch(`${API}/api/summary`).then(r => r.json());
+    // 1. Fetch all endpoints in parallel for speed
+    const [sum, gdpRes, infRes, fxRes, mprRes] = await Promise.all([
+      fetch(`${API}/api/summary`).then(r => r.json()),
+      fetch(`${API}/api/gdp`).then(r => r.json()),
+      fetch(`${API}/api/inflation`).then(r => r.json()),
+      fetch(`${API}/api/exchange-rate`).then(r => r.json()),
+      fetch(`${API}/api/interest-rate`).then(r => r.json()),
+    ]);
 
+    // 2. Populate hero KPI cards
     if (sum.gdp_growth) {
-      document.getElementById('val-gdp').textContent = sum.gdp_growth.value + '%';
-      document.getElementById('sub-gdp').textContent = fmt(sum.gdp_growth.obs_date) + ' | Source: NBS';
+      document.getElementById('hk-gdp').textContent = sum.gdp_growth.value + '%';
+      document.getElementById('hk-gdp-sub').textContent = fmt(sum.gdp_growth.obs_date) + ' · NBS';
+      const g = gdpRes.gdp_growth;
+      if (g.length >= 2) trendBadge(g[g.length-1].value, g[g.length-2].value, 'hk-gdp-trend', false);
     }
     if (sum.inflation) {
-      document.getElementById('val-inf').textContent = sum.inflation.value + '%';
-      document.getElementById('sub-inf').textContent = fmt(sum.inflation.obs_date) + ' | Source: NBS';
+      document.getElementById('hk-inf').textContent = sum.inflation.value + '%';
+      document.getElementById('hk-inf-sub').textContent = fmt(sum.inflation.obs_date) + ' · NBS';
+      const inf = infRes.data;
+      if (inf.length >= 2) trendBadge(inf[inf.length-1].value, inf[inf.length-2].value, 'hk-inf-trend', true);
     }
     if (sum.exchange_rate) {
-      document.getElementById('val-fx').textContent = '₦' + Number(sum.exchange_rate.value).toFixed(0);
-      document.getElementById('sub-fx').textContent = fmt(sum.exchange_rate.obs_date) + ' | Source: CBN';
+      document.getElementById('hk-fx').textContent = '₦' + Number(sum.exchange_rate.value).toFixed(0);
+      document.getElementById('hk-fx-sub').textContent = fmt(sum.exchange_rate.obs_date) + ' · CBN';
+      const fx = fxRes.data;
+      if (fx.length >= 2) trendBadge(fx[fx.length-1].value, fx[fx.length-2].value, 'hk-fx-trend', true);
     }
     if (sum.mpr) {
-      document.getElementById('val-mpr').textContent = sum.mpr.value + '%';
-      document.getElementById('sub-mpr').textContent = fmt(sum.mpr.obs_date) + ' | Source: CBN';
+      document.getElementById('hk-mpr').textContent = sum.mpr.value + '%';
+      document.getElementById('hk-mpr-sub').textContent = fmt(sum.mpr.obs_date) + ' · CBN';
+      const mpr = mprRes.data;
+      if (mpr.length >= 2) trendBadge(mpr[mpr.length-1].value, mpr[mpr.length-2].value, 'hk-mpr-trend', true);
     }
 
-    // Load GDP chart
-    const gdp = await fetch(`${API}/api/gdp`).then(r => r.json());
-    makeChart(
-      'chart-gdp',
-      gdp.gdp_growth.map(d => fmt(d.obs_date)),
-      gdp.gdp_growth.map(d => d.value),
-      COLORS.gdp, 'GDP Growth %'
-    );
+    // 3. Dual-axis chart: Inflation vs Exchange Rate
+    const infData = infRes.data;
+    const fxData  = fxRes.data;
+    // Align by matching dates
+    const infMap = Object.fromEntries(infData.map(d => [d.obs_date.slice(0,7), d.value]));
+    const fxMap  = Object.fromEntries(fxData.map(d => [d.obs_date.slice(0,7), d.value]));
+    const allMonths = [...new Set([...Object.keys(infMap), ...Object.keys(fxMap)])].sort();
+    new Chart(document.getElementById('chart-dual'), {
+      type: 'line',
+      data: {
+        labels: allMonths.map(m => {
+          const d = new Date(m + '-01');
+          return d.toLocaleDateString('en-NG', { year:'numeric', month:'short' });
+        }),
+        datasets: [
+          {
+            label: 'Inflation Rate (%)',
+            data: allMonths.map(m => infMap[m] ?? null),
+            borderColor: '#C0392B',
+            backgroundColor: '#C0392B12',
+            borderWidth: 2.5,
+            pointRadius: 0,
+            fill: true,
+            tension: 0.35,
+            yAxisID: 'yLeft',
+          },
+          {
+            label: 'NGN/USD Exchange Rate',
+            data: allMonths.map(m => fxMap[m] ?? null),
+            borderColor: '#2E5090',
+            backgroundColor: '#2E509012',
+            borderWidth: 2.5,
+            pointRadius: 0,
+            fill: true,
+            tension: 0.35,
+            yAxisID: 'yRight',
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode:'index', intersect:false },
+        plugins: {
+          legend: { display:false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ctx.datasetIndex === 0
+                ? ` Inflation: ${ctx.parsed.y?.toFixed(2)}%`
+                : ` Exchange Rate: ₦${ctx.parsed.y?.toFixed(2)}`
+            }
+          }
+        },
+        scales: {
+          x: { ticks:{ maxTicksLimit:12, font:{ size:9 } }, grid:{ display:false } },
+          yLeft: {
+            type: 'linear', position: 'left',
+            title: { display:true, text:'Inflation (%)', font:{ size:9 } },
+            ticks: { font:{ size:9 }, color:'#C0392B' },
+            grid: { color:'#E2EAF4' }
+          },
+          yRight: {
+            type: 'linear', position: 'right',
+            title: { display:true, text:'NGN/USD', font:{ size:9 } },
+            ticks: { font:{ size:9 }, color:'#2E5090' },
+            grid: { drawOnChartArea:false }
+          }
+        }
+      }
+    });
 
-    // Load Inflation chart
-    const inf = await fetch(`${API}/api/inflation`).then(r => r.json());
-    makeChart(
-      'chart-inf',
-      inf.data.map(d => fmt(d.obs_date)),
-      inf.data.map(d => d.value),
-      COLORS.inf, 'Inflation %'
-    );
+    // 4. Mini charts — show skeleton then reveal
+    const gdp = gdpRes.gdp_growth;
+    showChart('sk-gdp', 'chart-gdp');
+    makeChart('chart-gdp', gdp.map(d=>fmt(d.obs_date)), gdp.map(d=>d.value), COLORS.gdp, 'GDP %', 'bar');
 
-    // Load Exchange Rate chart
-    const fx = await fetch(`${API}/api/exchange-rate`).then(r => r.json());
-    makeChart(
-      'chart-fx',
-      fx.data.map(d => fmt(d.obs_date)),
-      fx.data.map(d => d.value),
-      COLORS.fx, 'NGN/USD'
-    );
+    showChart('sk-inf', 'chart-inf');
+    makeChart('chart-inf', infData.map(d=>fmt(d.obs_date)), infData.map(d=>d.value), COLORS.inf, 'Inflation %');
 
-    // Load MPR chart
-    const mpr = await fetch(`${API}/api/interest-rate`).then(r => r.json());
-    makeChart(
-      'chart-mpr',
-      mpr.data.map(d => fmt(d.obs_date)),
-      mpr.data.map(d => d.value),
-      COLORS.mpr, 'MPR %'
-    );
+    showChart('sk-fx', 'chart-fx');
+    makeChart('chart-fx', fxData.map(d=>fmt(d.obs_date)), fxData.map(d=>d.value), COLORS.fx, 'NGN/USD');
+
+    showChart('sk-mpr', 'chart-mpr');
+    makeChart('chart-mpr', mprRes.data.map(d=>fmt(d.obs_date)), mprRes.data.map(d=>d.value), COLORS.mpr, 'MPR %');
 
   } catch (err) {
-    console.error('Failed to load data:', err);
-    document.querySelectorAll('.value').forEach(el => el.textContent = 'Error');
-    document.querySelectorAll('.sub').forEach(el => el.textContent = 'Could not reach API. Is the server running?');
+    console.error('Dashboard load error:', err);
+    document.querySelectorAll('.hk-value').forEach(el => el.textContent = '—');
+    document.querySelectorAll('.hk-sub').forEach(el => el.textContent = 'Could not load');
+    wakeText.textContent = '⚠ Could not reach server. Try refreshing the page.';
+    banner.classList.remove('hidden', 'ready');
+    banner.style.background = 'linear-gradient(90deg,#7B2020,#C0392B)';
   }
 }
 
