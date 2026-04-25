@@ -10,8 +10,8 @@
 </head>
 <body>
 <nav>
-  <a class="nav-brand" href="index.html">🇳🇬 Nigeria Economic Dashboard</a>
-  <ul class="nav-links">
+  <a class="nav-brand" href="index.html"><span class="flag">🇳🇬</span> Nigeria Economic Dashboard</a>
+  <ul class="nav-center">
     <li><a href="index.html">Dashboard</a></li>
     <li><a href="gdp.html" class="active">GDP</a></li>
     <li><a href="inflation.html">Inflation</a></li>
@@ -19,45 +19,64 @@
     <li><a href="interest_rate.html">Interest Rate</a></li>
     <li><a href="about.html">About</a></li>
   </ul>
+  <span class="nav-badge">Caleb University · FYP 2026</span>
 </nav>
+
 <main>
   <div class="page-header">
     <h1>Gross Domestic Product (GDP)</h1>
     <p>Quarterly real GDP growth rate and annual nominal GDP in USD billions · NBS and World Bank · 2020–2024</p>
   </div>
+
+  <div class="stat-box">
+    <div class="stat-number" id="stat-gdp">—</div>
+    <div class="stat-label">Real GDP Growth Rate (latest quarter)</div>
+    <p class="stat-context">Nigeria's economy grew 3.97% in Q4 2024, recovering from a COVID-19 contraction of −6.10% in Q2 2020 — the deepest quarterly decline in the dataset.</p>
+  </div>
+
   <div class="card">
     <h2>Real GDP Growth Rate (%) — Quarterly</h2>
     <div class="chart-container">
-      <p class="chart-loading" id="loading-growth">Loading...</p>
+      <p class="chart-loading" id="loading-growth">Loading…</p>
       <canvas id="chart-growth" style="display:none"></canvas>
     </div>
     <p class="source-note">Source: NBS Quarterly GDP Report · Real GDP at 2010 constant basic prices</p>
   </div>
+
   <div class="card">
     <h2>Nominal GDP (USD Billions) — Annual</h2>
     <div class="chart-container">
-      <p class="chart-loading" id="loading-usd">Loading...</p>
+      <p class="chart-loading" id="loading-usd">Loading…</p>
       <canvas id="chart-usd" style="display:none"></canvas>
     </div>
     <p class="source-note">Source: World Bank Open Data · NY.GDP.MKTP.CD</p>
   </div>
+
   <div class="card">
     <h2>GDP Growth Rate Data Table</h2>
-    <div id="loading-table" class="loading">Loading data...</div>
+    <div id="loading-table" class="loading">Loading data…</div>
     <table class="data-table" id="gdp-table" style="display:none">
-      <thead><tr><th>Quarter</th><th class="num">Real GDP Growth Rate (%)</th><th>Performance</th></tr></thead>
+      <thead><tr><th>Quarter</th><th class="num">Real GDP Growth Rate (%)</th><th>Performance</th><th>Source</th></tr></thead>
       <tbody id="gdp-tbody"></tbody>
     </table>
   </div>
+
   <div class="card">
     <h2>Nominal GDP (USD) Data Table</h2>
     <table class="data-table" id="usd-table" style="display:none">
-      <thead><tr><th>Year</th><th class="num">GDP (USD Billions)</th><th>Change</th></tr></thead>
+      <thead><tr><th>Year</th><th class="num">GDP (USD Billions)</th><th>Change</th><th>Source</th></tr></thead>
       <tbody id="usd-tbody"></tbody>
     </table>
   </div>
 </main>
-<footer><p>Data sources: NBS · World Bank · Not financial advice</p></footer>
+
+<footer>
+  <div class="footer-inner">
+    <span>🇳🇬 Data Sources: CBN · NBS · World Bank &nbsp;|&nbsp; For educational purposes only · Not financial advice</span>
+    <span class="footer-right">Final Year Project · Dept of Computer Science · Caleb University, Imota, Lagos · 2026</span>
+  </div>
+</footer>
+
 <script>
 const API = 'https://nigerian-dashboard.onrender.com';
 
@@ -72,85 +91,97 @@ function badge(v) {
   return '<span class="badge badge-red">Very High</span>';
 }
 
-const TIP = { backgroundColor: '#fff', titleColor: '#1A3A5C', bodyColor: '#4A5568', borderColor: '#E2E8F0', borderWidth: 1, padding: 10, displayColors: false };
-const SX  = { grid: { display: false }, border: { display: false }, ticks: { color: '#718096', font: { size: 12 } } };
-const SY  = { grid: { color: '#F0F0F0' }, border: { display: false }, ticks: { color: '#718096', font: { size: 12 } } };
+const TIP = { backgroundColor:'#fff', titleColor:'#1A3A5C', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
+const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
 
-function showChart(loadId, canvasId) {
-  document.getElementById(loadId).style.display = 'none';
-  document.getElementById(canvasId).style.display = 'block';
+function showChart(lid, cid) {
+  document.getElementById(lid).style.display = 'none';
+  document.getElementById(cid).style.display = 'block';
 }
 
 async function load() {
-  const res = await fetch(`${API}/api/gdp`).then(r => r.json());
+  const res    = await fetch(`${API}/api/gdp`).then(r => r.json());
   const growth = res.gdp_growth;
   const usd    = res.gdp_usd;
 
-  // GDP growth bar chart — no rounded corners, thin bars, zero line
+  // Stat box — latest GDP growth
+  const latestGDP = growth[growth.length - 1];
+  document.getElementById('stat-gdp').textContent = `${Number(latestGDP.value).toFixed(2)}%`;
+
+  // GDP Q2 2020 annotation (peak contraction)
+  const q2Idx = growth.findIndex(d => d.obs_date.startsWith('2020-04'));
+  const growthAnnots = {};
+  if (q2Idx >= 0) growthAnnots.contraction = {
+    type: 'line', xMin: q2Idx, xMax: q2Idx,
+    borderColor: 'rgba(220,38,38,0.5)', borderWidth: 1.5, borderDash: [6, 4],
+    label: { display: true, content: 'Peak Contraction −6.10%', position: 'end',
+      backgroundColor: '#DC2626', color: '#fff',
+      font: { size: 11, weight: '600' }, padding: { x: 6, y: 3 }, borderRadius: 2 }
+  };
+
+  // GDP growth bar chart
   showChart('loading-growth', 'chart-growth');
   new Chart(document.getElementById('chart-growth'), {
     type: 'bar',
     data: { labels: growth.map(d => fmt(d.obs_date)), datasets: [{ label: 'Real GDP Growth (%)', data: growth.map(d => d.value),
-      backgroundColor: growth.map(d => d.value >= 0 ? '#1A7A4A' : '#C0392B'),
-      borderWidth: 0, borderRadius: 0, barPercentage: 0.6 }] },
+      backgroundColor: growth.map(d => d.value >= 0 ? '#006633' : '#DC2626'),
+      borderWidth: 0, barPercentage: 0.6 }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { ...TIP, callbacks: {
-          title: i => i[0].label,
-          label: ctx => `GDP Growth: ${ctx.parsed.y.toFixed(2)}%`
-        }},
+        tooltip: { ...TIP, callbacks: { title: i => i[0].label, label: ctx => `GDP Growth: ${ctx.parsed.y.toFixed(2)}%` }},
         annotation: { annotations: {
-          zero: { type: 'line', yMin: 0, yMax: 0, borderColor: '#aaa', borderWidth: 1, borderDash: [4, 4] }
+          zero: { type:'line', yMin:0, yMax:0, borderColor:'#9CA3AF', borderWidth:1, borderDash:[4,4] },
+          ...growthAnnots
         }}
       },
       scales: {
-        y: { ...SY, title: { display: true, text: 'Growth Rate (%)', color: '#718096', font: { size: 12 } } },
+        y: { ...SY, title: { display:true, text:'Growth Rate (%)', color:'#6B7280', font:{size:12} } },
         x: { ...SX }
       }
     }
   });
 
-  // Nominal GDP line chart — clean line, no fill
+  // Nominal GDP line chart
   showChart('loading-usd', 'chart-usd');
   new Chart(document.getElementById('chart-usd'), {
     type: 'line',
     data: { labels: usd.map(d => fmtYear(d.obs_date)), datasets: [{ label: 'Nominal GDP (USD Bn)', data: usd.map(d => d.value),
-      borderColor: '#2E5090', backgroundColor: 'transparent',
-      borderWidth: 2, pointRadius: 5, pointBackgroundColor: '#2E5090',
-      pointBorderColor: '#fff', pointBorderWidth: 1.5, fill: false, tension: 0.3 }] },
+      borderColor: '#1A3A5C', backgroundColor: 'transparent',
+      borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: '#1A3A5C',
+      pointBorderColor: '#fff', pointBorderWidth: 2, fill: false, tension: 0.3 }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { ...TIP, callbacks: {
-          title: i => i[0].label,
-          label: ctx => `GDP: $${ctx.parsed.y.toFixed(2)}B`
-        }}
+        tooltip: { ...TIP, callbacks: { title: i => i[0].label, label: ctx => `GDP: $${ctx.parsed.y.toFixed(2)}B` }}
       },
       scales: {
-        y: { ...SY, title: { display: true, text: 'USD Billions', color: '#718096', font: { size: 12 } } },
+        y: { ...SY, title: { display:true, text:'USD Billions', color:'#6B7280', font:{size:12} } },
         x: { ...SX }
       }
     }
   });
 
-  // GDP table
+  // GDP growth table
   const tbody = document.getElementById('gdp-tbody');
-  growth.forEach(d => { tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">${Number(d.value).toFixed(2)}%</td><td>${badge(d.value)}</td></tr>`; });
+  growth.forEach(d => {
+    tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">${Number(d.value).toFixed(2)}%</td><td>${badge(d.value)}</td><td class="src">NBS</td></tr>`;
+  });
   document.getElementById('loading-table').style.display = 'none';
   document.getElementById('gdp-table').style.display = 'table';
 
-  // USD table
+  // Nominal GDP table
   const usdTbody = document.getElementById('usd-tbody');
   usd.forEach((d, i) => {
-    const prev = i > 0 ? usd[i - 1].value : null;
-    const diff = prev ? d.value - prev : 0;
+    const prev   = i > 0 ? usd[i - 1].value : null;
+    const diff   = prev ? d.value - prev : 0;
     const change = i === 0 ? '—' : diff > 0
-      ? `<span style="color:#C0392B">▲ $${diff.toFixed(2)}B</span>`
-      : `<span style="color:#1A7A4A">▼ $${Math.abs(diff).toFixed(2)}B</span>`;
-    usdTbody.innerHTML += `<tr><td>${fmtYear(d.obs_date)}</td><td class="num">$${Number(d.value).toFixed(2)}B</td><td>${change}</td></tr>`;
+      ? `<span style="color:#DC2626">▲ $${diff.toFixed(2)}B</span>`
+      : `<span style="color:#15803D">▼ $${Math.abs(diff).toFixed(2)}B</span>`;
+    usdTbody.innerHTML += `<tr><td>${fmtYear(d.obs_date)}</td><td class="num">$${Number(d.value).toFixed(2)}B</td><td>${change}</td><td class="src">World Bank</td></tr>`;
   });
   document.getElementById('usd-table').style.display = 'table';
 }

@@ -9,8 +9,8 @@
 <body>
 
 <nav>
-  <a class="nav-brand" href="index.html">🇳🇬 Nigeria Economic Dashboard</a>
-  <ul class="nav-links">
+  <a class="nav-brand" href="index.html"><span class="flag">🇳🇬</span> Nigeria Economic Dashboard</a>
+  <ul class="nav-center">
     <li><a href="index.html">Dashboard</a></li>
     <li><a href="gdp.html">GDP</a></li>
     <li><a href="inflation.html">Inflation</a></li>
@@ -18,6 +18,7 @@
     <li><a href="interest_rate.html">Interest Rate</a></li>
     <li><a href="about.html" class="active">About</a></li>
   </ul>
+  <span class="nav-badge">Caleb University · FYP 2026</span>
 </nav>
 
 <main>
@@ -26,11 +27,15 @@
     <p>Design and Implementation of a Web-Based Financial Data Aggregation System Using Nigerian Public Economic Data</p>
   </div>
 
+  <div class="quote-box">
+    <p>This system aggregates Nigeria's four core macroeconomic indicators from the CBN, NBS and World Bank into a single interactive web dashboard — making public economic data accessible to all Nigerians.</p>
+  </div>
+
   <div class="card">
     <h2>System Overview</h2>
-    <p>This system aggregates four core Nigerian macroeconomic indicators from three official public data sources for the period January 2020 to December 2024. It presents the data through an interactive web dashboard with line charts and summary tables that any user can access through a standard web browser.</p>
+    <p style="color:#6B7280;line-height:1.7">This system aggregates four core Nigerian macroeconomic indicators from three official public data sources for the period January 2020 to December 2024. It presents the data through an interactive web dashboard with line charts and summary tables that any user can access through a standard web browser.</p>
     <br>
-    <p>This project was developed as a Final Year Project at Caleb University, Imota, Lagos, in the Department of Computer Science. Its contribution is a free, open-source, and academically documented implementation built on a teachable technology stack that Nigerian computer science students can study, understand, and extend.</p>
+    <p style="color:#6B7280;line-height:1.7">This project was developed as a Final Year Project at Caleb University, Imota, Lagos, in the Department of Computer Science. Its contribution is a free, open-source, and academically documented implementation built on a teachable technology stack that Nigerian computer science students can study, understand, and extend.</p>
   </div>
 
   <div class="card">
@@ -44,31 +49,31 @@
           <td>Central Bank of Nigeria (CBN)</td>
           <td>Exchange Rate (NGN/USD)</td>
           <td>Daily (averaged monthly)</td>
-          <td><a href="https://www.cbn.gov.ng" target="_blank">cbn.gov.ng</a></td>
+          <td><a href="https://www.cbn.gov.ng" target="_blank" style="color:#006633">cbn.gov.ng</a></td>
         </tr>
         <tr>
           <td>Central Bank of Nigeria (CBN)</td>
           <td>Monetary Policy Rate (MPR)</td>
           <td>Per MPC meeting (~bimonthly)</td>
-          <td><a href="https://www.cbn.gov.ng" target="_blank">cbn.gov.ng</a></td>
+          <td><a href="https://www.cbn.gov.ng" target="_blank" style="color:#006633">cbn.gov.ng</a></td>
         </tr>
         <tr>
           <td>National Bureau of Statistics (NBS)</td>
           <td>GDP Growth Rate (%)</td>
           <td>Quarterly</td>
-          <td><a href="https://nigerianstat.gov.ng" target="_blank">nigerianstat.gov.ng</a></td>
+          <td><a href="https://nigerianstat.gov.ng" target="_blank" style="color:#006633">nigerianstat.gov.ng</a></td>
         </tr>
         <tr>
           <td>National Bureau of Statistics (NBS)</td>
           <td>Headline Inflation Rate (%)</td>
           <td>Monthly</td>
-          <td><a href="https://nigerianstat.gov.ng" target="_blank">nigerianstat.gov.ng</a></td>
+          <td><a href="https://nigerianstat.gov.ng" target="_blank" style="color:#006633">nigerianstat.gov.ng</a></td>
         </tr>
         <tr>
           <td>World Bank Open Data</td>
           <td>Nominal GDP (USD Billions)</td>
           <td>Annual</td>
-          <td><a href="https://data.worldbank.org" target="_blank">data.worldbank.org</a></td>
+          <td><a href="https://data.worldbank.org" target="_blank" style="color:#006633">data.worldbank.org</a></td>
         </tr>
       </tbody>
     </table>
@@ -89,31 +94,35 @@
         <tr><td>Frontend Styling</td><td>CSS3</td><td>Visual presentation and responsive layout</td></tr>
         <tr><td>Frontend Logic</td><td>Vanilla JavaScript (ES6+)</td><td>Fetch API calls and dynamic rendering</td></tr>
         <tr><td>Data Visualisation</td><td>Chart.js v4</td><td>Interactive line and bar charts</td></tr>
+        <tr><td>Hosting</td><td>Render (free tier)</td><td>Cloud deployment with auto-sleep prevention</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="card">
     <h2>Data Collection Method</h2>
-    <p>All data was collected by manually downloading publicly available Excel and CSV files from the official websites of the three source institutions. The data was then processed using Python and Pandas following the ETL (Extract, Transform, Load) framework:</p>
+    <p style="color:#6B7280;line-height:1.7">All data was collected by manually downloading publicly available Excel and CSV files from the official websites of the three source institutions. The data was then processed using Python and Pandas following the ETL (Extract, Transform, Load) framework:</p>
     <br>
-    <p><strong>Extract:</strong> Excel and CSV files downloaded from CBN, NBS, and World Bank websites.</p>
+    <p style="color:#6B7280;line-height:1.7"><strong style="color:#1A1A1A">Extract:</strong> Excel and CSV files downloaded from CBN, NBS, and World Bank websites.</p>
     <br>
-    <p><strong>Transform:</strong> Python Pandas used to extract relevant columns, standardise date formats to ISO 8601 (YYYY-MM-DD), convert strings to numeric values, and filter for the 2020–2024 date range. For exchange rate, daily CBN values were averaged to monthly. For GDP, the "GDP at 2010 constant price" row from the "real gdp growth rate %" sheet was extracted from each quarterly NBS report.</p>
+    <p style="color:#6B7280;line-height:1.7"><strong style="color:#1A1A1A">Transform:</strong> Python Pandas used to extract relevant columns, standardise date formats to ISO 8601 (YYYY-MM-DD), convert strings to numeric values, and filter for the 2020–2024 date range. For exchange rate, daily CBN values were averaged to monthly. For GDP, the "GDP at 2010 constant price" row from the "real gdp growth rate %" sheet was extracted from each quarterly NBS report.</p>
     <br>
-    <p><strong>Load:</strong> Cleaned data inserted into the Supabase PostgreSQL database using the Supabase Python client library.</p>
+    <p style="color:#6B7280;line-height:1.7"><strong style="color:#1A1A1A">Load:</strong> Cleaned data inserted into the Supabase PostgreSQL database using the Supabase Python client library.</p>
   </div>
 
-  <div class="card" style="border-left: 4px solid #C0392B;">
+  <div class="card" style="border-left:4px solid #DC2626">
     <h2>⚠ Disclaimer</h2>
-    <p>This system is for <strong>informational and educational purposes only</strong>. Data is sourced from official institutions but the system cannot guarantee freedom from errors or omissions. Values may differ slightly from original publications due to rounding or data transformation.</p>
+    <p style="color:#6B7280;line-height:1.7">This system is for <strong style="color:#1A1A1A">informational and educational purposes only</strong>. Data is sourced from official institutions but the system cannot guarantee freedom from errors or omissions. Values may differ slightly from original publications due to rounding or data transformation.</p>
     <br>
-    <p><strong>This system does not constitute financial advice or investment recommendations of any kind.</strong> For official and definitive economic data, always refer directly to the CBN, NBS, and World Bank websites.</p>
+    <p style="color:#6B7280;line-height:1.7"><strong style="color:#1A1A1A">This system does not constitute financial advice or investment recommendations of any kind.</strong> For official and definitive economic data, always refer directly to the CBN, NBS, and World Bank websites.</p>
   </div>
 </main>
 
 <footer>
-  <p>Developed as a Final Year Project &bull; Caleb University, Imota, Lagos &bull; Department of Computer Science &bull; 2026</p>
+  <div class="footer-inner">
+    <span>🇳🇬 Data Sources: CBN · NBS · World Bank &nbsp;|&nbsp; For educational purposes only · Not financial advice</span>
+    <span class="footer-right">Final Year Project · Dept of Computer Science · Caleb University, Imota, Lagos · 2026</span>
+  </div>
 </footer>
 
 </body>

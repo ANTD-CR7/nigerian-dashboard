@@ -10,8 +10,8 @@
 </head>
 <body>
 <nav>
-  <a class="nav-brand" href="index.html">🇳🇬 Nigeria Economic Dashboard</a>
-  <ul class="nav-links">
+  <a class="nav-brand" href="index.html"><span class="flag">🇳🇬</span> Nigeria Economic Dashboard</a>
+  <ul class="nav-center">
     <li><a href="index.html">Dashboard</a></li>
     <li><a href="gdp.html">GDP</a></li>
     <li><a href="inflation.html">Inflation</a></li>
@@ -19,30 +19,47 @@
     <li><a href="interest_rate.html" class="active">Interest Rate</a></li>
     <li><a href="about.html">About</a></li>
   </ul>
+  <span class="nav-badge">Caleb University · FYP 2026</span>
 </nav>
+
 <main>
   <div class="page-header">
     <h1>Monetary Policy Rate (MPR)</h1>
-    <p>CBN benchmark interest rate at each MPC decision · CBN · 2020–2024</p>
+    <p>CBN benchmark interest rate at each MPC decision · Central Bank of Nigeria · 2020–2024</p>
   </div>
+
+  <div class="stat-box">
+    <div class="stat-number" id="stat-mpr">—</div>
+    <div class="stat-label">Monetary Policy Rate (latest MPC decision)</div>
+    <p class="stat-context">The CBN raised the MPR from 11.5% to 27.5% between 2022 and 2024 — a cumulative 1,600 basis point tightening — to combat surging inflation following the June 2023 FX unification reform.</p>
+  </div>
+
   <div class="card">
     <h2>CBN Monetary Policy Rate (%) — MPC Decision Dates</h2>
     <div class="chart-container-lg">
-      <p class="chart-loading" id="loading-mpr">Loading...</p>
+      <p class="chart-loading" id="loading-mpr">Loading…</p>
       <canvas id="chart-mpr" style="display:none"></canvas>
     </div>
     <p class="source-note">Source: CBN MPC communiques · Stepped line = rate held flat between meetings</p>
   </div>
+
   <div class="card">
     <h2>MPR Decision History</h2>
-    <div id="loading" class="loading">Loading data...</div>
+    <div id="loading" class="loading">Loading data…</div>
     <table class="data-table" id="mpr-table" style="display:none">
-      <thead><tr><th>MPC Decision Date</th><th class="num">MPR (%)</th><th>Change</th></tr></thead>
+      <thead><tr><th>MPC Decision Date</th><th class="num">MPR (%)</th><th>Change</th><th>Source</th></tr></thead>
       <tbody id="mpr-tbody"></tbody>
     </table>
   </div>
 </main>
-<footer><p>Data source: CBN · Not financial advice</p></footer>
+
+<footer>
+  <div class="footer-inner">
+    <span>🇳🇬 Data Sources: CBN · NBS · World Bank &nbsp;|&nbsp; For educational purposes only · Not financial advice</span>
+    <span class="footer-right">Final Year Project · Dept of Computer Science · Caleb University, Imota, Lagos · 2026</span>
+  </div>
+</footer>
+
 <script>
 const API = 'https://nigerian-dashboard.onrender.com';
 
@@ -50,35 +67,36 @@ function fmt(d) {
   return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
-const TIP = { backgroundColor: '#fff', titleColor: '#1A3A5C', bodyColor: '#4A5568', borderColor: '#E2E8F0', borderWidth: 1, padding: 10, displayColors: false };
-const SX  = { grid: { display: false }, border: { display: false }, ticks: { color: '#718096', font: { size: 12 } } };
-const SY  = { grid: { color: '#F0F0F0' }, border: { display: false }, ticks: { color: '#718096', font: { size: 12 } } };
+const TIP = { backgroundColor:'#fff', titleColor:'#1A3A5C', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
+const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
 
 async function load() {
   const res  = await fetch(`${API}/api/interest-rate`).then(r => r.json());
   const data = res.data;
 
+  // Stat box
+  const latest = data[data.length - 1];
+  document.getElementById('stat-mpr').textContent = `${Number(latest.value).toFixed(2)}%`;
+
   document.getElementById('loading-mpr').style.display = 'none';
-  document.getElementById('chart-mpr').style.display = 'block';
+  document.getElementById('chart-mpr').style.display   = 'block';
   new Chart(document.getElementById('chart-mpr'), {
     type: 'line',
     data: { labels: data.map(d => fmt(d.obs_date)), datasets: [{ label: 'MPR (%)', data: data.map(d => d.value),
-      borderColor: '#B7770D', backgroundColor: 'transparent',
-      borderWidth: 2,
-      pointRadius: 5, pointBackgroundColor: '#B7770D',
-      pointBorderColor: '#fff', pointBorderWidth: 1.5,
+      borderColor: '#C8A951', backgroundColor: 'transparent',
+      borderWidth: 2.5,
+      pointRadius: 5, pointBackgroundColor: '#C8A951',
+      pointBorderColor: '#fff', pointBorderWidth: 2,
       fill: false, stepped: true }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { ...TIP, callbacks: {
-          title: i => i[0].label,
-          label: ctx => `MPR: ${ctx.parsed.y.toFixed(2)}%`
-        }}
+        tooltip: { ...TIP, callbacks: { title: i => i[0].label, label: ctx => `MPR: ${ctx.parsed.y.toFixed(2)}%` }}
       },
       scales: {
-        y: { ...SY, min: 10, title: { display: true, text: 'Rate (%)', color: '#718096', font: { size: 12 } } },
+        y: { ...SY, min: 10, title: { display:true, text:'Rate (%)', color:'#6B7280', font:{size:12} } },
         x: { ...SX }
       }
     }
@@ -94,10 +112,10 @@ async function load() {
       else if (diff < 0) change = `<span class="badge badge-green">▼ ${diff.toFixed(2)}%</span>`;
       else               change = '<span class="badge badge-orange">Held</span>';
     }
-    tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">${Number(d.value).toFixed(2)}%</td><td>${change}</td></tr>`;
+    tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">${Number(d.value).toFixed(2)}%</td><td>${change}</td><td class="src">CBN</td></tr>`;
   });
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('mpr-table').style.display = 'table';
+  document.getElementById('loading').style.display    = 'none';
+  document.getElementById('mpr-table').style.display  = 'table';
 }
 
 load();

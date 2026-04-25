@@ -1,124 +1,139 @@
 /* ============================================================
    NIGERIAN FINANCIAL DATA AGGREGATION SYSTEM — style.css
-   Clean analytical financial redesign
+   ECB / CBN institutional redesign
    ============================================================ */
 :root {
-    --primary:   #1A3A5C;
-    --text:      #1A202C;
-    --text-mid:  #4A5568;
-    --text-light:#718096;
-    --bg:        #F8F9FA;
-    --card-bg:   #FFFFFF;
-    --border:    #E2E8F0;
-    --shadow:    0 1px 3px rgba(0,0,0,0.07),0 1px 2px rgba(0,0,0,0.04);
-    --font:      'Segoe UI',system-ui,Arial,sans-serif;
-    --radius:    8px;
-    --c-gdp:     #1A7A4A;
-    --c-inf:     #C0392B;
-    --c-fx:      #2E5090;
-    --c-mpr:     #B7770D;
+    --green:    #006633;
+    --navy:     #1A3A5C;
+    --gold:     #C8A951;
+    --bg:       #FFFFFF;
+    --section:  #F5F7FA;
+    --text:     #1A1A1A;
+    --muted:    #6B7280;
+    --border:   #E5E7EB;
+    --pos:      #15803D;
+    --neg:      #DC2626;
+    --font:     'Segoe UI',system-ui,Arial,sans-serif;
+    --shadow:   0 1px 3px rgba(0,0,0,0.07),0 1px 2px rgba(0,0,0,0.04);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font);background:var(--bg);color:var(--text-mid);font-size:14px;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
 
-/* NAV — white, navy text, underline active */
-nav{background:#fff;border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:stretch;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
-.nav-brand{color:var(--primary);font-size:1rem;font-weight:700;text-decoration:none;display:flex;align-items:center;letter-spacing:-.2px}
-.nav-links{display:flex;align-items:stretch;list-style:none}
-.nav-links li{display:flex;align-items:stretch}
-.nav-links a{display:flex;align-items:center;padding:0 .9rem;font-size:.875rem;font-weight:500;color:var(--text-mid);text-decoration:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
-.nav-links a:hover{color:var(--primary)}
-.nav-links a.active{color:var(--primary);font-weight:600;border-bottom-color:var(--primary)}
+/* ===== NAV — ECB style ===== */
+nav{background:#fff;border-bottom:3px solid var(--green);padding:0 2rem;display:flex;align-items:stretch;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100}
+.nav-brand{display:flex;align-items:center;gap:.45rem;text-decoration:none;font-size:.95rem;font-weight:700;color:var(--navy);letter-spacing:-.2px}
+.nav-brand .flag{font-size:1.1rem}
+.nav-center{display:flex;align-items:stretch;list-style:none}
+.nav-center li{display:flex;align-items:stretch}
+.nav-center a{display:flex;align-items:center;padding:0 .9rem;font-size:.875rem;font-weight:500;color:var(--navy);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-3px;transition:color .15s,border-color .15s}
+.nav-center a:hover{color:var(--green)}
+.nav-center a.active{color:var(--green);font-weight:600;border-bottom-color:var(--green)}
+.nav-badge{display:flex;align-items:center;background:var(--green);color:#fff;font-size:11px;font-weight:600;padding:0 .75rem;border-radius:20px;align-self:center;white-space:nowrap;letter-spacing:.2px}
 
-/* MAIN */
+/* ===== HERO — solid Nigerian green ===== */
+.hero{background:var(--green);padding:3rem 2rem 2.5rem}
+.hero-inner{max-width:1140px;margin:0 auto}
+.hero h1{font-size:2rem;font-weight:800;color:#fff;margin-bottom:.35rem;letter-spacing:-.5px;line-height:1.2}
+.hero-gold{font-size:.9rem;color:var(--gold);font-weight:600;letter-spacing:.3px;margin-bottom:.6rem}
+.hero-desc{font-size:.9rem;color:rgba(255,255,255,.82);margin-bottom:1.75rem;max-width:560px}
+
+/* ===== KPI GRID (hero & standalone) ===== */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:rgba(255,255,255,.25)}
+.kpi-card{background:#fff;padding:1.25rem 1.5rem}
+.kpi-label{font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.35rem}
+.kpi-value{font-size:2rem;font-weight:700;color:var(--navy);line-height:1;margin-bottom:.3rem;letter-spacing:-1px}
+.kpi-meta{font-size:12px;color:var(--muted);margin-bottom:.35rem}
+.trend-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:600}
+.trend-badge.bad{background:#FEE2E2;color:var(--neg)}
+.trend-badge.good{background:#DCFCE7;color:var(--pos)}
+
+/* ===== MAIN ===== */
 main{flex:1;max-width:1140px;margin:0 auto;padding:2rem 1.5rem;width:100%}
 
-/* PAGE INTRO (dashboard index) */
-.page-intro{margin-bottom:1.75rem}
-.page-intro h1{font-size:24px;font-weight:700;color:var(--primary);margin-bottom:.2rem}
-.intro-sub{font-size:14px;color:var(--text-light)}
+/* ===== PAGE HEADER ===== */
+.page-header{margin-bottom:1.75rem;padding-bottom:.85rem;border-bottom:2px solid var(--border)}
+.page-header h1{font-size:22px;font-weight:700;color:var(--navy);margin-bottom:.2rem}
+.page-header p{font-size:14px;color:var(--muted)}
 
-/* PAGE HEADER (detail pages) */
-.page-header{margin-bottom:1.75rem;padding-bottom:.75rem;border-bottom:2px solid var(--border)}
-.page-header h1{font-size:24px;font-weight:700;color:var(--primary);margin-bottom:.2rem}
-.page-header p{font-size:14px;color:var(--text-light)}
+/* ===== ECB STAT BOX ===== */
+.stat-box{background:var(--section);border:1px solid var(--border);border-left:4px solid var(--green);padding:1.75rem 2rem;margin-bottom:1.75rem}
+.stat-number{font-size:3rem;font-weight:800;color:var(--navy);line-height:1;margin-bottom:.3rem;letter-spacing:-2px}
+.stat-label{font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.6rem}
+.stat-context{font-size:14px;color:var(--muted);line-height:1.65;max-width:680px}
 
-/* KPI GRID */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.75rem}
-.kpi-card{background:var(--card-bg);border:1px solid var(--border);border-left:4px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;box-shadow:var(--shadow)}
-.kpi-card.kpi-gdp{border-left-color:var(--c-gdp)}
-.kpi-card.kpi-inf{border-left-color:var(--c-inf)}
-.kpi-card.kpi-fx {border-left-color:var(--c-fx)}
-.kpi-card.kpi-mpr{border-left-color:var(--c-mpr)}
-.kpi-label{font-size:12px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.5rem}
-.kpi-value{font-size:32px;font-weight:700;color:var(--text);line-height:1;margin-bottom:.3rem;letter-spacing:-1px}
-.kpi-sub{font-size:12px;color:var(--text-light);margin-bottom:.5rem}
-.trend-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600}
-.trend-badge.bad{background:#FEE2E2;color:var(--c-inf)}
-.trend-badge.good{background:#DCFCE7;color:var(--c-gdp)}
-.trend-badge.neutral{background:#F3F4F6;color:var(--text-mid)}
+/* ===== CARDS ===== */
+.card{background:#fff;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.5rem}
+.card h2{font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.4px;margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
 
-/* CARDS */
-.card{background:var(--card-bg);border-radius:var(--radius);padding:1.5rem;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:1.5rem}
-.card h2{font-size:15px;font-weight:600;color:var(--primary);margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
-
-/* MINI GRID */
+/* ===== MINI GRID ===== */
 .mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:1.5rem}
 
-/* CHART CONTAINERS */
+/* ===== CHART CONTAINERS ===== */
 .chart-container   {position:relative;height:360px;width:100%}
 .chart-container-sm{position:relative;height:220px;width:100%}
 .chart-container-lg{position:relative;height:400px;width:100%}
+.chart-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--muted);font-size:14px;pointer-events:none}
 
-/* CHART LOADING TEXT */
-.chart-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-light);font-size:14px;pointer-events:none}
-
-/* DUAL AXIS LEGEND */
-.dual-legend{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:.75rem;font-size:13px;color:var(--text-light)}
+/* ===== DUAL LEGEND ===== */
+.dual-legend{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:.75rem;font-size:13px;color:var(--muted)}
 .dual-legend span{display:flex;align-items:center;gap:.5rem}
 .dot{width:20px;height:2px;border-radius:1px;display:inline-block;flex-shrink:0}
 
-/* DATA TABLE */
-.data-table{width:100%;border-collapse:collapse;font-size:14px}
-.data-table th{background:#F8F9FA;color:var(--primary);padding:.65rem 1rem;text-align:left;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border)}
-.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);color:var(--text-mid)}
+/* ===== DATA TABLE — ECB style ===== */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{background:var(--navy);color:#fff;padding:.6rem 1rem;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.6px}
+.data-table td{padding:.55rem 1rem;border-bottom:1px solid var(--border);color:var(--text)}
+.data-table tr:nth-child(even) td{background:#F9FAFB}
+.data-table tr:hover td{background:#EFF6FF}
 .data-table tr:last-child td{border-bottom:none}
-.data-table tr:hover td{background:#F8F9FA}
-.data-table .num{font-variant-numeric:tabular-nums;text-align:right;font-weight:600;color:var(--text)}
+.data-table .num{font-variant-numeric:tabular-nums;text-align:right;font-weight:700}
+.data-table .src{font-size:11px;color:var(--muted);white-space:nowrap}
 
-/* BADGES */
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600}
-.badge-red   {background:#FEE2E2;color:var(--c-inf)}
-.badge-green {background:#DCFCE7;color:var(--c-gdp)}
-.badge-orange{background:#FEF3E2;color:var(--c-mpr)}
-.badge-blue  {background:#EFF6FF;color:var(--c-fx)}
+/* ===== BADGES ===== */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700}
+.badge-red   {background:#FEE2E2;color:var(--neg)}
+.badge-green {background:#DCFCE7;color:var(--pos)}
+.badge-orange{background:#FEF3E2;color:#B45309}
+.badge-blue  {background:#EFF6FF;color:var(--navy)}
 
-/* INSIGHT BOX */
-.insight-box{background:#fff;border:1px solid var(--border);border-left:4px solid var(--primary);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1.5rem}
-.insight-box h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--primary);margin-bottom:.4rem}
-.insight-box p{font-size:14px;line-height:1.65;color:var(--text-mid)}
+/* ===== INSIGHT BOX ===== */
+.insight-box{background:var(--section);border:1px solid var(--border);border-left:4px solid var(--navy);padding:1.25rem 1.5rem;margin-bottom:1.5rem}
+.insight-box h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--green);margin-bottom:.4rem}
+.insight-box p{font-size:14px;line-height:1.65;color:var(--muted)}
 
-/* SOURCE NOTE */
-.source-note{font-size:12px;color:var(--text-light);margin-top:.75rem;font-style:italic}
+/* ===== SOURCE NOTE ===== */
+.source-note{font-size:12px;color:var(--muted);margin-top:.75rem;font-style:italic}
 
-/* LOADING (tables) */
-.loading{text-align:center;color:var(--text-light);padding:2rem;font-size:14px}
+/* ===== LOADING ===== */
+.loading{text-align:center;color:var(--muted);padding:2rem;font-size:14px}
 
-/* FOOTER — plain white */
-footer{background:#fff;border-top:1px solid var(--border);color:var(--text-light);text-align:center;padding:1rem;font-size:13px;margin-top:auto}
+/* ===== QUOTE BOX (about) ===== */
+.quote-box{background:var(--green);color:#fff;padding:2rem 2.5rem;margin-bottom:1.75rem;position:relative}
+.quote-box::before{content:'"';font-size:4rem;color:rgba(255,255,255,.2);position:absolute;top:.5rem;left:1rem;font-family:Georgia,serif;line-height:1}
+.quote-box p{font-size:1.05rem;line-height:1.75;font-style:italic;position:relative;padding-left:1rem}
 
-/* RESPONSIVE */
-@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+/* ===== FOOTER — two-column, navy ===== */
+footer{background:var(--navy);border-top:3px solid var(--gold);color:rgba(255,255,255,.82);padding:1.25rem 2rem;margin-top:auto;font-size:13px}
+.footer-inner{max-width:1140px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.footer-right{text-align:right}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:960px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){
-    nav{padding:0 1rem;flex-wrap:wrap;height:auto;gap:.5rem}
-    .nav-links{flex-wrap:wrap}
-    .nav-links a{font-size:.8rem;padding:.35rem .6rem;border-bottom:none}
-    .nav-links a.active{text-decoration:underline;text-underline-offset:3px}
+    nav{padding:.5rem 1rem;flex-wrap:wrap;height:auto;gap:.4rem}
+    .nav-center{flex-wrap:wrap}
+    .nav-center a{font-size:.8rem;padding:.3rem .6rem;border-bottom:none;margin-bottom:0}
+    .nav-center a.active{text-decoration:underline;text-underline-offset:3px}
+    .hero{padding:1.75rem 1rem 1.5rem}
+    .hero h1{font-size:1.5rem}
     main{padding:1rem}
-    .kpi-grid{grid-template-columns:1fr 1fr;gap:.75rem}
-    .kpi-value{font-size:26px}
+    .kpi-grid{grid-template-columns:1fr 1fr}
+    .kpi-value{font-size:1.6rem}
+    .stat-number{font-size:2.2rem}
     .chart-container{height:260px}
     .chart-container-lg{height:280px}
     .chart-container-sm{height:180px}
+    .footer-inner{flex-direction:column;text-align:center}
+    .footer-right{text-align:center}
 }
 @media(max-width:480px){.kpi-grid{grid-template-columns:1fr 1fr}}

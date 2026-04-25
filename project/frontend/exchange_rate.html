@@ -10,8 +10,8 @@
 </head>
 <body>
 <nav>
-  <a class="nav-brand" href="index.html">🇳🇬 Nigeria Economic Dashboard</a>
-  <ul class="nav-links">
+  <a class="nav-brand" href="index.html"><span class="flag">🇳🇬</span> Nigeria Economic Dashboard</a>
+  <ul class="nav-center">
     <li><a href="index.html">Dashboard</a></li>
     <li><a href="gdp.html">GDP</a></li>
     <li><a href="inflation.html">Inflation</a></li>
@@ -19,30 +19,47 @@
     <li><a href="interest_rate.html">Interest Rate</a></li>
     <li><a href="about.html">About</a></li>
   </ul>
+  <span class="nav-badge">Caleb University · FYP 2026</span>
 </nav>
+
 <main>
   <div class="page-header">
     <h1>Exchange Rate (NGN/USD)</h1>
-    <p>Monthly average official Naira to US Dollar rate · CBN · 2020–2024</p>
+    <p>Monthly average official Naira to US Dollar rate · Central Bank of Nigeria · 2020–2024</p>
   </div>
+
+  <div class="stat-box">
+    <div class="stat-number" id="stat-fx">—</div>
+    <div class="stat-label">NGN/USD Exchange Rate (latest month)</div>
+    <p class="stat-context">The Naira depreciated from ₦360 in January 2020 to over ₦1,500 by end-2024 following the June 2023 FX unification, representing a cumulative depreciation of more than 300% over the period.</p>
+  </div>
+
   <div class="card">
     <h2>NGN/USD Exchange Rate — Monthly Average</h2>
     <div class="chart-container-lg">
-      <p class="chart-loading" id="loading-fx">Loading...</p>
+      <p class="chart-loading" id="loading-fx">Loading…</p>
       <canvas id="chart-fx" style="display:none"></canvas>
     </div>
     <p class="source-note">Source: CBN Official Rate · Daily Central Rate averaged to monthly · Higher = Naira depreciation</p>
   </div>
+
   <div class="card">
     <h2>Exchange Rate Data Table</h2>
-    <div id="loading" class="loading">Loading data...</div>
+    <div id="loading" class="loading">Loading data…</div>
     <table class="data-table" id="fx-table" style="display:none">
-      <thead><tr><th>Month</th><th class="num">NGN per USD</th><th>Monthly Change</th></tr></thead>
+      <thead><tr><th>Month</th><th class="num">NGN per USD</th><th>Monthly Change</th><th>Source</th></tr></thead>
       <tbody id="fx-tbody"></tbody>
     </table>
   </div>
 </main>
-<footer><p>Data source: CBN · Not financial advice</p></footer>
+
+<footer>
+  <div class="footer-inner">
+    <span>🇳🇬 Data Sources: CBN · NBS · World Bank &nbsp;|&nbsp; For educational purposes only · Not financial advice</span>
+    <span class="footer-right">Final Year Project · Dept of Computer Science · Caleb University, Imota, Lagos · 2026</span>
+  </div>
+</footer>
+
 <script>
 const API = 'https://nigerian-dashboard.onrender.com';
 
@@ -50,32 +67,33 @@ function fmt(d) {
   return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
-const TIP = { backgroundColor: '#fff', titleColor: '#1A3A5C', bodyColor: '#4A5568', borderColor: '#E2E8F0', borderWidth: 1, padding: 10, displayColors: false };
-const SX  = { grid: { display: false }, border: { display: false }, ticks: { color: '#718096', font: { size: 12 } } };
-const SY  = { grid: { color: '#F0F0F0' }, border: { display: false }, ticks: { color: '#718096', font: { size: 12 } } };
+const TIP = { backgroundColor:'#fff', titleColor:'#1A3A5C', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
+const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
 
 async function load() {
   const res  = await fetch(`${API}/api/exchange-rate`).then(r => r.json());
   const data = res.data;
 
-  document.getElementById('loading-fx').style.display = 'none';
-  document.getElementById('chart-fx').style.display = 'block';
+  // Stat box
+  const latest = data[data.length - 1];
+  document.getElementById('stat-fx').textContent = `₦${Number(latest.value).toFixed(0)}`;
+
+  document.getElementById('loading-fx').style.display  = 'none';
+  document.getElementById('chart-fx').style.display    = 'block';
   new Chart(document.getElementById('chart-fx'), {
     type: 'line',
     data: { labels: data.map(d => fmt(d.obs_date)), datasets: [{ label: 'NGN/USD', data: data.map(d => d.value),
-      borderColor: '#2E5090', backgroundColor: 'transparent',
-      borderWidth: 2, pointRadius: 0, fill: false, tension: 0.3 }] },
+      borderColor: '#1A3A5C', backgroundColor: 'transparent',
+      borderWidth: 2.5, pointRadius: 0, fill: false, tension: 0.3 }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { ...TIP, callbacks: {
-          title: i => i[0].label,
-          label: ctx => `Rate: ₦${ctx.parsed.y.toFixed(2)} per USD`
-        }}
+        tooltip: { ...TIP, callbacks: { title: i => i[0].label, label: ctx => `Rate: ₦${ctx.parsed.y.toFixed(2)} per USD` }}
       },
       scales: {
-        y: { ...SY, title: { display: true, text: 'Naira per USD', color: '#718096', font: { size: 12 } } },
+        y: { ...SY, title: { display:true, text:'Naira per USD', color:'#6B7280', font:{size:12} } },
         x: { ...SX, ticks: { ...SX.ticks, maxTicksLimit: 12 } }
       }
     }
@@ -86,12 +104,12 @@ async function load() {
     const prev   = i > 0 ? data[i - 1].value : null;
     const diff   = prev ? d.value - prev : 0;
     const change = i === 0 ? '—' : diff > 0
-      ? `<span style="color:#C0392B">▲ ₦${diff.toFixed(2)}</span>`
-      : `<span style="color:#1A7A4A">▼ ₦${Math.abs(diff).toFixed(2)}</span>`;
-    tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">₦${Number(d.value).toFixed(2)}</td><td>${change}</td></tr>`;
+      ? `<span style="color:#DC2626">▲ ₦${diff.toFixed(2)}</span>`
+      : `<span style="color:#15803D">▼ ₦${Math.abs(diff).toFixed(2)}</span>`;
+    tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">₦${Number(d.value).toFixed(2)}</td><td>${change}</td><td class="src">CBN</td></tr>`;
   });
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('fx-table').style.display = 'table';
+  document.getElementById('loading').style.display    = 'none';
+  document.getElementById('fx-table').style.display   = 'table';
 }
 
 load();
