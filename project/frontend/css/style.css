@@ -19,16 +19,22 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
 
-/* ===== NAV — ECB style ===== */
-nav{background:#fff;border-bottom:3px solid var(--green);padding:0 2rem;display:flex;align-items:stretch;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100}
-.nav-brand{display:flex;align-items:center;gap:.45rem;text-decoration:none;font-size:.95rem;font-weight:700;color:var(--navy);letter-spacing:-.2px}
-.nav-brand .flag{font-size:1.1rem}
-.nav-center{display:flex;align-items:stretch;list-style:none}
+/* ===== NAV — gradient with institutional logos ===== */
+nav{background:linear-gradient(90deg,#006633 0%,#1A3A5C 100%);border-bottom:none;padding:0 1.5rem;display:flex;align-items:stretch;justify-content:space-between;height:65px;position:sticky;top:0;z-index:100;gap:.5rem}
+.nav-brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;font-size:.95rem;font-weight:700;color:#fff;letter-spacing:-.2px;white-space:nowrap;flex-shrink:0}
+.nav-coa{height:40px;width:auto;object-fit:contain;flex-shrink:0}
+.nav-center{display:flex;align-items:stretch;list-style:none;flex:1;justify-content:center}
 .nav-center li{display:flex;align-items:stretch}
-.nav-center a{display:flex;align-items:center;padding:0 .9rem;font-size:.875rem;font-weight:500;color:var(--navy);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-3px;transition:color .15s,border-color .15s}
-.nav-center a:hover{color:var(--green)}
-.nav-center a.active{color:var(--green);font-weight:600;border-bottom-color:var(--green)}
-.nav-badge{display:flex;align-items:center;background:var(--green);color:#fff;font-size:11px;font-weight:600;padding:0 .75rem;border-radius:20px;align-self:center;white-space:nowrap;letter-spacing:.2px}
+.nav-center a{display:flex;align-items:center;padding:0 .85rem;font-size:.875rem;font-weight:500;color:rgba(255,255,255,.85);text-decoration:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;white-space:nowrap}
+.nav-center a:hover{color:#fff}
+.nav-center a.active{color:#fff;font-weight:600;border-bottom-color:#C8A951}
+.nav-right{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.nav-caleb{height:40px;width:auto;object-fit:contain;max-width:120px}
+.nav-fyp{color:rgba(255,255,255,.85);font-size:12px;font-weight:600;white-space:nowrap}
+.nav-caleb-fallback{display:none;color:#fff;font-size:11px;font-weight:600;border:1.5px solid rgba(255,255,255,.65);padding:3px 10px;border-radius:3px;white-space:nowrap;align-items:center}
+.logo-failed .nav-caleb{display:none}
+.logo-failed .nav-fyp{display:none}
+.logo-failed .nav-caleb-fallback{display:inline-flex}
 
 /* ===== HERO — solid Nigerian green ===== */
 .hero{background:var(--green);padding:3rem 2rem 2.5rem}
@@ -120,10 +126,15 @@ footer{background:var(--navy);border-top:3px solid var(--gold);color:rgba(255,25
 /* ===== RESPONSIVE ===== */
 @media(max-width:960px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){
-    nav{padding:.5rem 1rem;flex-wrap:wrap;height:auto;gap:.4rem}
-    .nav-center{flex-wrap:wrap}
-    .nav-center a{font-size:.8rem;padding:.3rem .6rem;border-bottom:none;margin-bottom:0}
-    .nav-center a.active{text-decoration:underline;text-underline-offset:3px}
+    nav{padding:.4rem 1rem;flex-wrap:wrap;height:auto;gap:.4rem}
+    .nav-brand{font-size:.85rem}
+    .nav-coa{height:30px}
+    .nav-caleb{height:28px;max-width:80px}
+    .nav-center{flex-wrap:wrap;justify-content:flex-start}
+    .nav-center a{font-size:.8rem;padding:.3rem .6rem;border-bottom:none}
+    .nav-center a.active{text-decoration:underline;text-underline-offset:3px;border-bottom:none}
+    .nav-right{gap:.35rem}
+    .nav-fyp{font-size:10px}
     .hero{padding:1.75rem 1rem 1.5rem}
     .hero h1{font-size:1.5rem}
     main{padding:1rem}

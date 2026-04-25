@@ -10,7 +10,10 @@
 </head>
 <body>
 <nav>
-  <a class="nav-brand" href="index.html"><span class="flag">🇳🇬</span> Nigeria Economic Dashboard</a>
+  <a class="nav-brand" href="index.html">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/200px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa">
+    Nigeria Economic Dashboard
+  </a>
   <ul class="nav-center">
     <li><a href="index.html">Dashboard</a></li>
     <li><a href="gdp.html">GDP</a></li>
@@ -19,7 +22,13 @@
     <li><a href="interest_rate.html" class="active">Interest Rate</a></li>
     <li><a href="about.html">About</a></li>
   </ul>
-  <span class="nav-badge">Caleb University · FYP 2026</span>
+  <div class="nav-right">
+    <img src="https://calebuniversity.edu.ng/wp-content/uploads/2021/01/Caleb-University-Logo.png"
+         alt="Caleb University" class="nav-caleb"
+         onerror="this.parentElement.classList.add('logo-failed')">
+    <span class="nav-fyp">FYP 2026</span>
+    <span class="nav-caleb-fallback">CALEB UNIVERSITY · FYP 2026</span>
+  </div>
 </nav>
 
 <main>
