@@ -23,18 +23,18 @@
 <main>
   <div class="page-header">
     <h1>Exchange Rate (NGN/USD)</h1>
-    <p>Monthly average official Naira to US Dollar rate · Source: CBN · 2020–2024</p>
+    <p>Monthly average official Naira to US Dollar rate · CBN · 2020–2024</p>
   </div>
   <div class="card">
-    <h2>💱 NGN/USD Exchange Rate — Monthly Average</h2>
+    <h2>NGN/USD Exchange Rate — Monthly Average</h2>
     <div class="chart-container-lg">
-      <span class="skeleton sk-chart" id="sk-fx"></span>
+      <p class="chart-loading" id="loading-fx">Loading...</p>
       <canvas id="chart-fx" style="display:none"></canvas>
     </div>
     <p class="source-note">Source: CBN Official Rate · Daily Central Rate averaged to monthly · Higher = Naira depreciation</p>
   </div>
   <div class="card">
-    <h2>📋 Exchange Rate Data Table</h2>
+    <h2>Exchange Rate Data Table</h2>
     <div id="loading" class="loading">Loading data...</div>
     <table class="data-table" id="fx-table" style="display:none">
       <thead><tr><th>Month</th><th class="num">NGN per USD</th><th>Monthly Change</th></tr></thead>
@@ -50,44 +50,44 @@ function fmt(d) {
   return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
-function gradFill(r, g, b) {
-  return ctx => {
-    const { ctx: c, chartArea } = ctx.chart;
-    if (!chartArea) return `rgba(${r},${g},${b},0.2)`;
-    const grad = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-    grad.addColorStop(0, `rgba(${r},${g},${b},0.4)`);
-    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
-    return grad;
-  };
-}
+const TIP = { backgroundColor: '#fff', titleColor: '#1A3A5C', bodyColor: '#4A5568', borderColor: '#E2E8F0', borderWidth: 1, padding: 10, displayColors: false };
+const SX  = { grid: { display: false }, border: { display: false }, ticks: { color: '#718096', font: { size: 12 } } };
+const SY  = { grid: { color: '#F0F0F0' }, border: { display: false }, ticks: { color: '#718096', font: { size: 12 } } };
 
 async function load() {
-  const res = await fetch(`${API}/api/exchange-rate`).then(r => r.json());
+  const res  = await fetch(`${API}/api/exchange-rate`).then(r => r.json());
   const data = res.data;
 
-  document.getElementById('sk-fx').style.display = 'none';
+  document.getElementById('loading-fx').style.display = 'none';
   document.getElementById('chart-fx').style.display = 'block';
   new Chart(document.getElementById('chart-fx'), {
     type: 'line',
     data: { labels: data.map(d => fmt(d.obs_date)), datasets: [{ label: 'NGN/USD', data: data.map(d => d.value),
-      borderColor: '#2E5090', backgroundColor: gradFill(46, 80, 144),
-      borderWidth: 3, pointRadius: 0, fill: true, tension: 0.4 }] },
+      borderColor: '#2E5090', backgroundColor: 'transparent',
+      borderWidth: 2, pointRadius: 0, fill: false, tension: 0.3 }] },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { tooltip: { callbacks: { label: ctx => ` ₦${ctx.parsed.y.toFixed(2)} per USD` } } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...TIP, callbacks: {
+          title: i => i[0].label,
+          label: ctx => `Rate: ₦${ctx.parsed.y.toFixed(2)} per USD`
+        }}
+      },
       scales: {
-        y: { title: { display: true, text: 'Naira per USD', font: { size: 13 } },
-             ticks: { font: { size: 12 } }, grid: { color: '#E2EAF4' } },
-        x: { ticks: { maxTicksLimit: 12, font: { size: 12 } }, grid: { display: false } }
+        y: { ...SY, title: { display: true, text: 'Naira per USD', color: '#718096', font: { size: 12 } } },
+        x: { ...SX, ticks: { ...SX.ticks, maxTicksLimit: 12 } }
       }
     }
   });
 
   const tbody = document.getElementById('fx-tbody');
   data.forEach((d, i) => {
-    const prev = i > 0 ? data[i - 1].value : null;
-    const diff = prev ? d.value - prev : 0;
-    const change = i === 0 ? '—' : diff > 0 ? `<span style="color:#C0392B">▲ ₦${diff.toFixed(2)}</span>` : `<span style="color:#1A7A4A">▼ ₦${Math.abs(diff).toFixed(2)}</span>`;
+    const prev   = i > 0 ? data[i - 1].value : null;
+    const diff   = prev ? d.value - prev : 0;
+    const change = i === 0 ? '—' : diff > 0
+      ? `<span style="color:#C0392B">▲ ₦${diff.toFixed(2)}</span>`
+      : `<span style="color:#1A7A4A">▼ ₦${Math.abs(diff).toFixed(2)}</span>`;
     tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">₦${Number(d.value).toFixed(2)}</td><td>${change}</td></tr>`;
   });
   document.getElementById('loading').style.display = 'none';
