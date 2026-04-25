@@ -11,7 +11,7 @@
 
 <div class="wake-banner" id="wake-banner">
   <div class="spinner" id="wake-spinner"></div>
-  <span id="wake-text">Waking up data server — this takes up to 60 seconds on first load...</span>
+  <span id="wake-text">Waking up server... 0s (can take up to 60s on first visit)</span>
 </div>
 
 <nav>
@@ -70,7 +70,6 @@
     <h3>📌 Key Insight — 2020–2024</h3>
     <p>Nigeria's economy contracted sharply in 2020 (COVID-19), recovered through 2021–2022, then faced surging inflation and a dramatic Naira depreciation following the June 2023 FX reform. The CBN responded with aggressive MPR hikes from 11.5% to 27.5% between 2022 and 2024.</p>
   </div>
-
   <div class="card">
     <h2>📉 Inflation vs Exchange Rate — The 2023 Divergence</h2>
     <div class="chart-container-lg">
@@ -81,9 +80,8 @@
       <span><span class="dot" style="background:#C0392B"></span>Inflation Rate (%) — Left axis</span>
       <span><span class="dot" style="background:#2E5090"></span>NGN/USD Exchange Rate — Right axis</span>
     </div>
-    <p class="source-note">Source: NBS (inflation) &bull; CBN (exchange rate) &bull; Monthly averages 2020–2024</p>
+    <p class="source-note">Source: NBS (inflation) · CBN (exchange rate) · Monthly averages 2020–2024</p>
   </div>
-
   <div class="mini-grid">
     <div class="card">
       <h2>GDP Growth Rate (%)</h2>
@@ -117,8 +115,7 @@
 </main>
 
 <footer>
-  <p>Data sources: Central Bank of Nigeria (CBN) &bull; National Bureau of Statistics (NBS) &bull; World Bank</p>
-  <p style="margin-top:0.3rem">For informational and educational purposes only &bull; Not financial advice &bull; Caleb University FYP 2026</p>
+  <p>Data sources: CBN · NBS · World Bank · Not financial advice · Caleb University FYP 2026</p>
 </footer>
 
 <script>
@@ -127,168 +124,134 @@ const banner   = document.getElementById('wake-banner');
 const wakeText = document.getElementById('wake-text');
 const COLORS   = { gdp:'#1A7A4A', inf:'#C0392B', fx:'#2E5090', mpr:'#E8A020' };
 
-// Fetch with long timeout to handle Render cold start (up to 90 seconds)
-async function fetchWithTimeout(url, timeoutMs = 90000) {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(id);
-    return res;
-  } catch (e) {
-    clearTimeout(id);
-    throw e;
-  }
-}
-
-// Countdown timer in banner so user knows it is still working
 let seconds = 0;
 const timer = setInterval(() => {
   seconds++;
-  wakeText.textContent = `Waking up data server... ${seconds}s (may take up to 60s on first load)`;
+  wakeText.textContent = `Waking up server... ${seconds}s (can take up to 60s on first visit)`;
 }, 1000);
 
-function fmt(date) {
-  const d = new Date(date);
-  return d.toLocaleDateString('en-NG', { year:'numeric', month:'short' });
+// Ping server repeatedly until it wakes up
+async function wakeServer() {
+  for (let i = 0; i < 20; i++) {
+    try {
+      const res = await fetch(`${API}/`, { signal: AbortSignal.timeout(8000) });
+      if (res.ok || res.status === 404 || res.status === 422) return true;
+    } catch(e) {}
+    await new Promise(r => setTimeout(r, 5000));
+  }
+  return false;
 }
 
+function fmt(date) {
+  return new Date(date).toLocaleDateString('en-NG', { year:'numeric', month:'short' });
+}
 function showChart(skId, canvasId) {
   document.getElementById(skId).style.display = 'none';
   document.getElementById(canvasId).style.display = 'block';
 }
-
 function makeChart(id, labels, data, color, label, type='line') {
   return new Chart(document.getElementById(id), {
     type,
-    data: {
-      labels,
-      datasets: [{
-        label,
-        data,
-        borderColor: color,
-        backgroundColor: type === 'bar'
-          ? data.map(v => v >= 0 ? color + 'AA' : '#C0392BAA')
-          : color + '18',
-        borderWidth: 2,
-        pointRadius: 2,
-        fill: type === 'line',
-        tension: 0.3,
-        borderRadius: type === 'bar' ? 4 : 0,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks:{ maxTicksLimit:6, font:{ size:9 } }, grid:{ display:false } },
-        y: { ticks:{ font:{ size:9 } }, grid:{ color:'#E2EAF4' } }
-      }
+    data: { labels, datasets: [{ label, data,
+      borderColor: color,
+      backgroundColor: type==='bar' ? data.map(v=>v>=0?color+'AA':'#C0392BAA') : color+'18',
+      borderWidth:2, pointRadius:2, fill:type==='line', tension:0.3, borderRadius:type==='bar'?4:0
+    }]},
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{ x:{ticks:{maxTicksLimit:6,font:{size:9}},grid:{display:false}}, y:{ticks:{font:{size:9}},grid:{color:'#E2EAF4'}} }
     }
   });
 }
-
-function trendBadge(cur, prev, containerId, upIsBad=false) {
+function trendBadge(cur, prev, id, upIsBad=false) {
   if (!prev) return;
   const diff = cur - prev;
-  const pct  = ((diff / Math.abs(prev)) * 100).toFixed(1);
-  const up   = diff > 0;
-  const cls  = up ? (upIsBad ? 'trend-up' : 'trend-down') : (upIsBad ? 'trend-down' : 'trend-up');
-  const arrow = up ? '▲' : '▼';
-  document.getElementById(containerId).innerHTML =
-    `<span class="hk-trend ${cls}">${arrow} ${Math.abs(pct)}% from prev</span>`;
+  const pct = ((diff/Math.abs(prev))*100).toFixed(1);
+  const up = diff > 0;
+  const cls = up ? (upIsBad?'trend-up':'trend-down') : (upIsBad?'trend-down':'trend-up');
+  document.getElementById(id).innerHTML = `<span class="hk-trend ${cls}">${up?'▲':'▼'} ${Math.abs(pct)}%</span>`;
 }
 
-async function loadDashboard() {
-  try {
-    // All requests in parallel with 90s timeout for Render cold start
-    const [sum, gdpRes, infRes, fxRes, mprRes] = await Promise.all([
-      fetchWithTimeout(`${API}/api/summary`).then(r => r.json()),
-      fetchWithTimeout(`${API}/api/gdp`).then(r => r.json()),
-      fetchWithTimeout(`${API}/api/inflation`).then(r => r.json()),
-      fetchWithTimeout(`${API}/api/exchange-rate`).then(r => r.json()),
-      fetchWithTimeout(`${API}/api/interest-rate`).then(r => r.json()),
-    ]);
+async function loadData() {
+  const [sum, gdpRes, infRes, fxRes, mprRes] = await Promise.all([
+    fetch(`${API}/api/summary`).then(r=>r.json()),
+    fetch(`${API}/api/gdp`).then(r=>r.json()),
+    fetch(`${API}/api/inflation`).then(r=>r.json()),
+    fetch(`${API}/api/exchange-rate`).then(r=>r.json()),
+    fetch(`${API}/api/interest-rate`).then(r=>r.json()),
+  ]);
 
-    // Server is awake — update banner and clear timer
-    clearInterval(timer);
-    document.getElementById('wake-spinner').style.display = 'none';
-    wakeText.textContent = `✓ Server connected in ${seconds}s — data loaded`;
-    banner.classList.add('ready');
-    setTimeout(() => banner.classList.add('hidden'), 3000);
+  if (sum.gdp_growth) {
+    document.getElementById('hk-gdp').textContent = sum.gdp_growth.value+'%';
+    document.getElementById('hk-gdp-sub').textContent = fmt(sum.gdp_growth.obs_date)+' · NBS';
+    const g = gdpRes.gdp_growth;
+    if (g.length>=2) trendBadge(g[g.length-1].value, g[g.length-2].value, 'hk-gdp-trend', false);
+  }
+  if (sum.inflation) {
+    document.getElementById('hk-inf').textContent = sum.inflation.value+'%';
+    document.getElementById('hk-inf-sub').textContent = fmt(sum.inflation.obs_date)+' · NBS';
+    const inf=infRes.data; if(inf.length>=2) trendBadge(inf[inf.length-1].value,inf[inf.length-2].value,'hk-inf-trend',true);
+  }
+  if (sum.exchange_rate) {
+    document.getElementById('hk-fx').textContent = '₦'+Number(sum.exchange_rate.value).toFixed(0);
+    document.getElementById('hk-fx-sub').textContent = fmt(sum.exchange_rate.obs_date)+' · CBN';
+    const fx=fxRes.data; if(fx.length>=2) trendBadge(fx[fx.length-1].value,fx[fx.length-2].value,'hk-fx-trend',true);
+  }
+  if (sum.mpr) {
+    document.getElementById('hk-mpr').textContent = sum.mpr.value+'%';
+    document.getElementById('hk-mpr-sub').textContent = fmt(sum.mpr.obs_date)+' · CBN';
+    const mpr=mprRes.data; if(mpr.length>=2) trendBadge(mpr[mpr.length-1].value,mpr[mpr.length-2].value,'hk-mpr-trend',true);
+  }
 
-    // Hero KPI cards
-    if (sum.gdp_growth) {
-      document.getElementById('hk-gdp').textContent = sum.gdp_growth.value + '%';
-      document.getElementById('hk-gdp-sub').textContent = fmt(sum.gdp_growth.obs_date) + ' · NBS';
-      const g = gdpRes.gdp_growth;
-      if (g.length >= 2) trendBadge(g[g.length-1].value, g[g.length-2].value, 'hk-gdp-trend', false);
-    }
-    if (sum.inflation) {
-      document.getElementById('hk-inf').textContent = sum.inflation.value + '%';
-      document.getElementById('hk-inf-sub').textContent = fmt(sum.inflation.obs_date) + ' · NBS';
-      const inf = infRes.data;
-      if (inf.length >= 2) trendBadge(inf[inf.length-1].value, inf[inf.length-2].value, 'hk-inf-trend', true);
-    }
-    if (sum.exchange_rate) {
-      document.getElementById('hk-fx').textContent = '₦' + Number(sum.exchange_rate.value).toFixed(0);
-      document.getElementById('hk-fx-sub').textContent = fmt(sum.exchange_rate.obs_date) + ' · CBN';
-      const fx = fxRes.data;
-      if (fx.length >= 2) trendBadge(fx[fx.length-1].value, fx[fx.length-2].value, 'hk-fx-trend', true);
-    }
-    if (sum.mpr) {
-      document.getElementById('hk-mpr').textContent = sum.mpr.value + '%';
-      document.getElementById('hk-mpr-sub').textContent = fmt(sum.mpr.obs_date) + ' · CBN';
-      const mpr = mprRes.data;
-      if (mpr.length >= 2) trendBadge(mpr[mpr.length-1].value, mpr[mpr.length-2].value, 'hk-mpr-trend', true);
-    }
+  const infData=infRes.data, fxData=fxRes.data;
+  const infMap=Object.fromEntries(infData.map(d=>[d.obs_date.slice(0,7),d.value]));
+  const fxMap=Object.fromEntries(fxData.map(d=>[d.obs_date.slice(0,7),d.value]));
+  const months=[...new Set([...Object.keys(infMap),...Object.keys(fxMap)])].sort();
+  showChart('sk-dual','chart-dual');
+  new Chart(document.getElementById('chart-dual'),{
+    type:'line',
+    data:{ labels:months.map(m=>{const d=new Date(m+'-01');return d.toLocaleDateString('en-NG',{year:'numeric',month:'short'});}),
+      datasets:[
+        {label:'Inflation (%)',data:months.map(m=>infMap[m]??null),borderColor:'#C0392B',backgroundColor:'#C0392B12',borderWidth:2.5,pointRadius:0,fill:true,tension:0.35,yAxisID:'yLeft'},
+        {label:'NGN/USD',data:months.map(m=>fxMap[m]??null),borderColor:'#2E5090',backgroundColor:'#2E509012',borderWidth:2.5,pointRadius:0,fill:true,tension:0.35,yAxisID:'yRight'}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{maxTicksLimit:12,font:{size:9}},grid:{display:false}},
+        yLeft:{type:'linear',position:'left',title:{display:true,text:'Inflation (%)',font:{size:9}},ticks:{font:{size:9},color:'#C0392B'},grid:{color:'#E2EAF4'}},
+        yRight:{type:'linear',position:'right',title:{display:true,text:'NGN/USD',font:{size:9}},ticks:{font:{size:9},color:'#2E5090'},grid:{drawOnChartArea:false}}
+      }}
+  });
 
-    // Dual-axis chart
-    const infData = infRes.data;
-    const fxData  = fxRes.data;
-    const infMap  = Object.fromEntries(infData.map(d => [d.obs_date.slice(0,7), d.value]));
-    const fxMap   = Object.fromEntries(fxData.map(d => [d.obs_date.slice(0,7), d.value]));
-    const months  = [...new Set([...Object.keys(infMap), ...Object.keys(fxMap)])].sort();
-    showChart('sk-dual', 'chart-dual');
-    new Chart(document.getElementById('chart-dual'), {
-      type: 'line',
-      data: {
-        labels: months.map(m => { const d = new Date(m+'-01'); return d.toLocaleDateString('en-NG',{year:'numeric',month:'short'}); }),
-        datasets: [
-          { label:'Inflation Rate (%)', data: months.map(m => infMap[m]??null), borderColor:'#C0392B', backgroundColor:'#C0392B12', borderWidth:2.5, pointRadius:0, fill:true, tension:0.35, yAxisID:'yLeft' },
-          { label:'NGN/USD Exchange Rate', data: months.map(m => fxMap[m]??null), borderColor:'#2E5090', backgroundColor:'#2E509012', borderWidth:2.5, pointRadius:0, fill:true, tension:0.35, yAxisID:'yRight' }
-        ]
-      },
-      options: {
-        responsive:true, maintainAspectRatio:false,
-        interaction:{ mode:'index', intersect:false },
-        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ctx.datasetIndex===0 ? ` Inflation: ${ctx.parsed.y?.toFixed(2)}%` : ` Rate: ₦${ctx.parsed.y?.toFixed(2)}` }}},
-        scales:{
-          x:{ ticks:{maxTicksLimit:12,font:{size:9}}, grid:{display:false} },
-          yLeft:{ type:'linear', position:'left', title:{display:true,text:'Inflation (%)',font:{size:9}}, ticks:{font:{size:9},color:'#C0392B'}, grid:{color:'#E2EAF4'} },
-          yRight:{ type:'linear', position:'right', title:{display:true,text:'NGN/USD',font:{size:9}}, ticks:{font:{size:9},color:'#2E5090'}, grid:{drawOnChartArea:false} }
-        }
-      }
-    });
+  const gdp=gdpRes.gdp_growth;
+  showChart('sk-gdp','chart-gdp'); makeChart('chart-gdp',gdp.map(d=>fmt(d.obs_date)),gdp.map(d=>d.value),COLORS.gdp,'GDP %','bar');
+  showChart('sk-inf','chart-inf'); makeChart('chart-inf',infData.map(d=>fmt(d.obs_date)),infData.map(d=>d.value),COLORS.inf,'Inflation %');
+  showChart('sk-fx','chart-fx');   makeChart('chart-fx',fxData.map(d=>fmt(d.obs_date)),fxData.map(d=>d.value),COLORS.fx,'NGN/USD');
+  showChart('sk-mpr','chart-mpr'); makeChart('chart-mpr',mprRes.data.map(d=>fmt(d.obs_date)),mprRes.data.map(d=>d.value),COLORS.mpr,'MPR %');
+}
 
-    // Mini charts
-    const gdp = gdpRes.gdp_growth;
-    showChart('sk-gdp','chart-gdp'); makeChart('chart-gdp', gdp.map(d=>fmt(d.obs_date)), gdp.map(d=>d.value), COLORS.gdp, 'GDP %', 'bar');
-    showChart('sk-inf','chart-inf'); makeChart('chart-inf', infData.map(d=>fmt(d.obs_date)), infData.map(d=>d.value), COLORS.inf, 'Inflation %');
-    showChart('sk-fx','chart-fx');   makeChart('chart-fx',  fxData.map(d=>fmt(d.obs_date)),  fxData.map(d=>d.value),  COLORS.fx,  'NGN/USD');
-    showChart('sk-mpr','chart-mpr'); makeChart('chart-mpr', mprRes.data.map(d=>fmt(d.obs_date)), mprRes.data.map(d=>d.value), COLORS.mpr, 'MPR %');
-
-  } catch(err) {
-    clearInterval(timer);
-    console.error('Dashboard error:', err);
-    wakeText.textContent = '⚠ Server took too long. Refresh the page to try again.';
+async function startApp() {
+  const alive = await wakeServer();
+  clearInterval(timer);
+  if (!alive) {
+    wakeText.textContent = '⚠ Server unavailable. Please refresh the page.';
     banner.style.background = 'linear-gradient(90deg,#7B2020,#C0392B)';
-    document.querySelectorAll('.hk-value').forEach(el => el.textContent = '—');
-    document.querySelectorAll('.hk-sub').forEach(el => el.textContent = 'Refresh to retry');
+    return;
+  }
+  wakeText.textContent = `✓ Server ready in ${seconds}s — loading data...`;
+  banner.classList.add('ready');
+  try {
+    await loadData();
+    setTimeout(() => banner.classList.add('hidden'), 2500);
+  } catch(err) {
+    console.error(err);
+    wakeText.textContent = '⚠ Error loading data. Please refresh.';
+    banner.style.background = 'linear-gradient(90deg,#7B2020,#C0392B)';
   }
 }
 
-loadDashboard();
+startApp();
 </script>
 </body>
 </html>
