@@ -6,6 +6,7 @@
 <title>GDP — Nigeria Economic Dashboard</title>
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
 </head>
 <body>
 <nav>
@@ -73,32 +74,67 @@ function badge(v) {
   return '<span class="badge badge-red">Very High</span>';
 }
 
+function gradFill(r, g, b) {
+  return ctx => {
+    const { ctx: c, chartArea } = ctx.chart;
+    if (!chartArea) return `rgba(${r},${g},${b},0.2)`;
+    const grad = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    grad.addColorStop(0, `rgba(${r},${g},${b},0.4)`);
+    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    return grad;
+  };
+}
+
 async function load() {
   const res = await fetch(`${API}/api/gdp`).then(r => r.json());
   const growth = res.gdp_growth;
   const usd = res.gdp_usd;
 
+  // GDP growth bar chart — colour-coded bars, zero reference line
   document.getElementById('sk-growth').style.display = 'none';
   document.getElementById('chart-growth').style.display = 'block';
   new Chart(document.getElementById('chart-growth'), {
     type: 'bar',
     data: { labels: growth.map(d => fmt(d.obs_date)), datasets: [{ label: 'Real GDP Growth (%)', data: growth.map(d => d.value),
-      backgroundColor: growth.map(d => d.value >= 0 ? '#1A7A4AAA' : '#C0392BAA'),
-      borderColor: growth.map(d => d.value >= 0 ? '#1A7A4A' : '#C0392B'), borderWidth: 1.5, borderRadius: 4 }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y.toFixed(2)}%` } } },
-      scales: { y: { title: { display: true, text: 'Growth Rate (%)' }, grid: { color: '#E2EAF4' } }, x: { grid: { display: false } } } }
+      backgroundColor: growth.map(d => d.value >= 0 ? '#1A7A4A' : '#C0392B'),
+      borderColor:     growth.map(d => d.value >= 0 ? '#1A7A4A' : '#C0392B'),
+      borderWidth: 1.5, borderRadius: 5 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` GDP Growth: ${ctx.parsed.y.toFixed(2)}%` } },
+        annotation: { annotations: {
+          zero: { type: 'line', yMin: 0, yMax: 0,
+            borderColor: '#333', borderWidth: 1.5, borderDash: [4, 4] }
+        }}
+      },
+      scales: {
+        y: { title: { display: true, text: 'Growth Rate (%)', font: { size: 13 } },
+             ticks: { font: { size: 12 } }, grid: { color: '#E2EAF4' } },
+        x: { ticks: { font: { size: 12 } }, grid: { display: false } }
+      }
+    }
   });
 
+  // Nominal GDP line chart — gradient fill
   document.getElementById('sk-usd').style.display = 'none';
   document.getElementById('chart-usd').style.display = 'block';
   new Chart(document.getElementById('chart-usd'), {
     type: 'line',
     data: { labels: usd.map(d => fmtYear(d.obs_date)), datasets: [{ label: 'Nominal GDP (USD Bn)', data: usd.map(d => d.value),
-      borderColor: '#2E5090', backgroundColor: '#2E509018', borderWidth: 2.5, pointRadius: 6, pointBackgroundColor: '#2E5090', fill: true, tension: 0.3 }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { tooltip: { callbacks: { label: ctx => ` $${ctx.parsed.y.toFixed(2)}B` } } },
-      scales: { y: { title: { display: true, text: 'USD Billions' }, grid: { color: '#E2EAF4' } }, x: { grid: { display: false } } } }
+      borderColor: '#2E5090', backgroundColor: gradFill(46, 80, 144),
+      borderWidth: 3, pointRadius: 6, pointBackgroundColor: '#2E5090',
+      pointBorderColor: '#fff', pointBorderWidth: 2, fill: true, tension: 0.4 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { tooltip: { callbacks: { label: ctx => ` GDP: $${ctx.parsed.y.toFixed(2)}B` } } },
+      scales: {
+        y: { title: { display: true, text: 'USD Billions', font: { size: 13 } },
+             ticks: { font: { size: 12 } }, grid: { color: '#E2EAF4' } },
+        x: { ticks: { font: { size: 12 } }, grid: { display: false } }
+      }
+    }
   });
 
   const tbody = document.getElementById('gdp-tbody');

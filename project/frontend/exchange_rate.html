@@ -6,6 +6,7 @@
 <title>Exchange Rate — Nigeria Economic Dashboard</title>
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
 </head>
 <body>
 <nav>
@@ -49,6 +50,17 @@ function fmt(d) {
   return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
+function gradFill(r, g, b) {
+  return ctx => {
+    const { ctx: c, chartArea } = ctx.chart;
+    if (!chartArea) return `rgba(${r},${g},${b},0.2)`;
+    const grad = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    grad.addColorStop(0, `rgba(${r},${g},${b},0.4)`);
+    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    return grad;
+  };
+}
+
 async function load() {
   const res = await fetch(`${API}/api/exchange-rate`).then(r => r.json());
   const data = res.data;
@@ -58,10 +70,17 @@ async function load() {
   new Chart(document.getElementById('chart-fx'), {
     type: 'line',
     data: { labels: data.map(d => fmt(d.obs_date)), datasets: [{ label: 'NGN/USD', data: data.map(d => d.value),
-      borderColor: '#2E5090', backgroundColor: '#2E509018', borderWidth: 2, pointRadius: 0, fill: true, tension: 0.3 }] },
-    options: { responsive: true, maintainAspectRatio: false,
+      borderColor: '#2E5090', backgroundColor: gradFill(46, 80, 144),
+      borderWidth: 3, pointRadius: 0, fill: true, tension: 0.4 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
       plugins: { tooltip: { callbacks: { label: ctx => ` ₦${ctx.parsed.y.toFixed(2)} per USD` } } },
-      scales: { y: { title: { display: true, text: 'Naira per USD' }, grid: { color: '#E2EAF4' } }, x: { ticks: { maxTicksLimit: 12 }, grid: { display: false } } } }
+      scales: {
+        y: { title: { display: true, text: 'Naira per USD', font: { size: 13 } },
+             ticks: { font: { size: 12 } }, grid: { color: '#E2EAF4' } },
+        x: { ticks: { maxTicksLimit: 12, font: { size: 12 } }, grid: { display: false } }
+      }
+    }
   });
 
   const tbody = document.getElementById('fx-tbody');

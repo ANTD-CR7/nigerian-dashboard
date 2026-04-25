@@ -6,6 +6,7 @@
 <title>Inflation — Nigeria Economic Dashboard</title>
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
 </head>
 <body>
 <nav>
@@ -56,19 +57,59 @@ function badge(v) {
   return '<span class="badge badge-red">Very High</span>';
 }
 
+function gradFill(r, g, b) {
+  return ctx => {
+    const { ctx: c, chartArea } = ctx.chart;
+    if (!chartArea) return `rgba(${r},${g},${b},0.2)`;
+    const grad = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    grad.addColorStop(0, `rgba(${r},${g},${b},0.4)`);
+    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    return grad;
+  };
+}
+
 async function load() {
   const res = await fetch(`${API}/api/inflation`).then(r => r.json());
   const data = res.data;
+
+  // Find annotation indices
+  const covidIdx = data.findIndex(d => d.obs_date.startsWith('2020-01'));
+  const fxIdx    = data.findIndex(d => d.obs_date.startsWith('2023-06'));
+  const annotations = {};
+  if (covidIdx >= 0) annotations.covid = {
+    type: 'line', xMin: covidIdx, xMax: covidIdx,
+    borderColor: 'rgba(192,57,43,0.75)', borderWidth: 1.5, borderDash: [6, 3],
+    label: { display: true, content: 'COVID-19', position: 'start',
+      backgroundColor: 'rgba(192,57,43,0.85)', color: '#fff',
+      font: { size: 11, weight: 'bold' }, padding: { x: 6, y: 3 }, borderRadius: 4 }
+  };
+  if (fxIdx >= 0) annotations.fxReform = {
+    type: 'line', xMin: fxIdx, xMax: fxIdx,
+    borderColor: 'rgba(46,80,144,0.75)', borderWidth: 1.5, borderDash: [6, 3],
+    label: { display: true, content: 'FX Reform', position: 'start',
+      backgroundColor: 'rgba(46,80,144,0.85)', color: '#fff',
+      font: { size: 11, weight: 'bold' }, padding: { x: 6, y: 3 }, borderRadius: 4 }
+  };
 
   document.getElementById('sk-inf').style.display = 'none';
   document.getElementById('chart-inf').style.display = 'block';
   new Chart(document.getElementById('chart-inf'), {
     type: 'line',
     data: { labels: data.map(d => fmt(d.obs_date)), datasets: [{ label: 'Inflation Rate (%)', data: data.map(d => d.value),
-      borderColor: '#C0392B', backgroundColor: '#C0392B18', borderWidth: 2, pointRadius: 0, fill: true, tension: 0.3 }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y.toFixed(2)}%` } } },
-      scales: { y: { title: { display: true, text: 'Inflation Rate (%)' }, grid: { color: '#E2EAF4' } }, x: { ticks: { maxTicksLimit: 12 }, grid: { display: false } } } }
+      borderColor: '#C0392B', backgroundColor: gradFill(192, 57, 43),
+      borderWidth: 3, pointRadius: 0, fill: true, tension: 0.4 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        tooltip: { callbacks: { label: ctx => ` Inflation: ${ctx.parsed.y.toFixed(2)}%` } },
+        annotation: { annotations }
+      },
+      scales: {
+        y: { title: { display: true, text: 'Inflation Rate (%)', font: { size: 13 } },
+             ticks: { font: { size: 12 } }, grid: { color: '#E2EAF4' } },
+        x: { ticks: { maxTicksLimit: 12, font: { size: 12 } }, grid: { display: false } }
+      }
+    }
   });
 
   const tbody = document.getElementById('inf-tbody');

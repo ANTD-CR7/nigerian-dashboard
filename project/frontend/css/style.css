@@ -91,7 +91,7 @@ main{flex:1;max-width:1140px;margin:0 auto;padding:2rem 1.5rem;width:100%}
 
 /* CHART CONTAINERS */
 .chart-container{position:relative;height:360px;width:100%}
-.chart-container-sm{position:relative;height:210px;width:100%}
+.chart-container-sm{position:relative;height:250px;width:100%}
 .chart-container-lg{position:relative;height:420px;width:100%}
 
 /* DUAL AXIS LEGEND */

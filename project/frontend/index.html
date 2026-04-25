@@ -6,6 +6,7 @@
 <title>Nigeria Economic Dashboard</title>
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
 </head>
 <body>
 
@@ -129,6 +130,17 @@ function badge(v) {
   return '<span class="badge badge-red">Very High</span>';
 }
 
+function gradFill(r, g, b) {
+  return ctx => {
+    const { ctx: c, chartArea } = ctx.chart;
+    if (!chartArea) return `rgba(${r},${g},${b},0.2)`;
+    const grad = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    grad.addColorStop(0, `rgba(${r},${g},${b},0.4)`);
+    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    return grad;
+  };
+}
+
 async function loadData() {
   const [gdpRes, infRes, fxRes, mprRes] = await Promise.all([
     fetch(`${API}/api/gdp`).then(r => r.json()),
@@ -170,6 +182,26 @@ async function loadData() {
       `<small style="color:${color}">${diff > 0 ? '▲' : '▼'} ₦${Math.abs(diff).toFixed(0)} vs prev</small>`;
   }
 
+  // Annotation indices (Q2 2020 = Apr 2020, Jun 2023 FX reform)
+  const covidIdx = inf.findIndex(d => d.obs_date.startsWith('2020-04'));
+  const fxIdx    = inf.findIndex(d => d.obs_date.startsWith('2023-06'));
+  const dualAnnotations = {};
+  if (covidIdx >= 0) dualAnnotations.covid = {
+    type: 'line', xMin: covidIdx, xMax: covidIdx,
+    borderColor: 'rgba(192,57,43,0.75)', borderWidth: 1.5, borderDash: [6, 3],
+    label: { display: true, content: 'COVID-19 (Q2 2020)', position: 'start',
+      backgroundColor: 'rgba(192,57,43,0.85)', color: '#fff',
+      font: { size: 11, weight: 'bold' }, padding: { x: 6, y: 3 }, borderRadius: 4 }
+  };
+  if (fxIdx >= 0) dualAnnotations.fxReform = {
+    type: 'line', xMin: fxIdx, xMax: fxIdx,
+    borderColor: 'rgba(46,80,144,0.75)', borderWidth: 1.5, borderDash: [6, 3],
+    label: { display: true, content: 'FX Reform (Jun 2023)', position: 'start',
+      backgroundColor: 'rgba(46,80,144,0.85)', color: '#fff',
+      font: { size: 11, weight: 'bold' }, padding: { x: 6, y: 3 }, borderRadius: 4 }
+  };
+
+  // Dual-axis chart
   document.getElementById('sk-dual').style.display = 'none';
   document.getElementById('chart-dual').style.display = 'block';
   new Chart(document.getElementById('chart-dual'), {
@@ -177,65 +209,121 @@ async function loadData() {
       labels: inf.map(d => fmt(d.obs_date)),
       datasets: [
         { type: 'line', label: 'Inflation Rate (%)', data: inf.map(d => d.value),
-          borderColor: '#C0392B', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, yAxisID: 'y' },
+          borderColor: '#C0392B', backgroundColor: 'transparent',
+          borderWidth: 3, pointRadius: 0, tension: 0.4, yAxisID: 'y' },
         { type: 'line', label: 'NGN/USD Exchange Rate', data: fx.map(d => d.value),
-          borderColor: '#2E5090', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, yAxisID: 'y1' },
+          borderColor: '#2E5090', backgroundColor: 'transparent',
+          borderWidth: 3, pointRadius: 0, tension: 0.4, yAxisID: 'y1' },
       ]
     },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: {
+          label: ctx => ctx.datasetIndex === 0
+            ? ` Inflation: ${ctx.parsed.y.toFixed(2)}%`
+            : ` Rate: ₦${ctx.parsed.y.toFixed(0)}/USD`
+        }},
+        annotation: { annotations: dualAnnotations }
+      },
       scales: {
-        y:  { title: { display: true, text: 'Inflation (%)' }, grid: { color: '#E2EAF4' } },
-        y1: { title: { display: true, text: 'NGN/USD' }, position: 'right', grid: { display: false } },
-        x:  { ticks: { maxTicksLimit: 12 }, grid: { display: false } }
+        y:  { title: { display: true, text: 'Inflation (%)', font: { size: 13 } },
+               ticks: { font: { size: 12 } }, grid: { color: '#E2EAF4' } },
+        y1: { title: { display: true, text: 'NGN/USD', font: { size: 13 } },
+               ticks: { font: { size: 12 } }, position: 'right', grid: { display: false } },
+        x:  { ticks: { maxTicksLimit: 12, font: { size: 12 } }, grid: { display: false } }
       }
     }
   });
 
+  // GDP mini bar chart — positive: green, negative: red, zero reference line
   document.getElementById('sk-gdp').style.display = 'none';
   document.getElementById('chart-gdp').style.display = 'block';
   new Chart(document.getElementById('chart-gdp'), {
     type: 'bar',
     data: { labels: gdp.map(d => fmt(d.obs_date)), datasets: [{ data: gdp.map(d => d.value),
-      backgroundColor: gdp.map(d => d.value >= 0 ? '#1A7A4AAA' : '#C0392BAA'),
-      borderColor: gdp.map(d => d.value >= 0 ? '#1A7A4A' : '#C0392B'),
-      borderWidth: 1.5, borderRadius: 4 }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { grid: { color: '#E2EAF4' } }, x: { ticks: { maxTicksLimit: 6 }, grid: { display: false } } } }
+      backgroundColor: gdp.map(d => d.value >= 0 ? '#1A7A4A' : '#C0392B'),
+      borderColor:     gdp.map(d => d.value >= 0 ? '#1A7A4A' : '#C0392B'),
+      borderWidth: 1.5, borderRadius: 5 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` GDP Growth: ${ctx.parsed.y.toFixed(2)}%` } },
+        annotation: { annotations: {
+          zero: { type: 'line', yMin: 0, yMax: 0,
+            borderColor: '#333', borderWidth: 1.5, borderDash: [4, 4] }
+        }}
+      },
+      scales: {
+        y: { ticks: { font: { size: 12 } }, grid: { color: '#E2EAF4' } },
+        x: { ticks: { maxTicksLimit: 6, font: { size: 12 } }, grid: { display: false } }
+      }
+    }
   });
 
+  // Inflation mini chart — gradient fill
   document.getElementById('sk-inf').style.display = 'none';
   document.getElementById('chart-inf').style.display = 'block';
   new Chart(document.getElementById('chart-inf'), {
     type: 'line',
     data: { labels: inf.map(d => fmt(d.obs_date)), datasets: [{ data: inf.map(d => d.value),
-      borderColor: '#C0392B', backgroundColor: '#C0392B18', borderWidth: 1.5, pointRadius: 0, fill: true, tension: 0.3 }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { grid: { color: '#E2EAF4' } }, x: { ticks: { maxTicksLimit: 6 }, grid: { display: false } } } }
+      borderColor: '#C0392B', backgroundColor: gradFill(192, 57, 43),
+      borderWidth: 3, pointRadius: 0, fill: true, tension: 0.4 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` Inflation: ${ctx.parsed.y.toFixed(2)}%` } }
+      },
+      scales: {
+        y: { ticks: { font: { size: 12 } }, grid: { color: '#E2EAF4' } },
+        x: { ticks: { maxTicksLimit: 6, font: { size: 12 } }, grid: { display: false } }
+      }
+    }
   });
 
+  // FX mini chart — gradient fill
   document.getElementById('sk-fx').style.display = 'none';
   document.getElementById('chart-fx').style.display = 'block';
   new Chart(document.getElementById('chart-fx'), {
     type: 'line',
     data: { labels: fx.map(d => fmt(d.obs_date)), datasets: [{ data: fx.map(d => d.value),
-      borderColor: '#2E5090', backgroundColor: '#2E509018', borderWidth: 1.5, pointRadius: 0, fill: true, tension: 0.3 }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { grid: { color: '#E2EAF4' } }, x: { ticks: { maxTicksLimit: 6 }, grid: { display: false } } } }
+      borderColor: '#2E5090', backgroundColor: gradFill(46, 80, 144),
+      borderWidth: 3, pointRadius: 0, fill: true, tension: 0.4 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ₦${ctx.parsed.y.toFixed(0)}/USD` } }
+      },
+      scales: {
+        y: { ticks: { font: { size: 12 } }, grid: { color: '#E2EAF4' } },
+        x: { ticks: { maxTicksLimit: 6, font: { size: 12 } }, grid: { display: false } }
+      }
+    }
   });
 
+  // MPR mini chart — gradient fill, stepped
   document.getElementById('sk-mpr').style.display = 'none';
   document.getElementById('chart-mpr').style.display = 'block';
   new Chart(document.getElementById('chart-mpr'), {
     type: 'line',
     data: { labels: mpr.map(d => fmt(d.obs_date)), datasets: [{ data: mpr.map(d => d.value),
-      borderColor: '#E8A020', backgroundColor: '#E8A02018', borderWidth: 1.5, pointRadius: 3, fill: true, stepped: true }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { grid: { color: '#E2EAF4' } }, x: { grid: { display: false } } } }
+      borderColor: '#E8A020', backgroundColor: gradFill(232, 160, 32),
+      borderWidth: 3, pointRadius: 0, fill: true, stepped: true }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` MPR: ${ctx.parsed.y.toFixed(2)}%` } }
+      },
+      scales: {
+        y: { ticks: { font: { size: 12 } }, grid: { color: '#E2EAF4' } },
+        x: { ticks: { font: { size: 12 } }, grid: { display: false } }
+      }
+    }
   });
 }
 
