@@ -8,10 +8,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<div class="wake-banner hidden" id="wake-banner">
-  <div class="spinner"></div>
-  <span id="wake-text">Waking up server... 0s</span>
-</div>
 <nav>
   <a class="nav-brand" href="index.html">🇳🇬 Nigeria Economic Dashboard</a>
   <ul class="nav-links">
@@ -47,82 +43,39 @@
 </main>
 <footer><p>Data source: CBN · Not financial advice</p></footer>
 <script>
-
 const API = 'https://nigerian-dashboard.onrender.com';
-const banner   = document.getElementById('wake-banner');
-const wakeText = document.getElementById('wake-text');
 
-async function wakeServer() {
-  // First try fast - if server already awake, respond in <2s
-  try {
-    const res = await fetch(`${API}/`, { signal: AbortSignal.timeout(2000) });
-    if (res.ok || res.status === 404 || res.status === 422 || res.status === 405) {
-      banner.classList.add('hidden'); // server awake - hide banner instantly
-      return true;
-    }
-  } catch(e) {}
-
-  // Server sleeping - show banner and keep pinging
-  banner.classList.remove('hidden');
-  let seconds = 0;
-  const timer = setInterval(() => {
-    seconds++;
-    wakeText.textContent = `Waking up server... ${seconds}s`;
-  }, 1000);
-
-  for (let i = 0; i < 20; i++) {
-    try {
-      const res = await fetch(`${API}/`, { signal: AbortSignal.timeout(8000) });
-      if (res.ok || res.status === 404 || res.status === 422 || res.status === 405) {
-        clearInterval(timer);
-        wakeText.textContent = `✓ Connected in ${seconds}s`;
-        banner.classList.add('ready');
-        setTimeout(() => banner.classList.add('hidden'), 2000);
-        return true;
-      }
-    } catch(e) {}
-    await new Promise(r => setTimeout(r, 5000));
-  }
-  clearInterval(timer);
-  return false;
+function fmt(d) {
+  return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
 async function load() {
-  const res = await fetch(`${API}/api/exchange-rate`).then(r=>r.json());
+  const res = await fetch(`${API}/api/exchange-rate`).then(r => r.json());
   const data = res.data;
 
-  document.getElementById('sk-fx').style.display='none';
-  document.getElementById('chart-fx').style.display='block';
+  document.getElementById('sk-fx').style.display = 'none';
+  document.getElementById('chart-fx').style.display = 'block';
   new Chart(document.getElementById('chart-fx'), {
-    type:'line',
-    data:{ labels:data.map(d=>fmt(d.obs_date)), datasets:[{ label:'NGN/USD', data:data.map(d=>d.value),
-      borderColor:'#2E5090', backgroundColor:'#2E509018', borderWidth:2, pointRadius:0, fill:true, tension:0.3 }]},
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ tooltip:{callbacks:{label:ctx=>` ₦${ctx.parsed.y.toFixed(2)} per USD`}} },
-      scales:{ y:{title:{display:true,text:'Naira per USD'},grid:{color:'#E2EAF4'}}, x:{ticks:{maxTicksLimit:12},grid:{display:false}} }}
+    type: 'line',
+    data: { labels: data.map(d => fmt(d.obs_date)), datasets: [{ label: 'NGN/USD', data: data.map(d => d.value),
+      borderColor: '#2E5090', backgroundColor: '#2E509018', borderWidth: 2, pointRadius: 0, fill: true, tension: 0.3 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { tooltip: { callbacks: { label: ctx => ` ₦${ctx.parsed.y.toFixed(2)} per USD` } } },
+      scales: { y: { title: { display: true, text: 'Naira per USD' }, grid: { color: '#E2EAF4' } }, x: { ticks: { maxTicksLimit: 12 }, grid: { display: false } } } }
   });
 
   const tbody = document.getElementById('fx-tbody');
-  data.forEach((d,i) => {
-    const prev=i>0?data[i-1].value:null;
-    const diff=prev?d.value-prev:0;
-    const change=i===0?'—':diff>0?`<span style="color:#C0392B">▲ ₦${diff.toFixed(2)}</span>`:`<span style="color:#1A7A4A">▼ ₦${Math.abs(diff).toFixed(2)}</span>`;
+  data.forEach((d, i) => {
+    const prev = i > 0 ? data[i - 1].value : null;
+    const diff = prev ? d.value - prev : 0;
+    const change = i === 0 ? '—' : diff > 0 ? `<span style="color:#C0392B">▲ ₦${diff.toFixed(2)}</span>` : `<span style="color:#1A7A4A">▼ ₦${Math.abs(diff).toFixed(2)}</span>`;
     tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">₦${Number(d.value).toFixed(2)}</td><td>${change}</td></tr>`;
   });
-  document.getElementById('loading').style.display='none';
-  document.getElementById('fx-table').style.display='table';
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('fx-table').style.display = 'table';
 }
 
-async function startApp() {
-  const alive = await wakeServer();
-  clearInterval(timer);
-  if (!alive) { wakeText.textContent='⚠ Server unavailable. Please refresh.'; banner.style.background='linear-gradient(90deg,#7B2020,#C0392B)'; return; }
-  wakeText.textContent=`✓ Connected in ${seconds}s — loading data...`;
-  banner.classList.add('ready');
-  try { await load(); setTimeout(()=>banner.classList.add('hidden'),2500); }
-  catch(err) { console.error(err); wakeText.textContent='⚠ Error loading data. Please refresh.'; banner.style.background='linear-gradient(90deg,#7B2020,#C0392B)'; }
-}
-startApp();
+load();
 </script>
 </body>
 </html>

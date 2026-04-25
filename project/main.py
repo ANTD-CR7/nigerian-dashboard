@@ -2,7 +2,7 @@
 FILE: main.py
 
 HOW TO RUN:
-    pip install fastapi uvicorn supabase
+    pip install fastapi uvicorn supabase httpx
     uvicorn main:app --reload
 
 Then open: http://localhost:8000/docs
@@ -13,11 +13,35 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from supabase import create_client, Client
 from typing import Optional
+from contextlib import asynccontextmanager
+import asyncio
+import httpx
+
+SELF_URL = "https://nigerian-dashboard.onrender.com"
+
+
+async def _keep_alive():
+    await asyncio.sleep(60)
+    async with httpx.AsyncClient() as client:
+        while True:
+            try:
+                await client.get(SELF_URL + "/", timeout=10.0)
+            except Exception:
+                pass
+            await asyncio.sleep(240)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    asyncio.create_task(_keep_alive())
+    yield
+
 
 app = FastAPI(
     title="Nigerian Financial Data Aggregation System",
     description="GDP, Inflation, Exchange Rate and MPR for Nigeria 2020-2024",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 app.add_middleware(

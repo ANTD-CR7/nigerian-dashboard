@@ -4,3 +4,4 @@ supabase
 pandas
 openpyxl
 python-multipart
+httpx
