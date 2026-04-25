@@ -10,7 +10,7 @@
 <body>
 <div class="wake-banner" id="wake-banner">
   <div class="spinner"></div>
-  <span id="wake-text">Connecting to data server...</span>
+  <span id="wake-text">Waking up server... 0s</span>
 </div>
 <nav>
   <a class="nav-brand" href="index.html">🇳🇬 Nigeria Economic Dashboard</a>
@@ -26,7 +26,7 @@
 <main>
   <div class="page-header">
     <h1>Headline Inflation Rate</h1>
-    <p>Monthly year-on-year Consumer Price Index change &bull; Source: NBS &bull; 2020–2024</p>
+    <p>Monthly year-on-year Consumer Price Index change · Source: NBS · 2020–2024</p>
   </div>
   <div class="card">
     <h2>📈 Headline Inflation Rate (%) — Monthly</h2>
@@ -34,138 +34,78 @@
       <span class="skeleton sk-chart" id="sk-inf"></span>
       <canvas id="chart-inf" style="display:none"></canvas>
     </div>
-    <p class="source-note">Source: NBS Consumer Price Index Report &bull; Year-on-year headline inflation (allItemsYearOn)</p>
+    <p class="source-note">Source: NBS Consumer Price Index Report · Year-on-year headline inflation</p>
   </div>
   <div class="card">
     <h2>📋 Inflation Data Table</h2>
     <div id="loading" class="loading">Loading data...</div>
     <table class="data-table" id="inf-table" style="display:none">
-      <thead><tr>
-        <th>Month</th>
-        <th class="num">Inflation Rate (%)</th>
-        <th>Change</th>
-        <th>Level</th>
-      </tr></thead>
+      <thead><tr><th>Month</th><th class="num">Inflation Rate (%)</th><th>Change</th><th>Level</th></tr></thead>
       <tbody id="inf-tbody"></tbody>
     </table>
   </div>
 </main>
-<footer>
-  <p>Data source: National Bureau of Statistics (NBS) &bull; Not financial advice</p>
-</footer>
+<footer><p>Data source: NBS · Not financial advice</p></footer>
 <script>
-const API = 'https://nigeria-dashboard.onrender.com';
+const API = 'https://nigerian-dashboard.onrender.com';
 const banner = document.getElementById('wake-banner');
 const wakeText = document.getElementById('wake-text');
 
-function fmt(date) {
-  return new Date(date).toLocaleDateString('en-NG', { year:'numeric', month:'short' });
-}
-function badge(val) {
-  if (val >= 30) return '<span class="badge badge-red">Very High</span>';
-  if (val >= 20) return '<span class="badge badge-red">High</span>';
-  if (val >= 10) return '<span class="badge badge-orange">Moderate</span>';
-  return '<span class="badge badge-green">Low</span>';
-}
-
-let seconds=0;
-const timer=setInterval(()=>{seconds++;document.getElementById('wake-text').textContent=`Connecting to data server... ${seconds}s`;},1000);
-
-const API = 'https://nigerian-dashboard.onrender.com';
-
-const banner   = document.getElementById('wake-banner');
-const wakeText = document.getElementById('wake-text');
-
 let seconds = 0;
-const timer = setInterval(() => {
-  seconds++;
-  if (wakeText) wakeText.textContent = `Waking up server... ${seconds}s (can take up to 60s on first visit)`;
-}, 1000);
+const timer = setInterval(() => { seconds++; wakeText.textContent = `Waking up server... ${seconds}s`; }, 1000);
 
 async function wakeServer() {
-  // Keep pinging every 5 seconds until server responds
-  for (let attempt = 0; attempt < 20; attempt++) {
-    try {
-      const res = await fetch(`${API}/`, { signal: AbortSignal.timeout(8000) });
-      if (res.ok || res.status === 404 || res.status === 422) {
-        return true; // server is awake
-      }
-    } catch(e) {
-      // still sleeping, try again
-    }
+  for (let i = 0; i < 20; i++) {
+    try { const res = await fetch(`${API}/`, { signal: AbortSignal.timeout(8000) }); if (res.ok||res.status===404||res.status===422) return true; } catch(e) {}
     await new Promise(r => setTimeout(r, 5000));
   }
   return false;
 }
 
-async function load() {
-  try {
-    const res  = await fetchWithTimeout(`${API}/api/inflation`).then(r => r.json());
-    banner.classList.add('hidden');
-    const data = res.data;
-
-    document.getElementById('sk-inf').style.display = 'none';
-    document.getElementById('chart-inf').style.display = 'block';
-
-    new Chart(document.getElementById('chart-inf'), {
-      type: 'line',
-      data: {
-        labels: data.map(d => fmt(d.obs_date)),
-        datasets: [{
-          label: 'Inflation Rate (%)',
-          data: data.map(d => d.value),
-          borderColor: '#C0392B', backgroundColor: '#C0392B18',
-          borderWidth: 2, pointRadius: 0, fill: true, tension: 0.3,
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y.toFixed(2)}%` } } },
-        scales: {
-          y: { title:{ display:true, text:'Inflation Rate (%)' }, grid:{ color:'#E2EAF4' } },
-          x: { ticks:{ maxTicksLimit:12 }, grid:{ display:false } }
-        }
-      }
-    });
-
-    const tbody = document.getElementById('inf-tbody');
-    data.forEach((d,i) => {
-      const prev = i > 0 ? data[i-1].value : null;
-      const diff = prev ? d.value - prev : 0;
-      const change = i === 0 ? '—' : diff > 0
-        ? `<span style="color:#C0392B">▲ ${diff.toFixed(2)}</span>`
-        : `<span style="color:#1A7A4A">▼ ${Math.abs(diff).toFixed(2)}</span>`;
-      tbody.innerHTML += `<tr>
-        <td>${fmt(d.obs_date)}</td>
-        <td class="num">${Number(d.value).toFixed(2)}%</td>
-        <td>${change}</td>
-        <td>${badge(d.value)}</td></tr>`;
-    });
-
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('inf-table').style.display = 'table';
-  } catch(err) {
-    wakeText.textContent = '⚠ Could not load data. Try refreshing.';
-    banner.style.background = 'linear-gradient(90deg,#7B2020,#C0392B)';
-    document.getElementById('loading').textContent = 'Error loading data.';
-    console.error(err);
-  }
+function fmt(date) { return new Date(date).toLocaleDateString('en-NG',{year:'numeric',month:'short'}); }
+function badge(val) {
+  if (val>=30) return '<span class="badge badge-red">Very High</span>';
+  if (val>=20) return '<span class="badge badge-red">High</span>';
+  if (val>=10) return '<span class="badge badge-orange">Moderate</span>';
+  return '<span class="badge badge-green">Low</span>';
 }
+
+async function load() {
+  const res = await fetch(`${API}/api/inflation`).then(r=>r.json());
+  const data = res.data;
+
+  document.getElementById('sk-inf').style.display='none';
+  document.getElementById('chart-inf').style.display='block';
+  new Chart(document.getElementById('chart-inf'), {
+    type:'line',
+    data:{ labels:data.map(d=>fmt(d.obs_date)), datasets:[{ label:'Inflation Rate (%)', data:data.map(d=>d.value),
+      borderColor:'#C0392B', backgroundColor:'#C0392B18', borderWidth:2, pointRadius:0, fill:true, tension:0.3 }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y.toFixed(2)}%`}} },
+      scales:{ y:{title:{display:true,text:'Inflation Rate (%)'},grid:{color:'#E2EAF4'}}, x:{ticks:{maxTicksLimit:12},grid:{display:false}} }}
+  });
+
+  const tbody = document.getElementById('inf-tbody');
+  data.forEach((d,i) => {
+    const prev=i>0?data[i-1].value:null;
+    const diff=prev?d.value-prev:0;
+    const change=i===0?'—':diff>0?`<span style="color:#C0392B">▲ ${diff.toFixed(2)}</span>`:`<span style="color:#1A7A4A">▼ ${Math.abs(diff).toFixed(2)}</span>`;
+    tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">${Number(d.value).toFixed(2)}%</td><td>${change}</td><td>${badge(d.value)}</td></tr>`;
+  });
+  document.getElementById('loading').style.display='none';
+  document.getElementById('inf-table').style.display='table';
+}
+
 async function startApp() {
   const alive = await wakeServer();
   clearInterval(timer);
-  if (!alive) {
-    wakeText.textContent = '⚠ Server unavailable. Please refresh the page.';
-    banner.style.background = 'linear-gradient(90deg,#7B2020,#C0392B)';
-    return;
-  }
-  wakeText.textContent = `✓ Connected in ${seconds}s`;
+  if (!alive) { wakeText.textContent='⚠ Server unavailable. Please refresh.'; banner.style.background='linear-gradient(90deg,#7B2020,#C0392B)'; return; }
+  wakeText.textContent=`✓ Connected in ${seconds}s — loading data...`;
   banner.classList.add('ready');
-  setTimeout(() => banner.classList.add('hidden'), 2500);
-  load();
+  try { await load(); setTimeout(()=>banner.classList.add('hidden'),2500); }
+  catch(err) { console.error(err); wakeText.textContent='⚠ Error loading data. Please refresh.'; banner.style.background='linear-gradient(90deg,#7B2020,#C0392B)'; }
 }
 startApp();
-
 </script>
 </body>
 </html>
