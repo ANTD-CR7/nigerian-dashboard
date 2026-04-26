@@ -14,7 +14,9 @@
          onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
     <span class="nav-flag" style="display:none">🇳🇬 </span>Nigeria Economic Dashboard
   </a>
-  <ul class="nav-center">
+  <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+  <div class="nav-menu" id="nav-menu">
+    <ul class="nav-center">
     <li><a href="index.html">Dashboard</a></li>
     <li><a href="gdp.html">GDP</a></li>
     <li><a href="inflation.html">Inflation</a></li>
@@ -28,6 +30,7 @@
          onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
     <span class="nav-fyp">FYP 2026</span>
     <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY · FYP 2026</span>
+  </div>
   </div>
 </nav>
 
@@ -135,5 +138,6 @@
   </div>
 </footer>
 
+<script src="js/nav.js"></script>
 </body>
 </html>
