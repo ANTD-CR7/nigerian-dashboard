@@ -20,9 +20,10 @@
 body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
 
 /* ===== NAV — gradient with institutional logos ===== */
-nav{background:linear-gradient(90deg,#006633 0%,#1A3A5C 100%);border-bottom:none;padding:0 1.5rem;display:flex;align-items:stretch;justify-content:space-between;height:65px;position:sticky;top:0;z-index:100;gap:.5rem}
+nav{background:#006633;border-bottom:3px solid #C8A951;padding:0 1.5rem;display:flex;align-items:stretch;justify-content:space-between;height:65px;position:sticky;top:0;z-index:100;gap:.5rem}
 .nav-brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;font-size:.95rem;font-weight:700;color:#fff;letter-spacing:-.2px;white-space:nowrap;flex-shrink:0}
-.nav-coa{height:40px;width:auto;object-fit:contain;flex-shrink:0}
+.nav-coa{height:45px;width:auto;object-fit:contain;flex-shrink:0}
+.nav-flag{font-size:1.1rem}
 .nav-center{display:flex;align-items:stretch;list-style:none;flex:1;justify-content:center}
 .nav-center li{display:flex;align-items:stretch}
 .nav-center a{display:flex;align-items:center;padding:0 .85rem;font-size:.875rem;font-weight:500;color:rgba(255,255,255,.85);text-decoration:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;white-space:nowrap}
@@ -31,10 +32,7 @@ nav{background:linear-gradient(90deg,#006633 0%,#1A3A5C 100%);border-bottom:none
 .nav-right{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
 .nav-caleb{height:40px;width:auto;object-fit:contain;max-width:120px}
 .nav-fyp{color:rgba(255,255,255,.85);font-size:12px;font-weight:600;white-space:nowrap}
-.nav-caleb-fallback{display:none;color:#fff;font-size:11px;font-weight:600;border:1.5px solid rgba(255,255,255,.65);padding:3px 10px;border-radius:3px;white-space:nowrap;align-items:center}
-.logo-failed .nav-caleb{display:none}
-.logo-failed .nav-fyp{display:none}
-.logo-failed .nav-caleb-fallback{display:inline-flex}
+.nav-caleb-fallback{display:none;background:#C8A951;color:#1A3A5C;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap;align-items:center;letter-spacing:.3px}
 
 /* ===== HERO — solid Nigerian green ===== */
 .hero{background:var(--green);padding:3rem 2rem 2.5rem}

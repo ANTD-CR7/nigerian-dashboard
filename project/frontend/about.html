@@ -10,8 +10,9 @@
 
 <nav>
   <a class="nav-brand" href="index.html">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/200px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa">
-    Nigeria Economic Dashboard
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+    <span class="nav-flag" style="display:none">🇳🇬 </span>Nigeria Economic Dashboard
   </a>
   <ul class="nav-center">
     <li><a href="index.html">Dashboard</a></li>
@@ -24,9 +25,9 @@
   <div class="nav-right">
     <img src="https://calebuniversity.edu.ng/wp-content/uploads/2021/01/Caleb-University-Logo.png"
          alt="Caleb University" class="nav-caleb"
-         onerror="this.parentElement.classList.add('logo-failed')">
+         onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
     <span class="nav-fyp">FYP 2026</span>
-    <span class="nav-caleb-fallback">CALEB UNIVERSITY · FYP 2026</span>
+    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY · FYP 2026</span>
   </div>
 </nav>
 
