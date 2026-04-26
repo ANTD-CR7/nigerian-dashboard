@@ -16,11 +16,15 @@ from typing import Optional
 from contextlib import asynccontextmanager
 import asyncio
 import httpx
+import os
 
-SELF_URL = "https://nigerian-dashboard.onrender.com"
+# Optional: set SELF_URL env var to enable a keep-alive ping (not needed on Railway)
+SELF_URL = os.environ.get("SELF_URL", "")
 
 
 async def _keep_alive():
+    if not SELF_URL:
+        return
     await asyncio.sleep(60)
     async with httpx.AsyncClient() as client:
         while True:
