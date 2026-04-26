@@ -19,7 +19,7 @@ import httpx
 import os
 
 # Optional: set SELF_URL env var to enable a keep-alive ping (not needed on Railway)
-SELF_URL = os.environ.get("SELF_URL", "")
+SELF_URL = os.environ.get("SELF_URL", "https://web-production-feb5f.up.railway.app")
 
 
 async def _keep_alive():
