@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interest Rate — Nigeria Economic Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+    <span class="nav-flag" style="display:none">🇳🇬 </span>Nigeria Economic Dashboard
+  </a>
+  <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+  <div class="nav-menu" id="nav-menu">
+    <ul class="nav-center">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="gdp.html">GDP</a></li>
+    <li><a href="inflation.html">Inflation</a></li>
+    <li><a href="exchange_rate.html">Exchange Rate</a></li>
+    <li><a href="interest_rate.html" class="active">Interest Rate</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-right">
+    <img src="https://calebuniversity.edu.ng/wp-content/uploads/2021/01/Caleb-University-Logo.png"
+         alt="Caleb University" class="nav-caleb"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
+    <span class="nav-fyp">FYP 2026</span>
+    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY · FYP 2026</span>
+  </div>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header page-header-blue">
+    <h1>Monetary Policy Rate (MPR)</h1>
+    <p>CBN benchmark interest rate at each MPC decision · Central Bank of Nigeria · 2020–2024</p>
+  </div>
+
+  <div class="stat-box stat-box-blue">
+    <div class="stat-number" id="stat-mpr">—</div>
+    <div class="stat-label">Monetary Policy Rate (latest MPC decision)</div>
+    <p class="stat-context">The CBN raised the MPR from 11.5% to 27.5% between 2022 and 2024 — a cumulative 1,600 basis point tightening — to combat surging inflation following the June 2023 FX unification reform.</p>
+  </div>
+
+  <div class="card">
+    <h2>CBN Monetary Policy Rate (%) — MPC Decision Dates</h2>
+    <div class="chart-container-lg">
+      <p class="chart-loading" id="loading-mpr">Loading…</p>
+      <canvas id="chart-mpr" style="display:none"></canvas>
+    </div>
+    <p class="source-note">Source: CBN MPC communiques · Stepped line = rate held flat between meetings</p>
+  </div>
+
+  <div class="card">
+    <h2>MPR Decision History</h2>
+    <div id="loading" class="loading">Loading data…</div>
+    <table class="data-table th-blue" id="mpr-table" style="display:none">
+      <thead><tr><th>MPC Decision Date</th><th class="num">MPR (%)</th><th>Change</th><th>Source</th></tr></thead>
+      <tbody id="mpr-tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>🇳🇬 Data Sources: CBN · NBS · World Bank &nbsp;|&nbsp; For educational purposes only · Not financial advice</span>
+    <span class="footer-right">Final Year Project · Dept of Computer Science · Caleb University, Imota, Lagos · 2026</span>
+  </div>
+</footer>
+
+<script>
+const API = 'https://web-production-feb5f.up.railway.app';
+
+function fmt(d) {
+  return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+
+const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
+const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+
+async function load() {
+  const res  = await fetch(`${API}/api/interest-rate`).then(r => r.json());
+  const data = res.data;
+
+  // Stat box
+  const latest = data[data.length - 1];
+  document.getElementById('stat-mpr').textContent = `${Number(latest.value).toFixed(2)}%`;
+
+  document.getElementById('loading-mpr').style.display = 'none';
+  document.getElementById('chart-mpr').style.display   = 'block';
+  new Chart(document.getElementById('chart-mpr'), {
+    type: 'line',
+    data: { labels: data.map(d => fmt(d.obs_date)), datasets: [{ label: 'MPR (%)', data: data.map(d => d.value),
+      borderColor: '#C8A951', backgroundColor: 'transparent',
+      borderWidth: 2.5,
+      pointRadius: 5, pointBackgroundColor: '#C8A951',
+      pointBorderColor: '#fff', pointBorderWidth: 2,
+      fill: false, stepped: true }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...TIP, callbacks: { title: i => i[0].label, label: ctx => `MPR: ${ctx.parsed.y.toFixed(2)}%` }}
+      },
+      scales: {
+        y: { ...SY, min: 10, title: { display:true, text:'Rate (%)', color:'#6B7280', font:{size:12} } },
+        x: { ...SX }
+      }
+    }
+  });
+
+  const tbody = document.getElementById('mpr-tbody');
+  data.forEach((d, i) => {
+    const prev = i > 0 ? data[i - 1].value : null;
+    const diff = prev ? d.value - prev : 0;
+    let change = '—';
+    if (i > 0) {
+      if (diff > 0)      change = `<span class="badge badge-red">▲ +${diff.toFixed(2)}%</span>`;
+      else if (diff < 0) change = `<span class="badge badge-green">▼ ${diff.toFixed(2)}%</span>`;
+      else               change = '<span class="badge badge-orange">Held</span>';
+    }
+    tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">${Number(d.value).toFixed(2)}%</td><td>${change}</td><td class="src">CBN</td></tr>`;
+  });
+  document.getElementById('loading').style.display    = 'none';
+  document.getElementById('mpr-table').style.display  = 'table';
+}
+
+load();
+</script>
+<script src="js/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inflation — Nigeria Economic Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+    <span class="nav-flag" style="display:none">🇳🇬 </span>Nigeria Economic Dashboard
+  </a>
+  <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+  <div class="nav-menu" id="nav-menu">
+    <ul class="nav-center">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="gdp.html">GDP</a></li>
+    <li><a href="inflation.html" class="active">Inflation</a></li>
+    <li><a href="exchange_rate.html">Exchange Rate</a></li>
+    <li><a href="interest_rate.html">Interest Rate</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-right">
+    <img src="https://calebuniversity.edu.ng/wp-content/uploads/2021/01/Caleb-University-Logo.png"
+         alt="Caleb University" class="nav-caleb"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
+    <span class="nav-fyp">FYP 2026</span>
+    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY · FYP 2026</span>
+  </div>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header page-header-green">
+    <h1>Headline Inflation Rate</h1>
+    <p>Monthly year-on-year Consumer Price Index change · National Bureau of Statistics · 2020–2024</p>
+  </div>
+
+  <div class="stat-box">
+    <div class="stat-number" id="stat-inf">—</div>
+    <div class="stat-label">Headline Inflation Rate (latest month)</div>
+    <p class="stat-context">Inflation peaked at 34.80% in December 2024, driven by post-FX reform currency depreciation and rising food prices — the highest level in Nigeria since the 1990s.</p>
+  </div>
+
+  <div class="card">
+    <h2>Headline Inflation Rate (%) — Monthly</h2>
+    <div class="chart-container-lg">
+      <p class="chart-loading" id="loading-inf">Loading…</p>
+      <canvas id="chart-inf" style="display:none"></canvas>
+    </div>
+    <p class="source-note">Source: NBS Consumer Price Index Report · Year-on-year headline inflation</p>
+  </div>
+
+  <div class="card">
+    <h2>Inflation Data Table</h2>
+    <div id="loading" class="loading">Loading data…</div>
+    <table class="data-table th-green" id="inf-table" style="display:none">
+      <thead><tr><th>Month</th><th class="num">Inflation Rate (%)</th><th>MoM Change</th><th>Level</th><th>Source</th></tr></thead>
+      <tbody id="inf-tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>🇳🇬 Data Sources: CBN · NBS · World Bank &nbsp;|&nbsp; For educational purposes only · Not financial advice</span>
+    <span class="footer-right">Final Year Project · Dept of Computer Science · Caleb University, Imota, Lagos · 2026</span>
+  </div>
+</footer>
+
+<script>
+const API = 'https://web-production-feb5f.up.railway.app';
+
+function fmt(d) {
+  return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+function badge(v) {
+  if (v < 0)  return '<span class="badge badge-red">Contraction</span>';
+  if (v < 10) return '<span class="badge badge-green">Low</span>';
+  if (v < 20) return '<span class="badge badge-orange">High</span>';
+  return '<span class="badge badge-red">Very High</span>';
+}
+
+const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
+const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+
+function annotLine(label, color, idx) {
+  return {
+    type:'line', xMin:idx, xMax:idx,
+    borderColor: color + '66', borderWidth:1.5, borderDash:[6,4],
+    label:{ display:true, content:label, position:'start',
+      backgroundColor:color, color:'#fff',
+      font:{size:11,weight:'600'}, padding:{x:6,y:3}, borderRadius:2 }
+  };
+}
+
+async function load() {
+  const res  = await fetch(`${API}/api/inflation`).then(r => r.json());
+  const data = res.data;
+
+  // Stat box
+  const latest = data[data.length - 1];
+  document.getElementById('stat-inf').textContent = `${Number(latest.value).toFixed(2)}%`;
+
+  // Annotations
+  const covidIdx = data.findIndex(d => d.obs_date.startsWith('2020-01'));
+  const fxIdx    = data.findIndex(d => d.obs_date.startsWith('2023-06'));
+  const annots   = {};
+  if (covidIdx >= 0) annots.covid    = annotLine('COVID-19 (Jan 2020)', '#DC2626', covidIdx);
+  if (fxIdx    >= 0) annots.fxReform = annotLine('FX Reform (Jun 2023)', '#0066CC', fxIdx);
+
+  document.getElementById('loading-inf').style.display = 'none';
+  document.getElementById('chart-inf').style.display   = 'block';
+  new Chart(document.getElementById('chart-inf'), {
+    type: 'line',
+    data: { labels: data.map(d => fmt(d.obs_date)), datasets: [{ label: 'Inflation Rate (%)', data: data.map(d => d.value),
+      borderColor: '#DC2626', backgroundColor: 'transparent',
+      borderWidth: 2.5, pointRadius: 0, fill: false, tension: 0.3 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...TIP, callbacks: { title: i => i[0].label, label: ctx => `Inflation: ${ctx.parsed.y.toFixed(2)}%` }},
+        annotation: { annotations: annots }
+      },
+      scales: {
+        y: { ...SY, title: { display:true, text:'Inflation Rate (%)', color:'#6B7280', font:{size:12} } },
+        x: { ...SX, ticks: { ...SX.ticks, maxTicksLimit: 12 } }
+      }
+    }
+  });
+
+  const tbody = document.getElementById('inf-tbody');
+  data.forEach((d, i) => {
+    const prev   = i > 0 ? data[i - 1].value : null;
+    const diff   = prev ? d.value - prev : 0;
+    const change = i === 0 ? '—' : diff > 0
+      ? `<span style="color:#DC2626">▲ ${diff.toFixed(2)}</span>`
+      : `<span style="color:#15803D">▼ ${Math.abs(diff).toFixed(2)}</span>`;
+    tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">${Number(d.value).toFixed(2)}%</td><td>${change}</td><td>${badge(d.value)}</td><td class="src">NBS</td></tr>`;
+  });
+  document.getElementById('loading').style.display   = 'none';
+  document.getElementById('inf-table').style.display = 'table';
+}
+
+load();
+</script>
+<script src="js/nav.js"></script>
+</body>
+</html>

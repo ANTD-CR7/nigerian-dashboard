@@ -1,0 +1,244 @@
+/* ============================================================
+   NIGERIAN FINANCIAL DATA AGGREGATION SYSTEM — style.css
+   ECB / CBN institutional redesign
+   ============================================================ */
+:root {
+    --green:    #006633;
+    --caleb:    #0066CC;
+    --gold:     #C8A951;
+    --bg:       #FFFFFF;
+    --section:  #F8FAFC;
+    --text:     #1A1A1A;
+    --sub:      #555555;
+    --muted:    #555555;
+    --border:   #E5E7EB;
+    --pos:      #15803D;
+    --neg:      #DC2626;
+    --font:     'Segoe UI',system-ui,Arial,sans-serif;
+    --shadow:   0 1px 4px rgba(0,0,0,0.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+
+/* ===== NAV — gradient with institutional logos ===== */
+nav{background:#006633;border-bottom:3px solid #C8A951;padding:0 1.5rem;display:flex;align-items:stretch;justify-content:space-between;height:65px;position:sticky;top:0;z-index:100;gap:.5rem}
+.nav-brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;font-size:.95rem;font-weight:700;color:#fff;letter-spacing:-.2px;white-space:nowrap;flex-shrink:0}
+.nav-coa{height:45px;width:auto;object-fit:contain;flex-shrink:0}
+.nav-flag{font-size:1.1rem}
+.nav-center{display:flex;align-items:stretch;list-style:none;flex:1;justify-content:center}
+.nav-center li{display:flex;align-items:stretch}
+.nav-center a{display:flex;align-items:center;padding:0 .85rem;font-size:.875rem;font-weight:500;color:rgba(255,255,255,.85);text-decoration:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;white-space:nowrap}
+.nav-center a:hover{color:#fff}
+.nav-center a.active{color:#fff;font-weight:600;border-bottom-color:#fff}
+.nav-right{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.nav-caleb{height:40px;width:auto;object-fit:contain;max-width:120px}
+.nav-fyp{color:rgba(255,255,255,.85);font-size:12px;font-weight:600;white-space:nowrap}
+.nav-caleb-fallback{display:none;background:#0066CC;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap;align-items:center;letter-spacing:.3px}
+/* ===== HAMBURGER TOGGLE ===== */
+.nav-toggle{display:none;background:none;border:1.5px solid rgba(255,255,255,.55);color:#fff;font-size:1.2rem;cursor:pointer;padding:.25rem .55rem;border-radius:4px;line-height:1;flex-shrink:0;transition:border-color .15s}
+.nav-toggle:hover{border-color:rgba(255,255,255,.9)}
+/* ===== NAV MENU WRAPPER (desktop: flex row; mobile: collapsible) ===== */
+.nav-menu{display:flex;align-items:stretch;flex:1}
+/* ===== TABLE SCROLL WRAPPER ===== */
+.table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* ===== HERO — solid Nigerian green ===== */
+.hero{background:var(--green);padding:3rem 2rem 2.5rem}
+.hero-inner{max-width:1140px;margin:0 auto}
+.hero h1{font-size:2rem;font-weight:800;color:#fff;margin-bottom:.35rem;letter-spacing:-.5px;line-height:1.2}
+.hero-gold{font-size:.9rem;color:var(--gold);font-weight:600;letter-spacing:.3px;margin-bottom:.6rem}
+.hero-desc{font-size:.9rem;color:rgba(255,255,255,.82);margin-bottom:1.75rem;max-width:560px}
+
+/* ===== KPI GRID (hero & standalone) ===== */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:rgba(255,255,255,.25)}
+.kpi-card{background:#fff;padding:1.25rem 1.5rem;border-left:4px solid transparent}
+.kpi-card.kpi-gdp{border-left-color:#006633}
+.kpi-card.kpi-inf{border-left-color:#CC0000}
+.kpi-card.kpi-fx {border-left-color:#0066CC}
+.kpi-card.kpi-mpr{border-left-color:#C8A951}
+.kpi-label{font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.35rem}
+.kpi-value{font-size:2rem;font-weight:700;color:#1A1A1A;line-height:1;margin-bottom:.3rem;letter-spacing:-1px}
+.kpi-meta{font-size:12px;color:var(--muted);margin-bottom:.35rem}
+.trend-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:600}
+.trend-badge.bad{background:#FEE2E2;color:var(--neg)}
+.trend-badge.good{background:#DCFCE7;color:var(--pos)}
+
+/* ===== MAIN ===== */
+main{flex:1;max-width:1140px;margin:0 auto;padding:2rem 1.5rem;width:100%}
+
+/* ===== PAGE HEADER ===== */
+.page-header{margin-bottom:1.75rem;padding-bottom:.85rem;border-bottom:3px solid #006633}
+.page-header h1{font-size:1.8rem;font-weight:700;color:#006633;margin-bottom:.2rem}
+.page-header p{font-size:14px;color:#555555}
+.page-header-green{border-bottom-color:#006633}
+.page-header-blue{border-bottom-color:#006633}
+
+/* ===== ECB STAT BOX ===== */
+.stat-box{background:var(--section);border:1px solid var(--border);border-left:4px solid #006633;padding:1.75rem 2rem;margin-bottom:1.75rem}
+.stat-box-blue{border-left-color:#006633}
+.stat-number{font-size:3rem;font-weight:800;color:#1A1A1A;line-height:1;margin-bottom:.3rem;letter-spacing:-2px}
+.stat-label{font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.6rem}
+.stat-context{font-size:14px;color:var(--muted);line-height:1.65;max-width:680px}
+
+/* ===== CARDS ===== */
+.card{background:#fff;border:1px solid var(--border);border-top:3px solid #006633;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.card h2{font-size:12px;font-weight:700;color:#006633;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+
+/* ===== MINI GRID ===== */
+.mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:1.5rem}
+
+/* ===== CHART CONTAINERS ===== */
+.chart-container   {position:relative;height:360px;width:100%}
+.chart-container-sm{position:relative;height:220px;width:100%}
+.chart-container-lg{position:relative;height:400px;width:100%}
+.chart-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--muted);font-size:14px;pointer-events:none}
+
+/* ===== DUAL LEGEND ===== */
+.dual-legend{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:.75rem;font-size:13px;color:var(--muted)}
+.dual-legend span{display:flex;align-items:center;gap:.5rem}
+.dot{width:20px;height:2px;border-radius:1px;display:inline-block;flex-shrink:0}
+
+/* ===== DATA TABLE — ECB style ===== */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{background:#006633;color:#fff;padding:.6rem 1rem;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.6px}
+.data-table td{padding:.55rem 1rem;border-bottom:1px solid var(--border);color:var(--text)}
+.data-table tr:nth-child(even) td{background:#F0FAF5}
+.data-table tr:hover td{background:#E8F5E9}
+.data-table tr:last-child td{border-bottom:none}
+.data-table .num{font-variant-numeric:tabular-nums;text-align:right;font-weight:700}
+.data-table .src{font-size:11px;color:var(--muted);white-space:nowrap}
+.data-table.th-green th{background:#006633}
+.data-table.th-blue  th{background:#006633}
+
+/* ===== BADGES ===== */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700}
+.badge-red   {background:#FEE2E2;color:var(--neg)}
+.badge-green {background:#DCFCE7;color:var(--pos)}
+.badge-orange{background:#FEF3E2;color:#B45309}
+.badge-blue  {background:#EFF6FF;color:#0066CC}
+
+/* ===== INSIGHT BOX ===== */
+.insight-box{background:var(--section);border:1px solid var(--border);border-left:4px solid #006633;padding:1.25rem 1.5rem;margin-bottom:1.5rem}
+.insight-box h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--green);margin-bottom:.4rem}
+.insight-box p{font-size:14px;line-height:1.65;color:var(--muted)}
+
+/* ===== SOURCE NOTE ===== */
+.source-note{font-size:12px;color:var(--muted);margin-top:.75rem;font-style:italic}
+
+/* ===== LOADING ===== */
+.loading{text-align:center;color:var(--muted);padding:2rem;font-size:14px}
+
+/* ===== QUOTE BOX (about) ===== */
+.quote-box{background:var(--green);color:#fff;padding:2rem 2.5rem;margin-bottom:1.75rem;position:relative}
+.quote-box::before{content:'"';font-size:4rem;color:rgba(255,255,255,.2);position:absolute;top:.5rem;left:1rem;font-family:Georgia,serif;line-height:1}
+.quote-box p{font-size:1.05rem;line-height:1.75;font-style:italic;position:relative;padding-left:1rem}
+
+/* ===== FOOTER — two-column, navy ===== */
+footer{background:#006633;border-top:4px solid #C8A951;color:#fff;padding:1.25rem 2rem;margin-top:auto;font-size:13px}
+.footer-inner{max-width:1140px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.footer-right{background:#0066CC;color:#fff;font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;white-space:nowrap;text-align:center;letter-spacing:.2px}
+
+/* ===== RESPONSIVE ===== */
+
+/* 1024 px — tablet landscape */
+@media(max-width:1024px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr)}
+    .mini-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+/* 768 px — tablet portrait / large phone */
+@media(max-width:768px){
+    /* NAV */
+    nav{height:auto;padding:.7rem 1rem;flex-wrap:nowrap;align-items:center;gap:.5rem}
+    .nav-brand{flex:1;font-size:.85rem;white-space:nowrap;min-width:0}
+    .nav-coa{height:30px}
+    .nav-caleb{height:28px;max-width:80px}
+    .nav-fyp{font-size:10px}
+    .nav-toggle{display:flex;align-items:center}
+    .nav-menu{
+        display:none;
+        flex-direction:column;
+        position:absolute;
+        top:100%;
+        left:0;
+        right:0;
+        background:#006633;
+        border-bottom:3px solid #C8A951;
+        z-index:98;
+        padding:.25rem 0;
+        gap:0;
+    }
+    .nav-menu.nav-open{display:flex}
+    .nav-center{flex-direction:column;align-items:stretch;flex:none}
+    .nav-center li{display:block}
+    .nav-center a{
+        display:block;
+        padding:.7rem 1.25rem;
+        border-bottom:1px solid rgba(255,255,255,.12) !important;
+        font-size:.9rem;
+    }
+    .nav-center a.active{
+        background:rgba(255,255,255,.1);
+        border-bottom-color:rgba(255,255,255,.12) !important;
+    }
+    .nav-right{padding:.6rem 1.25rem;border-top:1px solid rgba(255,255,255,.18);justify-content:flex-start}
+    /* HERO */
+    .hero{padding:1.5rem 1rem 1.25rem}
+    .hero h1{font-size:1.3rem}
+    .hero-desc{font-size:.85rem;margin-bottom:1.25rem}
+    .hero-gold{font-size:.82rem}
+    /* MAIN */
+    main{padding:.75rem}
+    /* PAGE HEADER */
+    .page-header h1{font-size:18px}
+    .page-header{margin-bottom:1.25rem}
+    /* KPI */
+    .kpi-grid{grid-template-columns:1fr 1fr;gap:1px}
+    .kpi-value{font-size:1.5rem}
+    .kpi-card{padding:1rem 1.1rem}
+    /* STAT BOX */
+    .stat-box{padding:1.25rem 1rem}
+    .stat-number{font-size:2rem}
+    .stat-context{font-size:13px}
+    /* CARDS — overflow-x enables table scroll without extra wrapper */
+    .card{padding:1rem;margin-bottom:.75rem;overflow-x:auto}
+    /* CHARTS */
+    .chart-container{height:250px}
+    .chart-container-sm{height:200px}
+    .chart-container-lg{height:200px}
+    /* MINI GRID */
+    .mini-grid{grid-template-columns:1fr}
+    /* TABLES */
+    .data-table{font-size:.8rem}
+    .data-table th,.data-table td{padding:.4rem .65rem}
+    /* INSIGHT / QUOTE */
+    .insight-box{padding:1rem}
+    .quote-box{padding:1.5rem 1.25rem}
+    .quote-box p{font-size:.95rem}
+    /* FOOTER */
+    footer{padding:.85rem 1rem;font-size:12px}
+    .footer-inner{flex-direction:column;text-align:center;gap:.4rem}
+    .footer-right{text-align:center}
+}
+
+/* 480 px — small phone */
+@media(max-width:480px){
+    nav{padding:.6rem .75rem}
+    .nav-brand{font-size:.78rem}
+    .nav-coa{height:26px}
+    .hero{padding:1.25rem .75rem 1rem}
+    .hero h1{font-size:1.1rem}
+    main{padding:.5rem}
+    .kpi-grid{grid-template-columns:1fr}
+    .kpi-value{font-size:1.35rem}
+    .kpi-card{padding:.75rem}
+    .chart-container{height:220px}
+    .chart-container-sm{height:180px}
+    .chart-container-lg{height:180px}
+    .data-table{font-size:.75rem}
+    .data-table th,.data-table td{padding:.3rem .5rem}
+    .stat-number{font-size:1.7rem}
+    .stat-box{padding:1rem .75rem}
+    .card{padding:.75rem}
+    .mini-grid{gap:.75rem}
+}

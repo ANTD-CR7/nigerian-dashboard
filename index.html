@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nigeria Economic Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+    <span class="nav-flag" style="display:none">🇳🇬 </span>Nigeria Economic Dashboard
+  </a>
+  <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+  <div class="nav-menu" id="nav-menu">
+    <ul class="nav-center">
+    <li><a href="index.html" class="active">Dashboard</a></li>
+    <li><a href="gdp.html">GDP</a></li>
+    <li><a href="inflation.html">Inflation</a></li>
+    <li><a href="exchange_rate.html">Exchange Rate</a></li>
+    <li><a href="interest_rate.html">Interest Rate</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-right">
+    <img src="https://calebuniversity.edu.ng/wp-content/uploads/2021/01/Caleb-University-Logo.png"
+         alt="Caleb University" class="nav-caleb"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
+    <span class="nav-fyp">FYP 2026</span>
+    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY · FYP 2026</span>
+  </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <h1>Nigerian Financial Data Aggregation System</h1>
+    <p class="hero-gold">Department of Computer Science · Caleb University, Imota · 2026</p>
+    <p class="hero-desc">Four core macroeconomic indicators — GDP, Inflation, Exchange Rate and Monetary Policy Rate — aggregated from the CBN, NBS and World Bank for January 2020 to December 2024.</p>
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-gdp">
+        <div class="kpi-label">GDP Growth Rate</div>
+        <div class="kpi-value" id="kpi-gdp">—</div>
+        <div class="kpi-meta" id="kpi-gdp-meta">Loading…</div>
+        <div id="kpi-gdp-trend"></div>
+      </div>
+      <div class="kpi-card kpi-inf">
+        <div class="kpi-label">Headline Inflation</div>
+        <div class="kpi-value" id="kpi-inf">—</div>
+        <div class="kpi-meta" id="kpi-inf-meta">Loading…</div>
+        <div id="kpi-inf-trend"></div>
+      </div>
+      <div class="kpi-card kpi-fx">
+        <div class="kpi-label">Exchange Rate (NGN/USD)</div>
+        <div class="kpi-value" id="kpi-fx">—</div>
+        <div class="kpi-meta" id="kpi-fx-meta">Loading…</div>
+        <div id="kpi-fx-trend"></div>
+      </div>
+      <div class="kpi-card kpi-mpr">
+        <div class="kpi-label">Monetary Policy Rate</div>
+        <div class="kpi-value" id="kpi-mpr">—</div>
+        <div class="kpi-meta" id="kpi-mpr-meta">Loading…</div>
+        <div id="kpi-mpr-trend"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="insight-box">
+    <h3>Key Insight — 2020–2024</h3>
+    <p>Nigeria's economy contracted in 2020 (COVID-19), recovered through 2021–2022, then faced surging inflation and a dramatic Naira depreciation following the June 2023 FX unification reform. The CBN responded with aggressive MPR hikes from 11.5% to 27.5% between 2022 and 2024.</p>
+  </div>
+
+  <div class="card">
+    <h2>Inflation vs Exchange Rate — The 2023 Divergence</h2>
+    <div class="chart-container-lg">
+      <p class="chart-loading" id="loading-dual">Loading…</p>
+      <canvas id="chart-dual" style="display:none"></canvas>
+    </div>
+    <div class="dual-legend">
+      <span><span class="dot" style="background:#DC2626"></span>Inflation Rate (%) — Left axis</span>
+      <span><span class="dot" style="background:#0066CC"></span>NGN/USD Exchange Rate — Right axis</span>
+    </div>
+    <p class="source-note">Source: NBS (inflation) · CBN (exchange rate) · Monthly averages 2020–2024</p>
+  </div>
+
+  <div class="mini-grid">
+    <div class="card">
+      <h2>GDP Growth Rate (%)</h2>
+      <div class="chart-container-sm">
+        <p class="chart-loading" id="loading-gdp">Loading…</p>
+        <canvas id="chart-gdp" style="display:none"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Inflation Rate (%)</h2>
+      <div class="chart-container-sm">
+        <p class="chart-loading" id="loading-inf">Loading…</p>
+        <canvas id="chart-inf" style="display:none"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Exchange Rate (NGN/USD)</h2>
+      <div class="chart-container-sm">
+        <p class="chart-loading" id="loading-fx">Loading…</p>
+        <canvas id="chart-fx" style="display:none"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Monetary Policy Rate (%)</h2>
+      <div class="chart-container-sm">
+        <p class="chart-loading" id="loading-mpr">Loading…</p>
+        <canvas id="chart-mpr" style="display:none"></canvas>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>🇳🇬 Data Sources: CBN · NBS · World Bank &nbsp;|&nbsp; For educational purposes only · Not financial advice</span>
+    <span class="footer-right">Final Year Project · Dept of Computer Science · Caleb University, Imota, Lagos · 2026</span>
+  </div>
+</footer>
+
+<script>
+const API = 'https://web-production-feb5f.up.railway.app';
+
+function fmt(d) {
+  return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+function badge(v) {
+  if (v < 0)  return '<span class="badge badge-red">Contraction</span>';
+  if (v < 10) return '<span class="badge badge-green">Growth</span>';
+  if (v < 20) return '<span class="badge badge-blue">High</span>';
+  return '<span class="badge badge-red">Very High</span>';
+}
+
+const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
+const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+
+function showChart(lid, cid) {
+  document.getElementById(lid).style.display = 'none';
+  document.getElementById(cid).style.display = 'block';
+}
+
+function setKPI(id, data, valFn, diffFn, badUp, source) {
+  const last = data[data.length - 1];
+  const prev = data.length > 1 ? data[data.length - 2].value : null;
+  document.getElementById('kpi-' + id).textContent = valFn(last.value);
+  document.getElementById('kpi-' + id + '-meta').textContent = fmt(last.obs_date) + ' · ' + source;
+  if (prev !== null) {
+    const diff = last.value - prev;
+    const isUp = diff > 0;
+    const bad  = (badUp && isUp) || (!badUp && !isUp);
+    document.getElementById('kpi-' + id + '-trend').innerHTML =
+      `<span class="trend-badge ${bad ? 'bad' : 'good'}">${isUp ? '▲' : '▼'} ${diffFn(Math.abs(diff))}</span>`;
+  }
+}
+
+function annotation(label, color, idx) {
+  return {
+    type: 'line', xMin: idx, xMax: idx,
+    borderColor: color + '66', borderWidth: 1.5, borderDash: [6, 4],
+    label: { display: true, content: label, position: 'start',
+      backgroundColor: color, color: '#fff',
+      font: { size: 11, weight: '600' }, padding: { x: 6, y: 3 }, borderRadius: 2 }
+  };
+}
+
+async function loadData() {
+  const [gdpRes, infRes, fxRes, mprRes] = await Promise.all([
+    fetch(`${API}/api/gdp`).then(r => r.json()),
+    fetch(`${API}/api/inflation`).then(r => r.json()),
+    fetch(`${API}/api/exchange-rate`).then(r => r.json()),
+    fetch(`${API}/api/interest-rate`).then(r => r.json()),
+  ]);
+
+  const gdp = gdpRes.gdp_growth;
+  const inf = infRes.data;
+  const fx  = fxRes.data;
+  const mpr = mprRes.data;
+
+  setKPI('gdp', gdp, v => `${v.toFixed(2)}%`, d => `${d.toFixed(2)}%`, false, 'NBS');
+  setKPI('inf', inf, v => `${v.toFixed(2)}%`, d => `${d.toFixed(2)}%`, true,  'NBS');
+  setKPI('mpr', mpr, v => `${v.toFixed(2)}%`, d => `${d.toFixed(2)}%`, true,  'CBN');
+
+  const lastFx = fx[fx.length - 1];
+  const prevFx = fx.length > 1 ? fx[fx.length - 2].value : null;
+  document.getElementById('kpi-fx').textContent = `₦${Number(lastFx.value).toFixed(0)}`;
+  document.getElementById('kpi-fx-meta').textContent = fmt(lastFx.obs_date) + ' · CBN';
+  if (prevFx !== null) {
+    const diff = lastFx.value - prevFx;
+    document.getElementById('kpi-fx-trend').innerHTML =
+      `<span class="trend-badge ${diff > 0 ? 'bad' : 'good'}">${diff > 0 ? '▲' : '▼'} ₦${Math.abs(diff).toFixed(0)}</span>`;
+  }
+
+  // Dual chart annotations
+  const covidIdx = inf.findIndex(d => d.obs_date.startsWith('2020-04'));
+  const fxIdx    = inf.findIndex(d => d.obs_date.startsWith('2023-06'));
+  const dualAnnots = {};
+  if (covidIdx >= 0) dualAnnots.covid    = annotation('COVID-19',       '#DC2626', covidIdx);
+  if (fxIdx    >= 0) dualAnnots.fxReform = annotation('FX Reform',      '#0066CC', fxIdx);
+
+  // Dual-axis chart
+  showChart('loading-dual', 'chart-dual');
+  new Chart(document.getElementById('chart-dual'), {
+    data: {
+      labels: inf.map(d => fmt(d.obs_date)),
+      datasets: [
+        { type:'line', data: inf.map(d => d.value), borderColor:'#DC2626', backgroundColor:'transparent',
+          borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y' },
+        { type:'line', data: fx.map(d => d.value),  borderColor:'#0066CC', backgroundColor:'transparent',
+          borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1' },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{display:false},
+        tooltip:{ ...TIP, callbacks:{
+          title: i => i[0].label,
+          label: ctx => ctx.datasetIndex === 0
+            ? `Inflation: ${ctx.parsed.y.toFixed(2)}%`
+            : `Rate: ₦${ctx.parsed.y.toFixed(0)} per USD`
+        }},
+        annotation:{ annotations: dualAnnots }
+      },
+      scales: {
+        y:  { ...SY, title:{display:true,text:'Inflation (%)',color:'#6B7280',font:{size:12}} },
+        y1: { ...SY, grid:{display:false}, title:{display:true,text:'NGN/USD',color:'#6B7280',font:{size:12}}, position:'right' },
+        x:  { ...SX, ticks:{...SX.ticks,maxTicksLimit:12} }
+      }
+    }
+  });
+
+  // GDP mini bar
+  showChart('loading-gdp', 'chart-gdp');
+  new Chart(document.getElementById('chart-gdp'), {
+    type:'bar',
+    data:{ labels:gdp.map(d => fmt(d.obs_date)), datasets:[{ data:gdp.map(d => d.value),
+      backgroundColor:gdp.map(d => d.value >= 0 ? '#006633' : '#DC2626'),
+      borderWidth:0, barPercentage:0.6 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP: ${ctx.parsed.y.toFixed(2)}%` }},
+        annotation:{ annotations:{ zero:{ type:'line', yMin:0, yMax:0, borderColor:'#9CA3AF', borderWidth:1, borderDash:[4,4] }}}
+      },
+      scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} }
+    }
+  });
+
+  // Inflation mini
+  showChart('loading-inf', 'chart-inf');
+  new Chart(document.getElementById('chart-inf'), {
+    type:'line',
+    data:{ labels:inf.map(d => fmt(d.obs_date)), datasets:[{ data:inf.map(d => d.value),
+      borderColor:'#DC2626', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`Inflation: ${ctx.parsed.y.toFixed(2)}%` }}
+      },
+      scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} }
+    }
+  });
+
+  // FX mini
+  showChart('loading-fx', 'chart-fx');
+  new Chart(document.getElementById('chart-fx'), {
+    type:'line',
+    data:{ labels:fx.map(d => fmt(d.obs_date)), datasets:[{ data:fx.map(d => d.value),
+      borderColor:'#0066CC', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`₦${ctx.parsed.y.toFixed(0)} per USD` }}
+      },
+      scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} }
+    }
+  });
+
+  // MPR mini
+  showChart('loading-mpr', 'chart-mpr');
+  new Chart(document.getElementById('chart-mpr'), {
+    type:'line',
+    data:{ labels:mpr.map(d => fmt(d.obs_date)), datasets:[{ data:mpr.map(d => d.value),
+      borderColor:'#C8A951', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, stepped:true }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`MPR: ${ctx.parsed.y.toFixed(2)}%` }}
+      },
+      scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX} }
+    }
+  });
+}
+
+loadData();
+</script>
+<script src="js/nav.js"></script>
+</body>
+</html>
