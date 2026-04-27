@@ -6,7 +6,8 @@
     --green:    #006633;
     --navy:     #1A3A5C;
     --gold:     #C8A951;
-    --bg:       #FFFFFF;
+    --bg:       #F8FAFC;
+    --caleb:    #0066CC;
     --section:  #F5F7FA;
     --text:     #1A1A1A;
     --muted:    #6B7280;
@@ -20,7 +21,7 @@
 body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
 
 /* ===== NAV — gradient with institutional logos ===== */
-nav{background:#006633;border-bottom:3px solid #C8A951;padding:0 1.5rem;display:flex;align-items:stretch;justify-content:space-between;height:65px;position:sticky;top:0;z-index:100;gap:.5rem}
+nav{background:linear-gradient(90deg,#006633 50%,#0066CC 50%);border-bottom:3px solid #C8A951;padding:0 1.5rem;display:flex;align-items:stretch;justify-content:space-between;height:65px;position:sticky;top:0;z-index:100;gap:.5rem}
 .nav-brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;font-size:.95rem;font-weight:700;color:#fff;letter-spacing:-.2px;white-space:nowrap;flex-shrink:0}
 .nav-coa{height:45px;width:auto;object-fit:contain;flex-shrink:0}
 .nav-flag{font-size:1.1rem}
@@ -50,7 +51,11 @@ nav{background:#006633;border-bottom:3px solid #C8A951;padding:0 1.5rem;display:
 
 /* ===== KPI GRID (hero & standalone) ===== */
 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:rgba(255,255,255,.25)}
-.kpi-card{background:#fff;padding:1.25rem 1.5rem}
+.kpi-card{background:#fff;padding:1.25rem 1.5rem;border-left:4px solid transparent}
+.kpi-card.kpi-gdp{border-left-color:#006633}
+.kpi-card.kpi-inf{border-left-color:#CC0000}
+.kpi-card.kpi-fx {border-left-color:#0066CC}
+.kpi-card.kpi-mpr{border-left-color:#C8A951}
 .kpi-label{font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.35rem}
 .kpi-value{font-size:2rem;font-weight:700;color:var(--navy);line-height:1;margin-bottom:.3rem;letter-spacing:-1px}
 .kpi-meta{font-size:12px;color:var(--muted);margin-bottom:.35rem}
@@ -62,12 +67,15 @@ nav{background:#006633;border-bottom:3px solid #C8A951;padding:0 1.5rem;display:
 main{flex:1;max-width:1140px;margin:0 auto;padding:2rem 1.5rem;width:100%}
 
 /* ===== PAGE HEADER ===== */
-.page-header{margin-bottom:1.75rem;padding-bottom:.85rem;border-bottom:2px solid var(--border)}
+.page-header{margin-bottom:1.75rem;padding-bottom:.85rem;border-bottom:3px solid var(--border)}
 .page-header h1{font-size:22px;font-weight:700;color:var(--navy);margin-bottom:.2rem}
 .page-header p{font-size:14px;color:var(--muted)}
+.page-header-green{border-bottom-color:#006633}
+.page-header-blue{border-bottom-color:#0066CC}
 
 /* ===== ECB STAT BOX ===== */
 .stat-box{background:var(--section);border:1px solid var(--border);border-left:4px solid var(--green);padding:1.75rem 2rem;margin-bottom:1.75rem}
+.stat-box-blue{border-left-color:#0066CC}
 .stat-number{font-size:3rem;font-weight:800;color:var(--navy);line-height:1;margin-bottom:.3rem;letter-spacing:-2px}
 .stat-label{font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.6rem}
 .stat-context{font-size:14px;color:var(--muted);line-height:1.65;max-width:680px}
@@ -99,6 +107,8 @@ main{flex:1;max-width:1140px;margin:0 auto;padding:2rem 1.5rem;width:100%}
 .data-table tr:last-child td{border-bottom:none}
 .data-table .num{font-variant-numeric:tabular-nums;text-align:right;font-weight:700}
 .data-table .src{font-size:11px;color:var(--muted);white-space:nowrap}
+.data-table.th-green th{background:#006633}
+.data-table.th-blue  th{background:#0066CC}
 
 /* ===== BADGES ===== */
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700}
@@ -124,7 +134,7 @@ main{flex:1;max-width:1140px;margin:0 auto;padding:2rem 1.5rem;width:100%}
 .quote-box p{font-size:1.05rem;line-height:1.75;font-style:italic;position:relative;padding-left:1rem}
 
 /* ===== FOOTER — two-column, navy ===== */
-footer{background:var(--navy);border-top:3px solid var(--gold);color:rgba(255,255,255,.82);padding:1.25rem 2rem;margin-top:auto;font-size:13px}
+footer{background:linear-gradient(90deg,#006633 50%,#0066CC 50%);border-top:3px solid var(--gold);color:rgba(255,255,255,.82);padding:1.25rem 2rem;margin-top:auto;font-size:13px}
 .footer-inner{max-width:1140px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
 .footer-right{text-align:right}
 
@@ -152,7 +162,7 @@ footer{background:var(--navy);border-top:3px solid var(--gold);color:rgba(255,25
         top:100%;
         left:0;
         right:0;
-        background:#006633;
+        background:linear-gradient(90deg,#006633 50%,#0066CC 50%);
         border-bottom:3px solid #C8A951;
         z-index:98;
         padding:.25rem 0;
