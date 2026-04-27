@@ -352,3 +352,8 @@ h2 { font-size: clamp(1rem, 3vw, 1.4rem); }
 @media(max-width:768px){
   .mini-grid{grid-template-columns:1fr !important}
 }
+
+/* Hide Caleb badge on mobile */
+@media(max-width:768px){
+  .caleb-badge{display:none !important}
+}
