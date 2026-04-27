@@ -305,3 +305,50 @@ h2 { font-size: clamp(1rem, 3vw, 1.4rem); }
     .card{padding:.75rem}
     .mini-grid{gap:.75rem}
 }
+
+/* ===== MOBILE LAYOUT FIXES ===== */
+
+/* KPI cards — 2 columns on mobile */
+@media(max-width:768px){
+  .hero-kpis{grid-template-columns:1fr 1fr !important;gap:.6rem}
+  .hero-kpi{padding:.75rem}
+  .hk-value{font-size:1.4rem;letter-spacing:-.5px}
+  .hk-label{font-size:.65rem}
+  .hk-sub{font-size:.65rem}
+}
+
+/* Hero section — reduced padding and font sizes */
+@media(max-width:768px){
+  .hero{padding:1rem .75rem}
+  .hero h1{font-size:1.1rem;margin-bottom:.25rem}
+  .hero p{font-size:.8rem;margin-bottom:.75rem}
+  .hero-badges{display:none}
+}
+
+/* Navbar — smaller Caleb badge and logos */
+@media(max-width:768px){
+  .caleb-badge{font-size:.65rem;padding:.2rem .5rem}
+  .nav-logo{height:28px !important}
+  .nav-coat{height:28px !important}
+  nav{padding:.5rem .75rem;gap:.3rem}
+  .nav-brand{font-size:.78rem}
+}
+
+/* Summary cards on inner pages — 2 columns */
+@media(max-width:768px){
+  .summary-grid{grid-template-columns:1fr 1fr !important;gap:.6rem}
+  .summary-card .value{font-size:1.4rem}
+  .summary-card{padding:.75rem}
+}
+
+/* Main content padding */
+@media(max-width:768px){
+  main{padding:.75rem .6rem}
+  .card{padding:.85rem;margin-bottom:.75rem}
+  .insight-box{padding:.85rem;font-size:.82rem}
+}
+
+/* Mini chart grid — 1 column */
+@media(max-width:768px){
+  .mini-grid{grid-template-columns:1fr !important}
+}
