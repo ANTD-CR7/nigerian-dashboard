@@ -84,7 +84,7 @@
     </div>
     <div class="dual-legend">
       <span><span class="dot" style="background:#DC2626"></span>Inflation Rate (%) — Left axis</span>
-      <span><span class="dot" style="background:#1A3A5C"></span>NGN/USD Exchange Rate — Right axis</span>
+      <span><span class="dot" style="background:#0066CC"></span>NGN/USD Exchange Rate — Right axis</span>
     </div>
     <p class="source-note">Source: NBS (inflation) · CBN (exchange rate) · Monthly averages 2020–2024</p>
   </div>
@@ -141,7 +141,7 @@ function badge(v) {
   return '<span class="badge badge-red">Very High</span>';
 }
 
-const TIP = { backgroundColor:'#fff', titleColor:'#1A3A5C', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
+const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
 const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
 const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
 
@@ -206,7 +206,7 @@ async function loadData() {
   const fxIdx    = inf.findIndex(d => d.obs_date.startsWith('2023-06'));
   const dualAnnots = {};
   if (covidIdx >= 0) dualAnnots.covid    = annotation('COVID-19',       '#DC2626', covidIdx);
-  if (fxIdx    >= 0) dualAnnots.fxReform = annotation('FX Reform',      '#1A3A5C', fxIdx);
+  if (fxIdx    >= 0) dualAnnots.fxReform = annotation('FX Reform',      '#0066CC', fxIdx);
 
   // Dual-axis chart
   showChart('loading-dual', 'chart-dual');
@@ -216,7 +216,7 @@ async function loadData() {
       datasets: [
         { type:'line', data: inf.map(d => d.value), borderColor:'#DC2626', backgroundColor:'transparent',
           borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y' },
-        { type:'line', data: fx.map(d => d.value),  borderColor:'#1A3A5C', backgroundColor:'transparent',
+        { type:'line', data: fx.map(d => d.value),  borderColor:'#0066CC', backgroundColor:'transparent',
           borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1' },
       ]
     },
@@ -277,7 +277,7 @@ async function loadData() {
   new Chart(document.getElementById('chart-fx'), {
     type:'line',
     data:{ labels:fx.map(d => fmt(d.obs_date)), datasets:[{ data:fx.map(d => d.value),
-      borderColor:'#1A3A5C', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
+      borderColor:'#0066CC', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
     options:{
       responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{display:false},

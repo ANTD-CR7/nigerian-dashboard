@@ -86,7 +86,7 @@ function badge(v) {
   return '<span class="badge badge-red">Very High</span>';
 }
 
-const TIP = { backgroundColor:'#fff', titleColor:'#1A3A5C', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
+const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
 const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
 const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
 
@@ -113,7 +113,7 @@ async function load() {
   const fxIdx    = data.findIndex(d => d.obs_date.startsWith('2023-06'));
   const annots   = {};
   if (covidIdx >= 0) annots.covid    = annotLine('COVID-19 (Jan 2020)', '#DC2626', covidIdx);
-  if (fxIdx    >= 0) annots.fxReform = annotLine('FX Reform (Jun 2023)', '#1A3A5C', fxIdx);
+  if (fxIdx    >= 0) annots.fxReform = annotLine('FX Reform (Jun 2023)', '#0066CC', fxIdx);
 
   document.getElementById('loading-inf').style.display = 'none';
   document.getElementById('chart-inf').style.display   = 'block';
