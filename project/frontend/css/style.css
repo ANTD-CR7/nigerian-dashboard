@@ -310,7 +310,7 @@ h2 { font-size: clamp(1rem, 3vw, 1.4rem); }
 
 /* KPI cards — 2 columns on mobile */
 @media(max-width:768px){
-  .hero-kpis{grid-template-columns:1fr 1fr !important;gap:.6rem}
+  .kpi-grid{grid-template-columns:1fr 1fr !important;gap:.6rem}
   .hero-kpi{padding:.75rem}
   .hk-value{font-size:1.4rem;letter-spacing:-.5px}
   .hk-label{font-size:.65rem}
@@ -355,5 +355,5 @@ h2 { font-size: clamp(1rem, 3vw, 1.4rem); }
 
 /* Hide Caleb badge on mobile */
 @media(max-width:768px){
-  .caleb-badge{display:none !important}
+  .caleb-badge,.nav-right,.nav-fyp,.nav-caleb{display:none !important}
 }
