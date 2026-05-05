@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="shortcut icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics  -  Nigeria Economic Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+    <span class="nav-flag" style="display:none">Nigeria </span>Nigeria Economic Dashboard
+  </a>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-center nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="gdp.html">GDP</a></li>
+    <li><a href="inflation.html">Inflation</a></li>
+    <li><a href="exchange_rate.html">Exchange Rate</a></li>
+    <li><a href="interest_rate.html">Interest Rate</a></li>
+    <li><a href="reserves.html">Reserves</a></li>
+    <li><a href="multicurrency.html">Multi-Currency</a></li>
+    <li><a href="analytics.html" class="active">Analytics</a></li>
+    <li><a href="api_docs.html">API Docs</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-right caleb-badge">
+    <img src="https://calebuniversity.edu.ng/wp-content/uploads/2021/01/Caleb-University-Logo.png"
+         alt="Caleb University" class="nav-caleb"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
+    <span class="nav-fyp">FYP 2026</span>
+    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY  -  FYP 2026</span>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header page-header-green">
+    <h1>Analytics and Insights</h1>
+    <p>Cross-indicator analysis, correlation, and trend visualisation  -  2020-2026</p>
+  </div>
+
+  <div class="card">
+    <h2>Year-over-Year Average Inflation  -  Annual Comparison</h2>
+    <div class="chart-container">
+      <p class="chart-loading" id="loading-yoy">Loading...</p>
+      <canvas id="chart-yoy" style="display:none"></canvas>
+    </div>
+    <p class="source-note">Source: NBS Consumer Price Index  -  Annual average of monthly headline inflation</p>
+  </div>
+
+  <div class="card">
+    <h2>Correlation Analysis  -  Inflation vs Exchange Rate</h2>
+    <div id="pearson-result" class="stat-box" style="margin-bottom:0">
+      <p style="color:#6B7280">Computing Pearson correlation...</p>
+    </div>
+    <p class="source-note" style="margin-top:.75rem">Pearson r calculated on aligned monthly observations. NBS inflation vs CBN NGN/USD central rate.</p>
+  </div>
+
+  <div class="card">
+    <h2>FX Reserves vs Exchange Rate  -  Inverse Relationship</h2>
+    <div class="chart-container-lg">
+      <p class="chart-loading" id="loading-dual">Loading...</p>
+      <canvas id="chart-dual" style="display:none"></canvas>
+    </div>
+    <div class="dual-legend">
+      <span><span class="dot" style="background:#0066CC"></span>NGN/USD Exchange Rate  -  Left axis</span>
+      <span><span class="dot" style="background:#006633"></span>FX Reserves (USD Bn)  -  Right axis</span>
+    </div>
+    <p class="source-note">Source: CBN  -  As reserves fall, the Naira typically weakens; as reserves rise, the rate stabilises.</p>
+  </div>
+
+  <div class="card">
+    <h2>GDP Growth Trend  -  Quarterly</h2>
+    <div class="chart-container">
+      <p class="chart-loading" id="loading-gdp">Loading...</p>
+      <canvas id="chart-gdp" style="display:none"></canvas>
+    </div>
+    <p class="source-note">Source: NBS Quarterly GDP Report  -  Green = growth, Red = contraction</p>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>Nigeria Data Sources: CBN  -  NBS  -  World Bank  |  For educational purposes only  -  Not financial advice</span>
+    <span class="footer-right">Final Year Project  -  Dept of Computer Science  -  Caleb University, Imota, Lagos  -  2026</span>
+  </div>
+</footer>
+
+<script>
+const API = window.location.protocol === 'file:'
+  ? 'https://web-production-feb5f.up.railway.app'
+  : window.location.origin;
+
+function fmt(d) {
+  return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+
+const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
+const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+
+function pearson(x, y) {
+  const n = Math.min(x.length, y.length);
+  if (n < 2) return 0;
+  const xs = x.slice(0, n), ys = y.slice(0, n);
+  const xm = xs.reduce((a,b) => a+b, 0) / n;
+  const ym = ys.reduce((a,b) => a+b, 0) / n;
+  let num = 0, dx2 = 0, dy2 = 0;
+  for (let i = 0; i < n; i++) {
+    const dx = xs[i] - xm, dy = ys[i] - ym;
+    num += dx * dy; dx2 += dx*dx; dy2 += dy*dy;
+  }
+  return (dx2 > 0 && dy2 > 0) ? num / Math.sqrt(dx2 * dy2) : 0;
+}
+
+async function load() {
+  const result = await fetch(`${API}/api/analytics`).then(r => r.json());
+  const inf = result.inflation     || [];
+  const fx  = result.exchange_rate || [];
+  const res = result.fx_reserves   || [];
+  const gdp = result.gdp           || [];
+
+  // 1. YoY average inflation bar chart
+  const yearly = {};
+  inf.forEach(d => {
+    const yr = d.obs_date.substring(0, 4);
+    if (!yearly[yr]) yearly[yr] = [];
+    yearly[yr].push(d.value);
+  });
+  const years  = Object.keys(yearly).sort();
+  const avgInf = years.map(yr => yearly[yr].reduce((a,b) => a+b, 0) / yearly[yr].length);
+
+  document.getElementById('loading-yoy').style.display = 'none';
+  const c1 = document.getElementById('chart-yoy');
+  c1.style.display = 'block';
+  new Chart(c1, {
+    type: 'bar',
+    data: { labels: years, datasets: [{ label: 'Annual Avg Inflation (%)', data: avgInf,
+      backgroundColor: avgInf.map(v => v > 20 ? '#DC2626' : v > 10 ? '#C8A951' : '#006633'),
+      borderWidth: 0, barPercentage: 0.6 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { ...TIP, callbacks: { title: i => i[0].label + ' average', label: ctx => `Avg Inflation: ${ctx.parsed.y.toFixed(2)}%` }}},
+      scales: {
+        y: { ...SY, title: { display:true, text:'Inflation (%)', color:'#6B7280', font:{size:12} } },
+        x: { ...SX }
+      }
+    }
+  });
+
+  // 2. Pearson correlation
+  const fxByDate = {};
+  fx.forEach(d => { fxByDate[d.obs_date] = d.value; });
+  const aligned = inf.filter(d => fxByDate[d.obs_date] !== undefined);
+  const r   = pearson(aligned.map(d => d.value), aligned.map(d => fxByDate[d.obs_date]));
+  const rAbs = Math.abs(r);
+  const strength = rAbs > 0.8 ? 'Strong' : rAbs > 0.5 ? 'Moderate' : 'Weak';
+  const dir = r > 0 ? 'Positive' : 'Negative';
+  document.getElementById('pearson-result').innerHTML = `
+    <div class="stat-number" style="font-size:2.5rem;color:${r > 0.8 ? '#DC2626' : '#006633'}">${r.toFixed(4)}</div>
+    <div class="stat-label">Pearson Correlation: Inflation vs Exchange Rate</div>
+    <p class="stat-context">${strength} ${dir} Relationship (n = ${aligned.length} paired monthly observations).
+    The June 2023 FX reform was the primary driver of Nigeria's inflation surge, creating a near lock-step movement between the two indicators.</p>`;
+
+  // 3. Reserves vs Exchange Rate dual axis
+  document.getElementById('loading-dual').style.display = 'none';
+  const c3 = document.getElementById('chart-dual');
+  c3.style.display = 'block';
+  const fxLabels = fx.map(d => fmt(d.obs_date));
+  const resByDate = {};
+  res.forEach(d => { resByDate[d.obs_date] = d.value; });
+  new Chart(c3, {
+    data: {
+      labels: fxLabels,
+      datasets: [
+        { type:'line', label:'NGN/USD Rate',       data: fx.map(d => d.value),           borderColor:'#0066CC', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y' },
+        { type:'line', label:'FX Reserves (USD Bn)',data: fx.map(d => resByDate[d.obs_date] || null), borderColor:'#006633', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1' },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { display:false },
+        tooltip: { ...TIP, callbacks: { title: i => i[0].label, label: ctx => ctx.datasetIndex === 0 ? `Rate: NGN ${ctx.parsed.y.toFixed(0)}` : `Reserves: $${ctx.parsed.y?.toFixed(1)}B` }}
+      },
+      scales: {
+        y:  { ...SY, title:{ display:true, text:'NGN/USD',      color:'#6B7280', font:{size:12} } },
+        y1: { ...SY, grid:{display:false}, title:{ display:true, text:'USD Billions', color:'#6B7280', font:{size:12} }, position:'right' },
+        x:  { ...SX, ticks:{ ...SX.ticks, maxTicksLimit:14 } }
+      }
+    }
+  });
+
+  // 4. GDP trend bar
+  document.getElementById('loading-gdp').style.display = 'none';
+  const c4 = document.getElementById('chart-gdp');
+  c4.style.display = 'block';
+  new Chart(c4, {
+    type: 'bar',
+    data: { labels: gdp.map(d => fmt(d.obs_date)), datasets: [{ label:'GDP Growth (%)', data: gdp.map(d => d.value),
+      backgroundColor: gdp.map(d => d.value >= 0 ? '#006633' : '#DC2626'),
+      borderWidth:0, barPercentage:0.6 }] },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{display:false},
+        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP Growth: ${ctx.parsed.y.toFixed(2)}%` }},
+        annotation:{ annotations:{ zero:{ type:'line', yMin:0, yMax:0, borderColor:'#9CA3AF', borderWidth:1, borderDash:[4,4] }}}},
+      scales: {
+        y: { ...SY, title:{ display:true, text:'Growth (%)', color:'#6B7280', font:{size:12} } },
+        x: { ...SX }
+      }
+    }
+  });
+}
+
+load();
+</script>
+<script src="js/nav.js"></script>
+</body>
+</html>
