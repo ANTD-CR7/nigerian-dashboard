@@ -416,13 +416,16 @@ def get_coverage(
 
 @app.get("/api/fx-reserves")
 def get_fx_reserves():
-    data = supabase.table('observations').select('*').eq('indicator_id', 'fx_reserves').order('obs_date').execute()
-    return {"data": data.data}
+    gross     = supabase.table('observations').select('*').eq('indicator_id', 'fx_reserves').order('obs_date').execute()
+    liquid    = supabase.table('observations').select('*').eq('indicator_id', 'reserves_liquid').order('obs_date').execute()
+    blocked   = supabase.table('observations').select('*').eq('indicator_id', 'reserves_blocked').order('obs_date').execute()
+    block_pct = supabase.table('observations').select('*').eq('indicator_id', 'reserves_block_pct').order('obs_date').execute()
+    return {"gross": gross.data, "liquid": liquid.data, "blocked": blocked.data, "block_pct": block_pct.data}
 
 
 @app.get("/api/currency-circulation")
 def get_currency_circulation():
-    data = supabase.table('observations').select('*').eq('indicator_id', 'currency_circulation').order('obs_date').execute()
+    data = supabase.table('observations').select('*').eq('indicator_id', 'currency_circulation_full').order('obs_date').execute()
     return {"data": data.data}
 
 
@@ -454,6 +457,50 @@ def get_analytics():
         "gdp":           gdp.data,
         "mpr":           mpr.data,
     }
+
+
+@app.get("/api/nfem")
+def get_nfem():
+    closing  = supabase.table('observations').select('*').eq('indicator_id', 'nfem_closing').order('obs_date').execute()
+    highest  = supabase.table('observations').select('*').eq('indicator_id', 'nfem_highest').order('obs_date').execute()
+    lowest   = supabase.table('observations').select('*').eq('indicator_id', 'nfem_lowest').order('obs_date').execute()
+    weighted = supabase.table('observations').select('*').eq('indicator_id', 'nfem_weighted_avg').order('obs_date').execute()
+    return {"closing": closing.data, "highest": highest.data, "lowest": lowest.data, "weighted_avg": weighted.data}
+
+
+@app.get("/api/multicurrency")
+def get_multicurrency():
+    currencies = ['usd', 'gbp', 'eur', 'cny', 'jpy', 'chf', 'zar', 'aed', 'sar', 'sdr', 'cfa', 'waua']
+    result = {}
+    for c in currencies:
+        buying  = supabase.table('observations').select('*').eq('indicator_id', f'{c}_buying').order('obs_date').execute()
+        central = supabase.table('observations').select('*').eq('indicator_id', f'{c}_central').order('obs_date').execute()
+        selling = supabase.table('observations').select('*').eq('indicator_id', f'{c}_selling').order('obs_date').execute()
+        result[c] = {'buying': buying.data, 'central': central.data, 'selling': selling.data}
+    return result
+
+
+@app.get("/api/gdp-sectors")
+def get_gdp_sectors():
+    sectors = ['agriculture', 'industry', 'services', 'manufacturing', 'miningAndQuarrying',
+               'construction', 'trade', 'financeAndInsurance', 'informationAndCommunication',
+               'realEstate', 'education', 'publicAdministration']
+    result = {}
+    for s in sectors:
+        data = supabase.table('observations').select('*').eq('indicator_id', f'gdp_{s}').order('obs_date').execute()
+        result[s] = data.data
+    return result
+
+
+@app.get("/api/cbn-balance-sheet")
+def get_cbn_balance_sheet():
+    indicators = ['cbn_total_assets', 'cbn_total_liabilities', 'cbn_gold',
+                  'cbn_currency_issued', 'cbn_govt_deposits', 'cbn_bankers_deposits']
+    result = {}
+    for ind in indicators:
+        data = supabase.table('observations').select('*').eq('indicator_id', ind).order('obs_date').execute()
+        result[ind.replace('cbn_', '')] = data.data
+    return result
 
 
 @app.get("/api/analytics/{indicator_id}")

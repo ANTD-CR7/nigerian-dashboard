@@ -45,35 +45,57 @@
 <main>
   <div class="page-header page-header-green">
     <h1>Foreign Exchange Reserves</h1>
-    <p>Monthly gross external reserves  -  Central Bank of Nigeria  -  2020-2026</p>
+    <p>Gross, liquid and blocked reserves  -  Central Bank of Nigeria  -  2020-2026</p>
   </div>
 
   <div class="stat-box">
-    <div class="stat-number" id="stat-res">-</div>
-    <div class="stat-label">Latest FX Reserves (USD Billions)</div>
-    <p class="stat-context" id="stat-res-date">Loading latest reserve data...</p>
+    <div class="stat-number" id="stat-gross">-</div>
+    <div class="stat-label">Gross External Reserves (USD Billions)</div>
+    <p class="stat-context" id="stat-date">Loading latest reserve figures...</p>
   </div>
 
   <div class="insight-box">
     <h3>Key Insight  -  2020-2026</h3>
-    <p>Nigeria's foreign reserves fell from $38B in 2020 to a low of $32.8B in December 2023 before recovering strongly to $49.7B by March 2026 driven by improved oil revenues and CBN FX policy reforms.</p>
+    <p>Nigeria's gross foreign reserves fell from $38B in January 2020 to a low of $32.8B in December 2023, then recovered strongly to $49.7B by March 2026 driven by improved oil revenues and CBN FX policy reforms. The blocked reserves represent assets under lien or encumbrance that cannot be freely used.</p>
   </div>
 
   <div class="card">
-    <h2>FX Reserves  -  Monthly (USD Billions)</h2>
+    <h2>Gross and Liquid Reserves  -  2020-2026 (USD Billions)</h2>
     <div class="chart-container-lg">
-      <p class="chart-loading" id="loading-chart">Loading...</p>
-      <canvas id="chart-res" style="display:none"></canvas>
+      <p class="chart-loading" id="loading-main">Loading...</p>
+      <canvas id="chart-main" style="display:none"></canvas>
     </div>
-    <p class="source-note">Source: CBN Gross External Reserves  -  Monthly data 2020-2026</p>
+    <div class="dual-legend">
+      <span><span class="dot" style="background:#0066CC"></span>Gross Reserves (USD Bn)</span>
+      <span><span class="dot" style="background:#006633"></span>Liquid Reserves (USD Bn)</span>
+    </div>
+    <p class="source-note">Source: CBN Foreign Exchange Reserves Data</p>
   </div>
 
   <div class="card">
-    <h2>Monthly Reserves Data Table</h2>
+    <h2>Blocked Reserves and Block Percentage</h2>
+    <div class="chart-container">
+      <p class="chart-loading" id="loading-blocked">Loading...</p>
+      <canvas id="chart-blocked" style="display:none"></canvas>
+    </div>
+    <p class="source-note">Source: CBN Foreign Exchange Reserves Data  -  Blocked = assets under lien/encumbrance</p>
+  </div>
+
+  <div class="card">
+    <h2>Monthly Reserves Data</h2>
     <div id="loading-table" class="loading">Loading data...</div>
     <div class="table-wrapper">
       <table class="data-table th-green" id="res-table" style="display:none">
-        <thead><tr><th>Month</th><th class="num">Reserves (USD Bn)</th><th>Month-on-Month Change</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th class="num">Gross (USD Bn)</th>
+            <th class="num">Liquid (USD Bn)</th>
+            <th class="num">Blocked (USD Bn)</th>
+            <th class="num">Block %</th>
+            <th>MoM Change</th>
+          </tr>
+        </thead>
         <tbody id="res-tbody"></tbody>
       </table>
     </div>
@@ -96,52 +118,108 @@ function fmt(d) {
   return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
-const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
+const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:true };
 const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
 const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
 
-async function load() {
-  const res  = await fetch(`${API}/api/fx-reserves`).then(r => r.json());
-  const data = res.data || [];
+function latestOf(arr) {
+  return arr && arr.length > 0 ? arr[arr.length - 1] : null;
+}
 
-  if (data.length > 0) {
-    const latest = data[data.length - 1];
-    document.getElementById('stat-res').textContent = `$${Number(latest.value).toFixed(2)}B`;
-    document.getElementById('stat-res-date').textContent = fmt(latest.obs_date) + '  -  CBN';
+async function load() {
+  const res   = await fetch(`${API}/api/fx-reserves`).then(r => r.json());
+  const gross = res.gross     || [];
+  const liquid = res.liquid   || [];
+  const blocked = res.blocked || [];
+  const blockPct = res.block_pct || [];
+
+  const latestGross = latestOf(gross);
+  if (latestGross) {
+    document.getElementById('stat-gross').textContent = `$${Number(latestGross.value).toFixed(2)}B`;
+    document.getElementById('stat-date').textContent = fmt(latestGross.obs_date) + '  -  CBN Gross External Reserves';
   }
 
-  document.getElementById('loading-chart').style.display = 'none';
-  const canvas = document.getElementById('chart-res');
-  canvas.style.display = 'block';
-  new Chart(canvas, {
-    type: 'line',
+  // Chart 1: Gross + Liquid
+  document.getElementById('loading-main').style.display = 'none';
+  const c1 = document.getElementById('chart-main');
+  c1.style.display = 'block';
+  new Chart(c1, {
     data: {
-      labels: data.map(d => fmt(d.obs_date)),
-      datasets: [{ label: 'FX Reserves (USD Bn)', data: data.map(d => d.value),
-        borderColor: '#006633', backgroundColor: 'rgba(0,102,51,0.06)',
-        borderWidth: 2.5, pointRadius: 0, fill: true, tension: 0.3 }]
+      labels: gross.map(d => fmt(d.obs_date)),
+      datasets: [
+        { type:'line', label:'Gross Reserves', data: gross.map(d => d.value),
+          borderColor:'#0066CC', backgroundColor:'rgba(0,102,204,0.05)',
+          borderWidth:2.5, pointRadius:0, fill:true, tension:0.3 },
+        { type:'line', label:'Liquid Reserves', data: liquid.map(d => d.value),
+          borderColor:'#006633', backgroundColor:'rgba(0,102,51,0.05)',
+          borderWidth:2.5, pointRadius:0, fill:true, tension:0.3 },
+      ]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
+      responsive:true, maintainAspectRatio:false,
       plugins: {
-        legend: { display: false },
-        tooltip: { ...TIP, callbacks: { title: i => i[0].label, label: ctx => `Reserves: $${ctx.parsed.y.toFixed(2)}B` }}
+        legend: { display:true, position:'top' },
+        tooltip: { ...TIP, callbacks: { title:i=>i[0].label, label:ctx=>`${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}B` }}
       },
       scales: {
-        y: { ...SY, title: { display:true, text:'USD Billions', color:'#6B7280', font:{size:12} } },
-        x: { ...SX, ticks: { ...SX.ticks, maxTicksLimit: 14 } }
+        y: { ...SY, title:{display:true,text:'USD Billions',color:'#6B7280',font:{size:12}} },
+        x: { ...SX, ticks:{...SX.ticks,maxTicksLimit:14} }
       }
     }
   });
 
+  // Chart 2: Blocked + Block Pct (dual axis)
+  document.getElementById('loading-blocked').style.display = 'none';
+  const c2 = document.getElementById('chart-blocked');
+  c2.style.display = 'block';
+  new Chart(c2, {
+    data: {
+      labels: blocked.map(d => fmt(d.obs_date)),
+      datasets: [
+        { type:'bar', label:'Blocked (USD Bn)', data: blocked.map(d => d.value),
+          backgroundColor:'rgba(220,38,38,0.6)', borderWidth:0, barPercentage:0.7, yAxisID:'y' },
+        { type:'line', label:'Block %', data: blockPct.map(d => d.value),
+          borderColor:'#C8A951', backgroundColor:'transparent',
+          borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1' },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { display:true, position:'top' },
+        tooltip: { ...TIP, callbacks: { title:i=>i[0].label, label:ctx=>ctx.datasetIndex===0?`Blocked: $${ctx.parsed.y.toFixed(2)}B`:`Block %: ${ctx.parsed.y.toFixed(2)}%` }}
+      },
+      scales: {
+        y:  { ...SY, title:{display:true,text:'USD Billions',color:'#6B7280',font:{size:12}} },
+        y1: { ...SY, grid:{display:false}, title:{display:true,text:'Block %',color:'#6B7280',font:{size:12}}, position:'right' },
+        x:  { ...SX, ticks:{...SX.ticks,maxTicksLimit:14} }
+      }
+    }
+  });
+
+  // Table — align all series by date
+  const grossMap = {}, liquidMap = {}, blockedMap = {}, pctMap = {};
+  gross.forEach(d => grossMap[d.obs_date] = d.value);
+  liquid.forEach(d => liquidMap[d.obs_date] = d.value);
+  blocked.forEach(d => blockedMap[d.obs_date] = d.value);
+  blockPct.forEach(d => pctMap[d.obs_date] = d.value);
+  const dates = [...new Set([...gross.map(d=>d.obs_date)])].sort();
+
   const tbody = document.getElementById('res-tbody');
-  data.forEach((d, i) => {
-    const prev = i > 0 ? data[i-1].value : null;
-    const diff = prev !== null ? d.value - prev : null;
+  dates.forEach((dt, i) => {
+    const g = grossMap[dt], prev = i > 0 ? grossMap[dates[i-1]] : null;
+    const diff = (g != null && prev != null) ? g - prev : null;
     const changeHtml = diff === null ? '-'
-      : diff > 0 ? `<span style="color:#006633">+$${diff.toFixed(2)}B</span>`
+      : diff >= 0 ? `<span style="color:#006633">+$${diff.toFixed(2)}B</span>`
       : `<span style="color:#DC2626">-$${Math.abs(diff).toFixed(2)}B</span>`;
-    tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">$${Number(d.value).toFixed(2)}B</td><td>${changeHtml}</td></tr>`;
+    tbody.innerHTML += `<tr>
+      <td>${fmt(dt)}</td>
+      <td class="num">${g != null ? '$'+Number(g).toFixed(2)+'B' : '-'}</td>
+      <td class="num">${liquidMap[dt] != null ? '$'+Number(liquidMap[dt]).toFixed(2)+'B' : '-'}</td>
+      <td class="num">${blockedMap[dt] != null ? '$'+Number(blockedMap[dt]).toFixed(2)+'B' : '-'}</td>
+      <td class="num">${pctMap[dt] != null ? Number(pctMap[dt]).toFixed(2)+'%' : '-'}</td>
+      <td>${changeHtml}</td>
+    </tr>`;
   });
   document.getElementById('loading-table').style.display = 'none';
   document.getElementById('res-table').style.display = 'table';
