@@ -45,45 +45,65 @@
 <main>
   <div class="page-header page-header-blue">
     <h1>Multi-Currency Exchange Rates</h1>
-    <p>Buying, central and selling rates for 12 currencies against the Naira  -  CBN  -  2020-2026</p>
+    <p>CBN buying, central and selling rates for 12 currencies  -  2020-2026</p>
   </div>
 
   <div class="insight-box">
-    <h3>Key Insight  -  FX Unification</h3>
-    <p>The June 2023 CBN foreign exchange unification reform caused the Naira to depreciate simultaneously against all major currencies. The NGN/USD rate moved from approximately NGN 461 to over NGN 1,600 within months. By April 2026 the Naira had partially stabilised at approximately NGN 1,361 per Dollar.</p>
+    <h3>Key Insight  -  FX Unification Reform</h3>
+    <p>The June 2023 CBN foreign exchange unification reform caused the Naira to depreciate simultaneously against all major currencies. The NGN/USD central rate moved from approximately NGN 461 to over NGN 1,500 within months. By April 2026 the rate had partially stabilised near NGN 1,361/USD. All 12 CBN-quoted currencies experienced proportional depreciation during this period.</p>
   </div>
 
   <div class="card">
-    <h2>Current Rates  -  Latest Available</h2>
-    <div id="loading-table" class="loading">Loading rates from CBN database...</div>
+    <h2>Current Rates  -  Latest Available (NGN per unit)</h2>
+    <div id="loading-table" class="loading">Loading CBN rates...</div>
     <div class="table-wrapper">
       <table class="data-table th-blue" id="rates-table" style="display:none">
         <thead>
-          <tr>
-            <th>Currency</th>
-            <th class="num">Buying Rate (NGN)</th>
-            <th class="num">Central Rate (NGN)</th>
-            <th class="num">Selling Rate (NGN)</th>
-          </tr>
+          <tr><th>Currency</th><th class="num">Buying</th><th class="num">Central Rate</th><th class="num">Selling</th></tr>
         </thead>
         <tbody id="rates-tbody"></tbody>
       </table>
     </div>
-    <p class="source-note">Source: CBN Official Exchange Rates  -  Data covers 2020-2026</p>
+    <p class="source-note">Source: CBN Official Exchange Rates  -  Monthly averages 2020-2026</p>
   </div>
 
   <div class="card">
-    <h2>Historical Trends  -  NGN/USD, NGN/GBP, NGN/EUR (Central Rate)</h2>
+    <h2>Historical Trend  -  NGN/USD, NGN/GBP, NGN/EUR Central Rates</h2>
     <div class="chart-container-lg">
-      <p class="chart-loading" id="loading-chart">Loading historical data...</p>
-      <canvas id="chart-mc" style="display:none"></canvas>
+      <p class="chart-loading" id="loading-trend">Loading...</p>
+      <canvas id="chart-trend" style="display:none"></canvas>
     </div>
     <div class="dual-legend">
       <span><span class="dot" style="background:#2E5090"></span>NGN/USD</span>
       <span><span class="dot" style="background:#8B0000"></span>NGN/GBP</span>
       <span><span class="dot" style="background:#003399"></span>NGN/EUR</span>
     </div>
-    <p class="source-note">Source: CBN Official Exchange Rates  -  Monthly averages 2020-2026</p>
+    <p class="source-note">Source: CBN Official Exchange Rates  -  Central rate monthly averages</p>
+  </div>
+
+  <div class="card">
+    <h2>Currency History  -  Select a Currency</h2>
+    <div style="margin-bottom:1rem">
+      <select id="currency-select" style="padding:.4rem .75rem;border:1px solid #E5E7EB;border-radius:4px;font-size:14px;color:#1A1A1A;background:#fff;cursor:pointer">
+        <option value="usd">USD  -  US Dollar</option>
+        <option value="gbp">GBP  -  British Pound Sterling</option>
+        <option value="eur">EUR  -  Euro</option>
+        <option value="cny">CNY  -  Chinese Yuan Renminbi</option>
+        <option value="jpy">JPY  -  Japanese Yen</option>
+        <option value="chf">CHF  -  Swiss Franc</option>
+        <option value="zar">ZAR  -  South African Rand</option>
+        <option value="aed">AED  -  UAE Dirham</option>
+        <option value="sar">SAR  -  Saudi Riyal</option>
+        <option value="sdr">SDR  -  IMF Special Drawing Rights</option>
+        <option value="cfa">CFA  -  CFA Franc</option>
+        <option value="waua">WAUA  -  West African Unit of Account</option>
+      </select>
+    </div>
+    <div class="chart-container-lg">
+      <p class="chart-loading" id="loading-single">Select a currency above</p>
+      <canvas id="chart-single" style="display:none"></canvas>
+    </div>
+    <p class="source-note" id="single-source">Source: CBN Official Exchange Rates</p>
   </div>
 </main>
 
@@ -100,65 +120,116 @@ const API = window.location.protocol === 'file:'
   : window.location.origin;
 
 const CURRENCY_NAMES = {
-  usd: 'US Dollar', gbp: 'British Pound Sterling', eur: 'Euro',
-  cny: 'Chinese Yuan Renminbi', jpy: 'Japanese Yen', chf: 'Swiss Franc',
-  zar: 'South African Rand', aed: 'UAE Dirham', sar: 'Saudi Riyal',
-  sdr: 'Special Drawing Rights (IMF)', cfa: 'CFA Franc', waua: 'WAUA'
+  usd:'US Dollar', gbp:'British Pound', eur:'Euro', cny:'Chinese Yuan',
+  jpy:'Japanese Yen', chf:'Swiss Franc', zar:'South African Rand',
+  aed:'UAE Dirham', sar:'Saudi Riyal', sdr:'Special Drawing Rights',
+  cfa:'CFA Franc', waua:'West African Unit of Account'
 };
 
 function fmt(d) {
   return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
+function fmtDay(d) {
+  return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { day:'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+
 const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:true };
 const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:11}} };
-const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:11}} };
+const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
 
-function latestVal(arr) {
-  return arr && arr.length > 0 ? arr[arr.length - 1] : null;
+let allData = {};
+let singleChart = null;
+
+function annotation(label, color, idx) {
+  return { type:'line', xMin:idx, xMax:idx,
+    borderColor:color+'66', borderWidth:1.5, borderDash:[6,4],
+    label:{ display:true, content:label, position:'start',
+      backgroundColor:color, color:'#fff', font:{size:11,weight:'600'},
+      padding:{x:6,y:3}, borderRadius:2 }
+  };
+}
+
+function drawSingleChart(currency) {
+  const rates = allData[currency];
+  if (!rates || !rates.central || rates.central.length === 0) return;
+
+  document.getElementById('loading-single').style.display = 'none';
+  const canvas = document.getElementById('chart-single');
+  canvas.style.display = 'block';
+
+  if (singleChart) singleChart.destroy();
+
+  const labels = rates.central.map(d => fmt(d.obs_date));
+  singleChart = new Chart(canvas, {
+    data: {
+      labels,
+      datasets: [
+        { type:'line', label:'Buying',  data: rates.buying.map(d=>d.value),  borderColor:'#006633', backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:0.3 },
+        { type:'line', label:'Central', data: rates.central.map(d=>d.value), borderColor:'#0066CC', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3 },
+        { type:'line', label:'Selling', data: rates.selling.map(d=>d.value), borderColor:'#DC2626', backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:0.3 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{ display:true, position:'top' },
+        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`${ctx.dataset.label}: NGN ${ctx.parsed.y.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2})}` }}
+      },
+      scales: {
+        y: { ...SY, title:{display:true,text:`NGN per ${currency.toUpperCase()}`,color:'#6B7280',font:{size:12}} },
+        x: { ...SX, ticks:{...SX.ticks,maxTicksLimit:14} }
+      }
+    }
+  });
+  document.getElementById('single-source').textContent =
+    `Source: CBN Official Exchange Rates  -  ${CURRENCY_NAMES[currency] || currency.toUpperCase()}  -  Buying, Central and Selling rates 2020-2026`;
 }
 
 async function load() {
-  const data = await fetch(`${API}/api/all-currencies`).then(r => r.json());
+  allData = await fetch(`${API}/api/multicurrency`).then(r => r.json());
 
+  // Current rates table
   const order = ['usd','gbp','eur','cny','jpy','chf','zar','aed','sar','sdr','cfa','waua'];
   const tbody = document.getElementById('rates-tbody');
   for (const c of order) {
-    const rates = data[c];
+    const rates = allData[c];
     if (!rates) continue;
-    const b = latestVal(rates.buying);
-    const n = latestVal(rates.central);
-    const s = latestVal(rates.selling);
+    const b = rates.buying?.slice(-1)[0];
+    const n = rates.central?.slice(-1)[0];
+    const s = rates.selling?.slice(-1)[0];
+    const fv = v => v != null ? Number(v).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2}) : '-';
     tbody.innerHTML += `<tr>
-      <td><strong>${c.toUpperCase()}</strong>&nbsp; <span style="color:#6B7280;font-size:12px">${CURRENCY_NAMES[c] || ''}</span></td>
-      <td class="num">${b ? Number(b.value).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2}) : 'n/a'}</td>
-      <td class="num"><strong>${n ? Number(n.value).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2}) : 'n/a'}</strong></td>
-      <td class="num">${s ? Number(s.value).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2}) : 'n/a'}</td>
+      <td><strong>${c.toUpperCase()}</strong>&nbsp;<span style="color:#6B7280;font-size:12px">${CURRENCY_NAMES[c]||''}</span></td>
+      <td class="num">${fv(b?.value)}</td>
+      <td class="num"><strong>${fv(n?.value)}</strong></td>
+      <td class="num">${fv(s?.value)}</td>
     </tr>`;
   }
   document.getElementById('loading-table').style.display = 'none';
   document.getElementById('rates-table').style.display = 'table';
 
-  const usd = data.usd?.central || [];
-  const gbp = data.gbp?.central || [];
-  const eur = data.eur?.central || [];
+  // Historical trend chart for USD, GBP, EUR
+  const usd = allData.usd?.central || [];
+  const gbp = allData.gbp?.central || [];
+  const eur = allData.eur?.central || [];
 
   const covidIdx = usd.findIndex(d => d.obs_date.startsWith('2020-04'));
   const fxIdx    = usd.findIndex(d => d.obs_date.startsWith('2023-06'));
   const annots   = {};
-  if (covidIdx >= 0) annots.covid    = { type:'line', xMin:covidIdx, xMax:covidIdx, borderColor:'rgba(220,38,38,.5)', borderWidth:1.5, borderDash:[6,4], label:{ display:true, content:'COVID-19', position:'start', backgroundColor:'#DC2626', color:'#fff', font:{size:11,weight:'600'}, padding:{x:6,y:3}, borderRadius:2 }};
-  if (fxIdx    >= 0) annots.fxReform = { type:'line', xMin:fxIdx,    xMax:fxIdx,    borderColor:'rgba(0,102,204,.5)', borderWidth:1.5, borderDash:[6,4], label:{ display:true, content:'FX Reform', position:'start', backgroundColor:'#0066CC', color:'#fff', font:{size:11,weight:'600'}, padding:{x:6,y:3}, borderRadius:2 }};
+  if (covidIdx >= 0) annots.covid    = annotation('COVID-19',   '#DC2626', covidIdx);
+  if (fxIdx    >= 0) annots.fxReform = annotation('FX Reform',  '#0066CC', fxIdx);
 
-  document.getElementById('loading-chart').style.display = 'none';
-  const canvas = document.getElementById('chart-mc');
-  canvas.style.display = 'block';
-  new Chart(canvas, {
+  document.getElementById('loading-trend').style.display = 'none';
+  const ct = document.getElementById('chart-trend');
+  ct.style.display = 'block';
+  new Chart(ct, {
     data: {
       labels: usd.map(d => fmt(d.obs_date)),
       datasets: [
-        { type:'line', label:'NGN/USD', data: usd.map(d => d.value), borderColor:'#2E5090', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3 },
-        { type:'line', label:'NGN/GBP', data: gbp.map(d => d.value), borderColor:'#8B0000', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3 },
-        { type:'line', label:'NGN/EUR', data: eur.map(d => d.value), borderColor:'#003399', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3 },
+        { type:'line', label:'NGN/USD', data:usd.map(d=>d.value), borderColor:'#2E5090', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3 },
+        { type:'line', label:'NGN/GBP', data:gbp.map(d=>d.value), borderColor:'#8B0000', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3 },
+        { type:'line', label:'NGN/EUR', data:eur.map(d=>d.value), borderColor:'#003399', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3 },
       ]
     },
     options: {
@@ -169,10 +240,17 @@ async function load() {
         annotation:{ annotations: annots }
       },
       scales: {
-        y: { ...SY, title:{ display:true, text:'Naira per Foreign Currency Unit', color:'#6B7280', font:{size:12} } },
-        x: { ...SX, ticks:{ ...SX.ticks, maxTicksLimit:14 } }
+        y: { ...SY, title:{display:true,text:'NGN per Unit',color:'#6B7280',font:{size:12}} },
+        x: { ...SX, ticks:{...SX.ticks,maxTicksLimit:14} }
       }
     }
+  });
+
+  // Initial single chart
+  drawSingleChart('usd');
+
+  document.getElementById('currency-select').addEventListener('change', e => {
+    drawSingleChart(e.target.value);
   });
 }
 
