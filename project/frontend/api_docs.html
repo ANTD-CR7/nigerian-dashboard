@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="shortcut icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Documentation  -  Nigeria Economic Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+    <span class="nav-flag" style="display:none">Nigeria </span>Nigeria Economic Dashboard
+  </a>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-center nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="gdp.html">GDP</a></li>
+    <li><a href="inflation.html">Inflation</a></li>
+    <li><a href="exchange_rate.html">Exchange Rate</a></li>
+    <li><a href="interest_rate.html">Interest Rate</a></li>
+    <li><a href="reserves.html">Reserves</a></li>
+    <li><a href="multicurrency.html">Multi-Currency</a></li>
+    <li><a href="analytics.html">Analytics</a></li>
+    <li><a href="api_docs.html" class="active">API Docs</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-right caleb-badge">
+    <img src="https://calebuniversity.edu.ng/wp-content/uploads/2021/01/Caleb-University-Logo.png"
+         alt="Caleb University" class="nav-caleb"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
+    <span class="nav-fyp">FYP 2026</span>
+    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY  -  FYP 2026</span>
+  </div>
+</nav>
+
+<div class="hero" style="padding:2rem">
+  <div class="hero-inner">
+    <h1 style="font-size:1.75rem">Nigeria Economic Data API</h1>
+    <p class="hero-gold">Free Public REST API  -  No authentication  -  No rate limits</p>
+    <p class="hero-desc">Programmatic access to Nigerian macroeconomic data including GDP, inflation, exchange rates, monetary policy, foreign reserves and multi-currency CBN rates  -  2020 to 2026.</p>
+    <div style="margin-top:1rem;background:rgba(0,0,0,.25);border-radius:6px;padding:.75rem 1.25rem;font-family:monospace;font-size:.95rem;color:#C8A951">
+      Base URL: https://web-production-feb5f.up.railway.app
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="page-header" style="border-bottom-color:#006633">
+    <h1>Endpoints</h1>
+    <p>All endpoints return JSON. GET requests only. CORS enabled for all origins.</p>
+  </div>
+
+  <style>
+    .ep-card { background:#fff; border:1px solid #E5E7EB; border-left:4px solid #006633; padding:1.25rem 1.5rem; margin-bottom:1rem; }
+    .ep-card.blue { border-left-color:#0066CC; }
+    .ep-header { display:flex; align-items:center; gap:.75rem; margin-bottom:.5rem; flex-wrap:wrap; }
+    .ep-method { background:#006633; color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:3px; letter-spacing:.5px; }
+    .ep-path { font-family:monospace; font-size:1rem; font-weight:700; color:#1A1A1A; }
+    .ep-desc { color:#555555; font-size:14px; margin-bottom:.75rem; }
+    .ep-params { font-size:13px; color:#6B7280; margin-bottom:.5rem; }
+    .ep-params code { background:#F5F7FA; padding:1px 5px; border-radius:3px; font-family:monospace; color:#1A1A1A; }
+    .ep-example { background:#F5F7FA; border-radius:4px; padding:.6rem 1rem; font-family:monospace; font-size:12px; color:#1A1A1A; overflow-x:auto; margin-bottom:.75rem; white-space:pre-wrap; }
+    .try-btn { background:#006633; color:#fff; border:none; padding:.4rem 1rem; border-radius:4px; font-size:13px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-block; }
+    .try-btn:hover { background:#005229; }
+    .try-btn.blue { background:#0066CC; }
+    .try-btn.blue:hover { background:#0052a3; }
+    .use-case-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1rem; }
+    .use-case { background:#F5F7FA; border:1px solid #E5E7EB; border-top:3px solid #006633; padding:1.25rem; }
+    .use-case h3 { color:#006633; font-size:15px; margin-bottom:.5rem; }
+    .use-case p  { color:#555555; font-size:13px; line-height:1.6; }
+  </style>
+
+  <!-- Summary -->
+  <div class="ep-card">
+    <div class="ep-header">
+      <span class="ep-method">GET</span>
+      <span class="ep-path">/api/summary</span>
+    </div>
+    <p class="ep-desc">Latest single value for all core indicators: GDP growth, inflation, exchange rate, MPR, and FX reserves. Ideal for KPI dashboards.</p>
+    <div class="ep-example">{"gdp_growth":{"obs_date":"2024-09-30","value":3.97},"inflation":{"obs_date":"2024-12-01","value":34.8},"exchange_rate":{"obs_date":"2024-12-01","value":1535.0},"mpr":{"obs_date":"2024-11-26","value":27.5},"fx_reserves":{"obs_date":"2026-03-01","value":49.7}}</div>
+    <a class="try-btn" href="https://web-production-feb5f.up.railway.app/api/summary" target="_blank">Try it</a>
+  </div>
+
+  <!-- GDP -->
+  <div class="ep-card">
+    <div class="ep-header">
+      <span class="ep-method">GET</span>
+      <span class="ep-path">/api/gdp</span>
+    </div>
+    <p class="ep-desc">Quarterly real GDP growth rate (%) and annual nominal GDP in USD billions.</p>
+    <p class="ep-params">Query params: <code>start</code> (default 2020-01-01) &nbsp; <code>end</code> (default 2026-12-31)</p>
+    <div class="ep-example">{"gdp_growth":[{"obs_date":"2020-01-01","value":1.87},...], "gdp_usd":[{"obs_date":"2020-01-01","value":432.29},...], "unit_growth":"Percent (%)","unit_usd":"USD Billions"}</div>
+    <a class="try-btn" href="https://web-production-feb5f.up.railway.app/api/gdp" target="_blank">Try it</a>
+  </div>
+
+  <!-- Inflation -->
+  <div class="ep-card">
+    <div class="ep-header">
+      <span class="ep-method">GET</span>
+      <span class="ep-path">/api/inflation</span>
+    </div>
+    <p class="ep-desc">Monthly headline inflation rate (%) — year-on-year CPI change. Source: NBS Consumer Price Index Report.</p>
+    <p class="ep-params">Query params: <code>start</code> &nbsp; <code>end</code></p>
+    <div class="ep-example">{"data":[{"obs_date":"2020-01-01","value":12.13},{"obs_date":"2020-02-01","value":12.2},...], "unit":"Percent (%)","source":"NBS CPI Report"}</div>
+    <a class="try-btn" href="https://web-production-feb5f.up.railway.app/api/inflation" target="_blank">Try it</a>
+  </div>
+
+  <!-- Exchange Rate -->
+  <div class="ep-card">
+    <div class="ep-header">
+      <span class="ep-method">GET</span>
+      <span class="ep-path">/api/exchange-rate</span>
+    </div>
+    <p class="ep-desc">Monthly average NGN/USD exchange rate (official CBN rate). Captures the full impact of the June 2023 FX unification reform.</p>
+    <p class="ep-params">Query params: <code>start</code> &nbsp; <code>end</code></p>
+    <div class="ep-example">{"data":[{"obs_date":"2020-01-01","value":360.0},...,{"obs_date":"2023-07-01","value":782.54},...], "unit":"Naira per USD"}</div>
+    <a class="try-btn" href="https://web-production-feb5f.up.railway.app/api/exchange-rate" target="_blank">Try it</a>
+  </div>
+
+  <!-- Interest Rate -->
+  <div class="ep-card">
+    <div class="ep-header">
+      <span class="ep-method">GET</span>
+      <span class="ep-path">/api/interest-rate</span>
+    </div>
+    <p class="ep-desc">CBN Monetary Policy Rate (MPR) at each MPC decision date. Stepped time series reflecting policy decisions from 2020 to 2026.</p>
+    <p class="ep-params">Query params: <code>start</code> &nbsp; <code>end</code></p>
+    <div class="ep-example">{"data":[{"obs_date":"2020-01-21","value":13.5},{"obs_date":"2020-03-24","value":13.5},...,{"obs_date":"2024-11-26","value":27.5}]}</div>
+    <a class="try-btn" href="https://web-production-feb5f.up.railway.app/api/interest-rate" target="_blank">Try it</a>
+  </div>
+
+  <!-- FX Reserves -->
+  <div class="ep-card blue">
+    <div class="ep-header">
+      <span class="ep-method" style="background:#0066CC">GET</span>
+      <span class="ep-path">/api/fx-reserves</span>
+    </div>
+    <p class="ep-desc">Monthly gross foreign exchange reserves in USD billions. Covers 2020 to 2026 including the post-reform recovery to $49.7B by March 2026.</p>
+    <div class="ep-example">{"data":[{"obs_date":"2020-01-01","value":38.59},...,{"obs_date":"2026-03-01","value":49.7}]}</div>
+    <a class="try-btn blue" href="https://web-production-feb5f.up.railway.app/api/fx-reserves" target="_blank">Try it</a>
+  </div>
+
+  <!-- Currency Circulation -->
+  <div class="ep-card blue">
+    <div class="ep-header">
+      <span class="ep-method" style="background:#0066CC">GET</span>
+      <span class="ep-path">/api/currency-circulation</span>
+    </div>
+    <p class="ep-desc">Currency in circulation data (NGN billions). Reflects CBN monetary supply management over time.</p>
+    <div class="ep-example">{"data":[{"obs_date":"2020-01-01","value":2120.5},...}]}</div>
+    <a class="try-btn blue" href="https://web-production-feb5f.up.railway.app/api/currency-circulation" target="_blank">Try it</a>
+  </div>
+
+  <!-- All Currencies -->
+  <div class="ep-card blue">
+    <div class="ep-header">
+      <span class="ep-method" style="background:#0066CC">GET</span>
+      <span class="ep-path">/api/all-currencies</span>
+    </div>
+    <p class="ep-desc">Buying, central and selling rates for 12 currencies (USD, GBP, EUR, CNY, JPY, CHF, ZAR, AED, SAR, SDR, CFA, WAUA) from 2020 to 2026. Returns ~2,700 time-series points.</p>
+    <div class="ep-example">{"usd":{"buying":[{"obs_date":"2020-01-02","value":358.0},...], "central":[...], "selling":[...]},"gbp":{...},...}</div>
+    <a class="try-btn blue" href="https://web-production-feb5f.up.railway.app/api/all-currencies" target="_blank">Try it</a>
+  </div>
+
+  <!-- Analytics -->
+  <div class="ep-card">
+    <div class="ep-header">
+      <span class="ep-method">GET</span>
+      <span class="ep-path">/api/analytics</span>
+    </div>
+    <p class="ep-desc">Combined dataset for all five core indicators in a single request. Optimised for cross-indicator analysis, correlation studies and multi-series charts.</p>
+    <div class="ep-example">{"inflation":[...],"exchange_rate":[...],"fx_reserves":[...],"gdp":[...],"mpr":[...]}</div>
+    <a class="try-btn" href="https://web-production-feb5f.up.railway.app/api/analytics" target="_blank">Try it</a>
+  </div>
+
+  <div class="card" style="margin-top:2rem">
+    <h2>Use Cases</h2>
+    <div class="use-case-grid">
+      <div class="use-case">
+        <h3>Researchers</h3>
+        <p>Download complete time series for econometric modelling. All data is deduplicated, date-normalised to ISO 8601, and sourced from primary CBN, NBS and World Bank publications.</p>
+      </div>
+      <div class="use-case" style="border-top-color:#0066CC">
+        <h3>Developers</h3>
+        <p>Integrate Nigerian economic data into your own applications with zero authentication overhead. CORS is fully open and all responses are standard JSON arrays.</p>
+      </div>
+      <div class="use-case">
+        <h3>Students</h3>
+        <p>Use the data for final year projects, dissertations and class assignments in economics, data science, finance or computer science. Free and open access.</p>
+      </div>
+      <div class="use-case" style="border-top-color:#C8A951">
+        <h3>Journalists</h3>
+        <p>Verify economic claims with primary data. The /api/summary endpoint gives the latest snapshot in under 200ms  -  bookmark it for rapid fact-checking.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Interactive Swagger Docs</h2>
+    <p style="color:#555;margin-bottom:1rem">Full Swagger UI with live request testing is available at the /docs endpoint. Includes all parameters, response schemas and the ability to run requests directly in the browser.</p>
+    <a class="try-btn" href="https://web-production-feb5f.up.railway.app/docs" target="_blank">Open Swagger UI</a>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>Nigeria Data Sources: CBN  -  NBS  -  World Bank  |  For educational purposes only  -  Not financial advice</span>
+    <span class="footer-right">Final Year Project  -  Dept of Computer Science  -  Caleb University, Imota, Lagos  -  2026</span>
+  </div>
+</footer>
+
+<script src="js/nav.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6,7 +6,7 @@
 <link rel="shortcut icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inflation — Nigeria Economic Dashboard</title>
+<title>Inflation  -  Nigeria Economic Dashboard</title>
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
@@ -16,7 +16,7 @@
   <a class="nav-brand" href="index.html">
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
          onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
-    <span class="nav-flag" style="display:none">🇳🇬 </span>Nigeria Economic Dashboard
+    <span class="nav-flag" style="display:none">Nigeria </span>Nigeria Economic Dashboard
   </a>
   <button class="hamburger" id="hamburger" aria-label="Toggle menu">
     <span></span><span></span><span></span>
@@ -27,6 +27,10 @@
     <li><a href="inflation.html" class="active">Inflation</a></li>
     <li><a href="exchange_rate.html">Exchange Rate</a></li>
     <li><a href="interest_rate.html">Interest Rate</a></li>
+    <li><a href="reserves.html">Reserves</a></li>
+    <li><a href="multicurrency.html">Multi-Currency</a></li>
+    <li><a href="analytics.html">Analytics</a></li>
+    <li><a href="api_docs.html">API Docs</a></li>
     <li><a href="about.html">About</a></li>
   </ul>
   <div class="nav-right caleb-badge">
@@ -34,34 +38,34 @@
          alt="Caleb University" class="nav-caleb"
          onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
     <span class="nav-fyp">FYP 2026</span>
-    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY · FYP 2026</span>
+    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY  -  FYP 2026</span>
   </div>
 </nav>
 
 <main>
   <div class="page-header page-header-green">
     <h1>Headline Inflation Rate</h1>
-    <p>Monthly year-on-year Consumer Price Index change · National Bureau of Statistics · 2020–2024</p>
+    <p>Monthly year-on-year Consumer Price Index change  -  National Bureau of Statistics  -  2020-2024</p>
   </div>
 
   <div class="stat-box">
-    <div class="stat-number" id="stat-inf">—</div>
+    <div class="stat-number" id="stat-inf"> - </div>
     <div class="stat-label">Headline Inflation Rate (latest month)</div>
-    <p class="stat-context">Inflation peaked at 34.80% in December 2024, driven by post-FX reform currency depreciation and rising food prices — the highest level in Nigeria since the 1990s.</p>
+    <p class="stat-context">Inflation peaked at 34.80% in December 2024, driven by post-FX reform currency depreciation and rising food prices  -  the highest level in Nigeria since the 1990s.</p>
   </div>
 
   <div class="card">
-    <h2>Headline Inflation Rate (%) — Monthly</h2>
+    <h2>Headline Inflation Rate (%)  -  Monthly</h2>
     <div class="chart-container-lg">
-      <p class="chart-loading" id="loading-inf">Loading…</p>
+      <p class="chart-loading" id="loading-inf">Loading...</p>
       <canvas id="chart-inf" style="display:none"></canvas>
     </div>
-    <p class="source-note">Source: NBS Consumer Price Index Report · Year-on-year headline inflation</p>
+    <p class="source-note">Source: NBS Consumer Price Index Report  -  Year-on-year headline inflation</p>
   </div>
 
   <div class="card">
     <h2>Inflation Data Table</h2>
-    <div id="loading" class="loading">Loading data…</div>
+    <div id="loading" class="loading">Loading data...</div>
     <div class="table-wrapper"><table class="data-table th-green" id="inf-table" style="display:none">
       <thead><tr><th>Month</th><th class="num">Inflation Rate (%)</th><th>MoM Change</th><th>Level</th><th>Source</th></tr></thead>
       <tbody id="inf-tbody"></tbody>
@@ -71,13 +75,15 @@
 
 <footer>
   <div class="footer-inner">
-    <span>🇳🇬 Data Sources: CBN · NBS · World Bank &nbsp;|&nbsp; For educational purposes only · Not financial advice</span>
-    <span class="footer-right">Final Year Project · Dept of Computer Science · Caleb University, Imota, Lagos · 2026</span>
+    <span>Nigeria Data Sources: CBN  -  NBS  -  World Bank  |  For educational purposes only  -  Not financial advice</span>
+    <span class="footer-right">Final Year Project  -  Dept of Computer Science  -  Caleb University, Imota, Lagos  -  2026</span>
   </div>
 </footer>
 
 <script>
-const API = 'https://web-production-feb5f.up.railway.app';
+const API = window.location.protocol === 'file:'
+  ? 'https://web-production-feb5f.up.railway.app'
+  : window.location.origin;
 
 function fmt(d) {
   return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -143,9 +149,9 @@ async function load() {
   data.forEach((d, i) => {
     const prev   = i > 0 ? data[i - 1].value : null;
     const diff   = prev ? d.value - prev : 0;
-    const change = i === 0 ? '—' : diff > 0
-      ? `<span style="color:#DC2626">▲ ${diff.toFixed(2)}</span>`
-      : `<span style="color:#15803D">▼ ${Math.abs(diff).toFixed(2)}</span>`;
+    const change = i === 0 ? ' - ' : diff > 0
+      ? `<span style="color:#DC2626">up ${diff.toFixed(2)}</span>`
+      : `<span style="color:#15803D">down ${Math.abs(diff).toFixed(2)}</span>`;
     tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">${Number(d.value).toFixed(2)}%</td><td>${change}</td><td>${badge(d.value)}</td><td class="src">NBS</td></tr>`;
   });
   document.getElementById('loading').style.display   = 'none';
@@ -167,3 +173,5 @@ if (hamburger) {
 <script src="js/nav.js"></script>
 </body>
 </html>
+
+

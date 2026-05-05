@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6,7 +6,7 @@
 <link rel="shortcut icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GDP — Nigeria Economic Dashboard</title>
+<title>GDP  -  Nigeria Economic Dashboard</title>
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
@@ -16,7 +16,7 @@
   <a class="nav-brand" href="index.html">
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
          onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
-    <span class="nav-flag" style="display:none">🇳🇬 </span>Nigeria Economic Dashboard
+    <span class="nav-flag" style="display:none">Nigeria </span>Nigeria Economic Dashboard
   </a>
   <button class="hamburger" id="hamburger" aria-label="Toggle menu">
     <span></span><span></span><span></span>
@@ -27,6 +27,10 @@
     <li><a href="inflation.html">Inflation</a></li>
     <li><a href="exchange_rate.html">Exchange Rate</a></li>
     <li><a href="interest_rate.html">Interest Rate</a></li>
+    <li><a href="reserves.html">Reserves</a></li>
+    <li><a href="multicurrency.html">Multi-Currency</a></li>
+    <li><a href="analytics.html">Analytics</a></li>
+    <li><a href="api_docs.html">API Docs</a></li>
     <li><a href="about.html">About</a></li>
   </ul>
   <div class="nav-right caleb-badge">
@@ -34,43 +38,43 @@
          alt="Caleb University" class="nav-caleb"
          onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
     <span class="nav-fyp">FYP 2026</span>
-    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY · FYP 2026</span>
+    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY  -  FYP 2026</span>
   </div>
 </nav>
 
 <main>
   <div class="page-header page-header-green">
     <h1>Gross Domestic Product (GDP)</h1>
-    <p>Quarterly real GDP growth rate and annual nominal GDP in USD billions · NBS and World Bank · 2020–2024</p>
+    <p>Quarterly real GDP growth rate and annual nominal GDP in USD billions  -  NBS and World Bank  -  2020-2024</p>
   </div>
 
   <div class="stat-box">
-    <div class="stat-number" id="stat-gdp">—</div>
+    <div class="stat-number" id="stat-gdp"> - </div>
     <div class="stat-label">Real GDP Growth Rate (latest quarter)</div>
-    <p class="stat-context">Nigeria's economy grew 3.97% in Q4 2024, recovering from a COVID-19 contraction of −6.10% in Q2 2020 — the deepest quarterly decline in the dataset.</p>
+    <p class="stat-context">Nigeria's economy grew 3.97% in Q4 2024, recovering from a COVID-19 contraction of -6.10% in Q2 2020  -  the deepest quarterly decline in the dataset.</p>
   </div>
 
   <div class="card">
-    <h2>Real GDP Growth Rate (%) — Quarterly</h2>
+    <h2>Real GDP Growth Rate (%)  -  Quarterly</h2>
     <div class="chart-container">
-      <p class="chart-loading" id="loading-growth">Loading…</p>
+      <p class="chart-loading" id="loading-growth">Loading...</p>
       <canvas id="chart-growth" style="display:none"></canvas>
     </div>
-    <p class="source-note">Source: NBS Quarterly GDP Report · Real GDP at 2010 constant basic prices</p>
+    <p class="source-note">Source: NBS Quarterly GDP Report  -  Real GDP at 2010 constant basic prices</p>
   </div>
 
   <div class="card">
-    <h2>Nominal GDP (USD Billions) — Annual</h2>
+    <h2>Nominal GDP (USD Billions)  -  Annual</h2>
     <div class="chart-container">
-      <p class="chart-loading" id="loading-usd">Loading…</p>
+      <p class="chart-loading" id="loading-usd">Loading...</p>
       <canvas id="chart-usd" style="display:none"></canvas>
     </div>
-    <p class="source-note">Source: World Bank Open Data · NY.GDP.MKTP.CD</p>
+    <p class="source-note">Source: World Bank Open Data  -  NY.GDP.MKTP.CD</p>
   </div>
 
   <div class="card">
     <h2>GDP Growth Rate Data Table</h2>
-    <div id="loading-table" class="loading">Loading data…</div>
+    <div id="loading-table" class="loading">Loading data...</div>
     <div class="table-wrapper"><table class="data-table th-green" id="gdp-table" style="display:none">
       <thead><tr><th>Quarter</th><th class="num">Real GDP Growth Rate (%)</th><th>Performance</th><th>Source</th></tr></thead>
       <tbody id="gdp-tbody"></tbody>
@@ -88,13 +92,15 @@
 
 <footer>
   <div class="footer-inner">
-    <span>🇳🇬 Data Sources: CBN · NBS · World Bank &nbsp;|&nbsp; For educational purposes only · Not financial advice</span>
-    <span class="footer-right">Final Year Project · Dept of Computer Science · Caleb University, Imota, Lagos · 2026</span>
+    <span>Nigeria Data Sources: CBN  -  NBS  -  World Bank  |  For educational purposes only  -  Not financial advice</span>
+    <span class="footer-right">Final Year Project  -  Dept of Computer Science  -  Caleb University, Imota, Lagos  -  2026</span>
   </div>
 </footer>
 
 <script>
-const API = 'https://web-production-feb5f.up.railway.app';
+const API = window.location.protocol === 'file:'
+  ? 'https://web-production-feb5f.up.railway.app'
+  : window.location.origin;
 
 function fmt(d) {
   return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -121,7 +127,7 @@ async function load() {
   const growth = res.gdp_growth;
   const usd    = res.gdp_usd;
 
-  // Stat box — latest GDP growth
+  // Stat box  -  latest GDP growth
   const latestGDP = growth[growth.length - 1];
   document.getElementById('stat-gdp').textContent = `${Number(latestGDP.value).toFixed(2)}%`;
 
@@ -131,7 +137,7 @@ async function load() {
   if (q2Idx >= 0) growthAnnots.contraction = {
     type: 'line', xMin: q2Idx, xMax: q2Idx,
     borderColor: 'rgba(220,38,38,0.5)', borderWidth: 1.5, borderDash: [6, 4],
-    label: { display: true, content: 'Peak Contraction −6.10%', position: 'end',
+    label: { display: true, content: 'Peak Contraction -6.10%', position: 'end',
       backgroundColor: '#DC2626', color: '#fff',
       font: { size: 11, weight: '600' }, padding: { x: 6, y: 3 }, borderRadius: 2 }
   };
@@ -194,9 +200,9 @@ async function load() {
   usd.forEach((d, i) => {
     const prev   = i > 0 ? usd[i - 1].value : null;
     const diff   = prev ? d.value - prev : 0;
-    const change = i === 0 ? '—' : diff > 0
-      ? `<span style="color:#DC2626">▲ $${diff.toFixed(2)}B</span>`
-      : `<span style="color:#15803D">▼ $${Math.abs(diff).toFixed(2)}B</span>`;
+    const change = i === 0 ? ' - ' : diff > 0
+      ? `<span style="color:#DC2626">up $${diff.toFixed(2)}B</span>`
+      : `<span style="color:#15803D">down $${Math.abs(diff).toFixed(2)}B</span>`;
     usdTbody.innerHTML += `<tr><td>${fmtYear(d.obs_date)}</td><td class="num">$${Number(d.value).toFixed(2)}B</td><td>${change}</td><td class="src">World Bank</td></tr>`;
   });
   document.getElementById('usd-table').style.display = 'table';
@@ -217,3 +223,5 @@ if (hamburger) {
 <script src="js/nav.js"></script>
 </body>
 </html>
+
+

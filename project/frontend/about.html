@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6,7 +6,7 @@
 <link rel="shortcut icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>About — Nigeria Economic Dashboard</title>
+<title>About  -  Nigeria Economic Dashboard</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -15,7 +15,7 @@
   <a class="nav-brand" href="index.html">
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
          onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
-    <span class="nav-flag" style="display:none">🇳🇬 </span>Nigeria Economic Dashboard
+    <span class="nav-flag" style="display:none">Nigeria </span>Nigeria Economic Dashboard
   </a>
   <button class="hamburger" id="hamburger" aria-label="Toggle menu">
     <span></span><span></span><span></span>
@@ -26,6 +26,10 @@
     <li><a href="inflation.html">Inflation</a></li>
     <li><a href="exchange_rate.html">Exchange Rate</a></li>
     <li><a href="interest_rate.html">Interest Rate</a></li>
+    <li><a href="reserves.html">Reserves</a></li>
+    <li><a href="multicurrency.html">Multi-Currency</a></li>
+    <li><a href="analytics.html">Analytics</a></li>
+    <li><a href="api_docs.html">API Docs</a></li>
     <li><a href="about.html" class="active">About</a></li>
   </ul>
   <div class="nav-right caleb-badge">
@@ -33,18 +37,25 @@
          alt="Caleb University" class="nav-caleb"
          onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
     <span class="nav-fyp">FYP 2026</span>
-    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY · FYP 2026</span>
+    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY  -  FYP 2026</span>
   </div>
 </nav>
 
 <main>
   <div class="page-header">
     <h1>About This System</h1>
-    <p>Design and Implementation of a Web-Based Financial Data Aggregation System Using Nigerian Public Economic Data</p>
+    <p>Design and Implementation of a Web-Based Financial Data Aggregation and Analytics System Using Nigerian Public Economic Data (2020-2024 as a Case Study)</p>
   </div>
 
   <div class="quote-box">
-    <p>This system aggregates Nigeria's four core macroeconomic indicators from the CBN, NBS and World Bank into a single interactive web dashboard — making public economic data accessible to all Nigerians.</p>
+    <p>This system aggregates Nigeria's four core macroeconomic indicators from the CBN, NBS and World Bank into a single interactive web dashboard  -  making public economic data accessible to all Nigerians.</p>
+  </div>
+
+  <div class="card">
+    <h2>Project Identity</h2>
+    <p style="color:#6B7280;line-height:1.7">This project is not a static archive of old figures. It is a mini financial data platform that aggregates public economic data, normalizes it into a common time-series format, stores it in an appendable database, and exposes analytics through API endpoints and dashboard controls.</p>
+    <br>
+    <p style="color:#6B7280;line-height:1.7">The 2020-2024 period is used as a controlled case study for consistency, validation, and reproducibility. The implementation supports future data through demo-safe manual API validation and CSV ingestion, with real database writes gated by a server-side configuration flag.</p>
   </div>
 
   <div class="card">
@@ -52,6 +63,22 @@
     <p style="color:#6B7280;line-height:1.7">This system aggregates four core Nigerian macroeconomic indicators from three official public data sources for the period January 2020 to December 2024. It presents the data through an interactive web dashboard with line charts and summary tables that any user can access through a standard web browser.</p>
     <br>
     <p style="color:#6B7280;line-height:1.7">This project was developed as a Final Year Project at Caleb University, Imota, Lagos, in the Department of Computer Science. Its contribution is a free, open-source, and academically documented implementation built on a teachable technology stack that Nigerian computer science students can study, understand, and extend.</p>
+  </div>
+
+  <div class="card">
+    <h2>System Architecture</h2>
+    <div class="table-wrapper"><table class="data-table">
+      <thead>
+        <tr><th>Layer</th><th>Implementation</th><th>Engineering Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Data Aggregation</td><td>Excel/CSV ETL scripts, manual API validation, CSV upload endpoint</td><td>Accepts multiple source formats and prepares future extensions without risking live data during demonstration</td></tr>
+        <tr><td>Normalization</td><td>Common observations model: indicator_id, obs_date, value, source</td><td>Converts heterogeneous records into one time-series structure</td></tr>
+        <tr><td>Storage</td><td>Supabase PostgreSQL tables and indicator/date index</td><td>Stores appendable, queryable observations for each indicator</td></tr>
+        <tr><td>Analytics</td><td>FastAPI analytics endpoint</td><td>Computes latest value, period change, year-over-year change, trend, and forecast</td></tr>
+        <tr><td>Presentation</td><td>HTML, CSS, JavaScript, Chart.js</td><td>Displays indicators, filters, charts, and update controls in the browser</td></tr>
+      </tbody>
+    </table></div>
   </div>
 
   <div class="card">
@@ -105,7 +132,7 @@
         <tr><td>Backend Language</td><td>Python 3.11</td><td>Server logic and data processing</td></tr>
         <tr><td>Backend Framework</td><td>FastAPI</td><td>REST API with automatic documentation</td></tr>
         <tr><td>Database</td><td>Supabase (PostgreSQL)</td><td>Stores all aggregated economic data</td></tr>
-        <tr><td>Data Processing</td><td>Python Pandas</td><td>ETL — clean and transform Excel files</td></tr>
+        <tr><td>Data Processing</td><td>Python Pandas</td><td>ETL  -  clean and transform Excel files</td></tr>
         <tr><td>Frontend Structure</td><td>HTML5</td><td>Web page structure</td></tr>
         <tr><td>Frontend Styling</td><td>CSS3</td><td>Visual presentation and responsive layout</td></tr>
         <tr><td>Frontend Logic</td><td>Vanilla JavaScript (ES6+)</td><td>Fetch API calls and dynamic rendering</td></tr>
@@ -121,13 +148,13 @@
     <br>
     <p style="color:#6B7280;line-height:1.7"><strong style="color:#1A1A1A">Extract:</strong> Excel and CSV files downloaded from CBN, NBS, and World Bank websites.</p>
     <br>
-    <p style="color:#6B7280;line-height:1.7"><strong style="color:#1A1A1A">Transform:</strong> Python Pandas used to extract relevant columns, standardise date formats to ISO 8601 (YYYY-MM-DD), convert strings to numeric values, and filter for the 2020–2024 date range. For exchange rate, daily CBN values were averaged to monthly. For GDP, the "GDP at 2010 constant price" row from the "real gdp growth rate %" sheet was extracted from each quarterly NBS report.</p>
+    <p style="color:#6B7280;line-height:1.7"><strong style="color:#1A1A1A">Transform:</strong> Python Pandas used to extract relevant columns, standardise date formats to ISO 8601 (YYYY-MM-DD), convert strings to numeric values, and filter for the 2020-2024 date range. For exchange rate, daily CBN values were averaged to monthly. For GDP, the "GDP at 2010 constant price" row from the "real gdp growth rate %" sheet was extracted from each quarterly NBS report.</p>
     <br>
     <p style="color:#6B7280;line-height:1.7"><strong style="color:#1A1A1A">Load:</strong> Cleaned data inserted into the Supabase PostgreSQL database using the Supabase Python client library.</p>
   </div>
 
   <div class="card" style="border-left:4px solid #DC2626">
-    <h2>⚠ Disclaimer</h2>
+    <h2>Warning Disclaimer</h2>
     <p style="color:#6B7280;line-height:1.7">This system is for <strong style="color:#1A1A1A">informational and educational purposes only</strong>. Data is sourced from official institutions but the system cannot guarantee freedom from errors or omissions. Values may differ slightly from original publications due to rounding or data transformation.</p>
     <br>
     <p style="color:#6B7280;line-height:1.7"><strong style="color:#1A1A1A">This system does not constitute financial advice or investment recommendations of any kind.</strong> For official and definitive economic data, always refer directly to the CBN, NBS, and World Bank websites.</p>
@@ -136,8 +163,8 @@
 
 <footer>
   <div class="footer-inner">
-    <span>🇳🇬 Data Sources: CBN · NBS · World Bank &nbsp;|&nbsp; For educational purposes only · Not financial advice</span>
-    <span class="footer-right">Final Year Project · Dept of Computer Science · Caleb University, Imota, Lagos · 2026</span>
+    <span>Nigeria Data Sources: CBN  -  NBS  -  World Bank  |  For educational purposes only  -  Not financial advice</span>
+    <span class="footer-right">Final Year Project  -  Dept of Computer Science  -  Caleb University, Imota, Lagos  -  2026</span>
   </div>
 </footer>
 
@@ -154,3 +181,5 @@ if (hamburger) {
 <script src="js/nav.js"></script>
 </body>
 </html>
+
+
