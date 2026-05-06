@@ -115,9 +115,9 @@
 </footer>
 
 <script>
-const API = window.location.protocol === 'file:'
-  ? 'https://web-production-feb5f.up.railway.app'
-  : window.location.origin;
+const API = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  ? window.location.origin
+  : 'https://web-production-feb5f.up.railway.app';
 
 const CURRENCY_NAMES = {
   usd:'US Dollar', gbp:'British Pound', eur:'Euro', cny:'Chinese Yuan',
