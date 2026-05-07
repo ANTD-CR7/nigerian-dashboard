@@ -109,14 +109,17 @@ def load_indicator(indicator_id: str, data: list):
                 "value":        row["value"],
                 "source":       row["source"],
             }
-            supabase.table("observations").insert(record).execute()
-            print(f"  Inserted: {row['obs_date']} = {row['value']}")
+            supabase.table("observations").upsert(
+                record,
+                on_conflict="indicator_id,obs_date"
+            ).execute()
+            print(f"  Upserted: {row['obs_date']} = {row['value']}")
             success += 1
         except Exception as e:
             print(f"  ERROR on {row['obs_date']}: {e}")
             errors += 1
 
-    print(f"  Done: {success} inserted, {errors} errors")
+    print(f"  Done: {success} upserted, {errors} errors")
 
 
 if __name__ == "__main__":

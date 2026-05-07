@@ -1,4 +1,4 @@
-"""
+﻿"""
 FILE: load_data.py
 
 PURPOSE:
@@ -22,7 +22,7 @@ import pandas as pd
 from supabase import create_client, Client
 
 # ============================================================
-# YOUR SUPABASE CREDENTIALS — already filled in
+# YOUR SUPABASE CREDENTIALS  -  already filled in
 # ============================================================
 SUPABASE_URL = "https://fjsytcmcxapfbrwvawmu.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw"
@@ -31,15 +31,15 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 # ============================================================
-# HELPER — inserts one row into observations table
+# HELPER  -  inserts one row into observations table
 # ============================================================
 def insert(indicator_id, obs_date, value, source):
-    supabase.table("observations").insert({
+    supabase.table("observations").upsert({
         "indicator_id": indicator_id,
         "obs_date":     obs_date,
         "value":        value,
         "source":       source,
-    }).execute()
+    }, on_conflict="indicator_id,obs_date").execute()
 
 
 # ============================================================
@@ -53,11 +53,11 @@ def load_gdp_growth():
 
     data = [
         ("2020-01-01",  1.87),   # Q1 2020
-        ("2020-04-01", -6.10),   # Q2 2020 — COVID-19 shock
+        ("2020-04-01", -6.10),   # Q2 2020  -  COVID-19 shock
         ("2020-07-01", -3.62),   # Q3 2020
         ("2020-10-01",  0.11),   # Q4 2020
         ("2021-01-01",  0.51),   # Q1 2021
-        ("2021-04-01",  5.01),   # Q2 2021 — recovery
+        ("2021-04-01",  5.01),   # Q2 2021  -  recovery
         ("2021-07-01",  4.03),   # Q3 2021
         ("2021-10-01",  3.98),   # Q4 2021
         ("2022-01-01",  3.11),   # Q1 2022
@@ -78,12 +78,12 @@ def load_gdp_growth():
         insert("gdp_growth", obs_date, value, "NBS")
         print(f"  {obs_date}  {value:+.2f}%")
 
-    print(f"  Done — {len(data)} quarters loaded")
+    print(f"  Done  -  {len(data)} quarters loaded")
 
 
 # ============================================================
 # PART 2: NOMINAL GDP IN USD (annual, from World Bank)
-# Source: data.worldbank.org — NY.GDP.MKTP.CD
+# Source: data.worldbank.org  -  NY.GDP.MKTP.CD
 # Values in USD Billions
 # ============================================================
 def load_gdp_usd():
@@ -101,7 +101,7 @@ def load_gdp_usd():
         insert("gdp_usd", obs_date, value, "WB")
         print(f"  {obs_date}  ${value:.2f}B")
 
-    print(f"  Done — {len(data)} years loaded")
+    print(f"  Done  -  {len(data)} years loaded")
 
 
 # ============================================================
@@ -134,7 +134,7 @@ def load_inflation():
         print(f"  {row['obs_date']}  {row['value']:.2f}%")
         count += 1
 
-    print(f"  Done — {count} months loaded")
+    print(f"  Done  -  {count} months loaded")
 
 
 # ============================================================
@@ -178,13 +178,13 @@ def load_exchange_rate():
         print(f"  {row['obs_date']}  {row['Central Rate']:.2f} NGN/USD")
         count += 1
 
-    print(f"  Done — {count} months loaded")
+    print(f"  Done  -  {count} months loaded")
 
 
 # ============================================================
 # PART 5: MONETARY POLICY RATE (from mpr.xlsx)
 # Source: CBN MPC decisions
-# Already clean — just load directly
+# Already clean  -  just load directly
 # ============================================================
 def load_mpr():
     print("\n[5/5] Loading Monetary Policy Rate (MPR)...")
@@ -211,7 +211,7 @@ def load_mpr():
         print(f"  {obs_date}  {row['value']:.2f}%")
         count += 1
 
-    print(f"  Done — {count} MPC decisions loaded")
+    print(f"  Done  -  {count} MPC decisions loaded")
 
 
 # ============================================================
@@ -242,3 +242,4 @@ if __name__ == "__main__":
         print("  1. Your Excel files are in the same folder as this script")
         print("  2. You ran setup.sql in Supabase SQL Editor first")
         print("  3. You have internet connection")
+

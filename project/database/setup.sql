@@ -39,11 +39,28 @@ CREATE TABLE IF NOT EXISTS observations (
 CREATE INDEX IF NOT EXISTS idx_indicator_date
 ON observations(indicator_id, obs_date);
 
+-- Step 4b: Remove existing duplicates before enforcing uniqueness.
+-- If the loader was run more than once, this keeps the most recent row id
+-- for each indicator/date pair and removes older duplicates.
+DELETE FROM observations old_row
+USING observations new_row
+WHERE old_row.indicator_id = new_row.indicator_id
+  AND old_row.obs_date = new_row.obs_date
+  AND old_row.id < new_row.id;
+
+-- Step 4c: Prevent duplicate observations for the same indicator/date.
+-- This supports repeatable ingestion: a later upload can update an existing
+-- value instead of creating a duplicate time-series point.
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_observation_indicator_date
+ON observations(indicator_id, obs_date);
+
 -- Step 5: Insert the data sources
 INSERT INTO data_sources (code, full_name, website) VALUES
 ('CBN',  'Central Bank of Nigeria',          'https://www.cbn.gov.ng'),
 ('NBS',  'National Bureau of Statistics',    'https://nigerianstat.gov.ng'),
-('WB',   'World Bank Open Data',             'https://data.worldbank.org')
+('WB',   'World Bank Open Data',             'https://data.worldbank.org'),
+('UPLOAD', 'Uploaded CSV / manual entry',    NULL),
+('MANUAL', 'Manual dashboard entry',         NULL)
 ON CONFLICT (code) DO NOTHING;
 
 -- Step 6: Insert the indicators

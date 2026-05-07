@@ -1,4 +1,4 @@
-"""
+﻿"""
 FILE: etl/load_other_indicators.py
 
 PURPOSE:
@@ -6,11 +6,11 @@ PURPOSE:
     Excel files you downloaded and loads them into Supabase.
 
 WHAT THIS SCRIPT DOES (step by step):
-    1. Reads Inflation_Data_in_Excel.xlsx — filters to 2020-2024,
+    1. Reads Inflation_Data_in_Excel.xlsx  -  filters to 2020-2024,
        extracts the "allItemsYearOn" column (headline inflation %)
-    2. Reads exchange_rate.xlsx — filters daily USD rates to 2020-2024,
+    2. Reads exchange_rate.xlsx  -  filters daily USD rates to 2020-2024,
        calculates monthly averages using the Central Rate column
-    3. Reads mpr.xlsx — loads MPR values directly (already clean)
+    3. Reads mpr.xlsx  -  loads MPR values directly (already clean)
     4. Inserts all values into the observations table in Supabase
 
 HOW TO RUN:
@@ -73,15 +73,15 @@ def load_inflation():
     success = 0
     for _, row in df.iterrows():
         try:
-            supabase.table("observations").insert({
+            supabase.table("observations").upsert({
                 "indicator_id": "inflation",
                 "obs_date":     row['obs_date'].strftime('%Y-%m-%d'),
                 "value":        round(float(row['value']), 2),
                 "source":       "NBS",
-            }).execute()
+            }, on_conflict="indicator_id,obs_date").execute()
             success += 1
         except Exception as e:
-            print(f"  ERROR: {row['obs_date'].date()} — {e}")
+            print(f"  ERROR: {row['obs_date'].date()}  -  {e}")
 
     print(f"  Inserted {success} inflation records")
 
@@ -138,15 +138,15 @@ def load_exchange_rate():
     success = 0
     for _, row in monthly.iterrows():
         try:
-            supabase.table("observations").insert({
+            supabase.table("observations").upsert({
                 "indicator_id": "exchange_rate",
                 "obs_date":     row['obs_date'].strftime('%Y-%m-%d'),
                 "value":        round(float(row['Central Rate']), 4),
                 "source":       "CBN",
-            }).execute()
+            }, on_conflict="indicator_id,obs_date").execute()
             success += 1
         except Exception as e:
-            print(f"  ERROR: {row['obs_date'].date()} — {e}")
+            print(f"  ERROR: {row['obs_date'].date()}  -  {e}")
 
     print(f"  Inserted {success} exchange rate records")
 
@@ -186,15 +186,15 @@ def load_mpr():
     success = 0
     for _, row in df.iterrows():
         try:
-            supabase.table("observations").insert({
+            supabase.table("observations").upsert({
                 "indicator_id": "mpr",
                 "obs_date":     row['obs_date'].strftime('%Y-%m-%d'),
                 "value":        round(float(row['value']), 2),
                 "source":       "CBN",
-            }).execute()
+            }, on_conflict="indicator_id,obs_date").execute()
             success += 1
         except Exception as e:
-            print(f"  ERROR: {row['obs_date'].date()} — {e}")
+            print(f"  ERROR: {row['obs_date'].date()}  -  {e}")
 
     print(f"  Inserted {success} MPR records")
 
@@ -212,3 +212,4 @@ if __name__ == "__main__":
     load_mpr()
 
     print("\nAll data loaded successfully.")
+
