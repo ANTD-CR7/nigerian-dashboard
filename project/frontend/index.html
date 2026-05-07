@@ -326,7 +326,7 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
   const inf    = infRes.data;
   const fx     = fxRes.data;
   const mpr    = mprRes.data;
-  const resData = resRes.data || [];
+  const resData = resRes.gross || resRes.data || [];
 
   setKPI('gdp', gdp, v => `${v.toFixed(2)}%`, d => `${d.toFixed(2)}%`, false, 'NBS');
   setKPI('inf', inf, v => `${v.toFixed(2)}%`, d => `${d.toFixed(2)}%`, true,  'NBS');
