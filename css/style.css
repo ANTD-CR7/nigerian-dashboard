@@ -391,3 +391,14 @@ h2 { font-size: clamp(1rem, 3vw, 1.4rem); }
   .caleb-badge,.nav-right,.nav-fyp,.nav-caleb{display:none !important}
 }
 
+/* Mobile layout fixes — Caleb badge + KPI grid */
+@media (max-width: 768px) {
+  .caleb-badge, [class*="caleb-badge"], .nav-badge, .fyp-badge,
+  .nav-right, .nav-fyp, .nav-caleb, .nav-caleb-fallback {
+    display: none !important;
+  }
+  .hero-kpis, .kpi-grid, .summary-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
