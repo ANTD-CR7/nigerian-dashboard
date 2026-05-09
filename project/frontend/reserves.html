@@ -31,6 +31,10 @@
     <li><a href="multicurrency.html">Multi-Currency</a></li>
     <li><a href="analytics.html">Analytics</a></li>
     <li><a href="api_docs.html">API Docs</a></li>
+    <li><a href="nfem.html">NFEM Rates</a></li>
+    <li><a href="currency_circulation.html">Currency Circulation</a></li>
+    <li><a href="assets_liabilities.html">Assets &amp; Liabilities</a></li>
+    <li><a href="financial_statement.html">Financial Statement</a></li>
     <li><a href="about.html">About</a></li>
   </ul>
   <div class="nav-right caleb-badge">
@@ -176,7 +180,7 @@ async function load() {
     data: {
       labels: blocked.map(d => fmt(d.obs_date)),
       datasets: [
-        { type:'bar', label:'Blocked (USD Bn)', data: blocked.map(d => d.value),
+        { type:'bar', label:'Blocked (USD Bn)', data: blocked.map(d => d.value / 1e9),
           backgroundColor:'rgba(220,38,38,0.6)', borderWidth:0, barPercentage:0.7, yAxisID:'y' },
         { type:'line', label:'Block %', data: blockPct.map(d => d.value),
           borderColor:'#C8A951', backgroundColor:'transparent',
@@ -201,7 +205,7 @@ async function load() {
   const grossMap = {}, liquidMap = {}, blockedMap = {}, pctMap = {};
   gross.forEach(d => grossMap[d.obs_date] = d.value);
   liquid.forEach(d => liquidMap[d.obs_date] = d.value);
-  blocked.forEach(d => blockedMap[d.obs_date] = d.value);
+  blocked.forEach(d => blockedMap[d.obs_date] = d.value / 1e9);
   blockPct.forEach(d => pctMap[d.obs_date] = d.value);
   const dates = [...new Set([...gross.map(d=>d.obs_date)])].sort();
 

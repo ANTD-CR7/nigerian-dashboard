@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="shortcut icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFEM Rates  -  Nigeria Economic Data Platform</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+    <span class="nav-flag" style="display:none">Nigeria </span>Nigeria Economic Data Platform
+  </a>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-center nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="gdp.html">GDP</a></li>
+    <li><a href="inflation.html">Inflation</a></li>
+    <li><a href="exchange_rate.html">Exchange Rate</a></li>
+    <li><a href="interest_rate.html">Interest Rate</a></li>
+    <li><a href="reserves.html">Reserves</a></li>
+    <li><a href="multicurrency.html">Multi-Currency</a></li>
+    <li><a href="analytics.html">Analytics</a></li>
+    <li><a href="api_docs.html">API Docs</a></li>
+    <li><a href="nfem.html" class="active">NFEM Rates</a></li>
+    <li><a href="currency_circulation.html">Currency Circulation</a></li>
+    <li><a href="assets_liabilities.html">Assets &amp; Liabilities</a></li>
+    <li><a href="financial_statement.html">Financial Statement</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-right caleb-badge">
+    <img src="https://calebuniversity.edu.ng/wp-content/uploads/2021/01/Caleb-University-Logo.png"
+         alt="Caleb University" class="nav-caleb"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
+    <span class="nav-fyp">FYP 2026</span>
+    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY  -  FYP 2026</span>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header page-header-blue">
+    <h1>NFEM Daily Exchange Rates</h1>
+    <p>Nigerian Foreign Exchange Market  -  Interbank FX rates  -  Dec 2024 to Apr 2026</p>
+  </div>
+
+  <div class="insight-box">
+    <h3>Key Insight  -  NFEM Market</h3>
+    <p>The NFEM (Nigerian Foreign Exchange Market) is the interbank FX market. NFEM rates reflect actual market-determined prices rather than official window rates. Data covers December 2024 to April 2026  -  354 daily trading sessions.</p>
+  </div>
+
+  <div class="card">
+    <h2>NFEM Daily Exchange Rates  -  Dec 2024 to Apr 2026</h2>
+    <div class="chart-container-lg">
+      <p class="chart-loading" id="loading-nfem">Loading NFEM data...</p>
+      <canvas id="chart-nfem" style="display:none"></canvas>
+    </div>
+    <div class="dual-legend">
+      <span><span class="dot" style="background:#0066CC"></span>Closing Rate</span>
+      <span><span class="dot" style="background:#006633"></span>Highest</span>
+      <span><span class="dot" style="background:#DC2626"></span>Lowest</span>
+    </div>
+    <p class="source-note">Source: CBN NFEM Daily Report  -  Rates in NGN per USD</p>
+  </div>
+
+  <div class="card">
+    <h2>NFEM Daily Data Table</h2>
+    <div id="loading-table" class="loading">Loading data...</div>
+    <div class="table-wrapper">
+      <table class="data-table th-blue" id="nfem-table" style="display:none">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th class="num">Closing (NGN)</th>
+            <th class="num">Highest (NGN)</th>
+            <th class="num">Lowest (NGN)</th>
+            <th class="num">Weighted Avg (NGN)</th>
+          </tr>
+        </thead>
+        <tbody id="nfem-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>Nigeria Data Sources: CBN  -  NBS  -  World Bank  |  For educational purposes only  -  Not financial advice</span>
+    <span class="footer-right">Final Year Project  -  Dept of Computer Science  -  Caleb University, Imota, Lagos  -  2026</span>
+  </div>
+</footer>
+
+<script>
+const API = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  ? window.location.origin
+  : 'https://web-production-feb5f.up.railway.app';
+
+function fmtDay(d) {
+  return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric', timeZone:'UTC' });
+}
+function fmtNGN(v) {
+  if (v == null) return '-';
+  return '₦' + Number(v).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:true };
+const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:11}} };
+const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:11}} };
+
+async function load() {
+  const res = await fetch(`${API}/api/nfem`).then(r => r.json());
+  const closing = res.closing    || [];
+  const highest = res.highest    || [];
+  const lowest  = res.lowest     || [];
+  const wavg    = res.weighted_avg || [];
+
+  // Chart
+  document.getElementById('loading-nfem').style.display = 'none';
+  const canvas = document.getElementById('chart-nfem');
+  canvas.style.display = 'block';
+  new Chart(canvas, {
+    data: {
+      labels: closing.map(d => fmtDay(d.obs_date)),
+      datasets: [
+        { type:'line', label:'Closing', data: closing.map(d => d.value), borderColor:'#0066CC', backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:0.2 },
+        { type:'line', label:'Highest', data: highest.map(d => d.value), borderColor:'#006633', backgroundColor:'transparent', borderWidth:1.5, pointRadius:0, tension:0.2 },
+        { type:'line', label:'Lowest',  data: lowest.map(d => d.value),  borderColor:'#DC2626', backgroundColor:'transparent', borderWidth:1.5, pointRadius:0, tension:0.2 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{ display:false },
+        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`${ctx.dataset.label}: ${fmtNGN(ctx.parsed.y)}` }}
+      },
+      scales: {
+        y: { ...SY, title:{display:true,text:'NGN per USD',color:'#6B7280',font:{size:12}} },
+        x: { ...SX, ticks:{...SX.ticks,maxTicksLimit:16} }
+      }
+    }
+  });
+
+  // Table
+  const wavgMap = {};
+  wavg.forEach(d => wavgMap[d.obs_date] = d.value);
+  const highMap = {}, lowMap = {};
+  highest.forEach(d => highMap[d.obs_date] = d.value);
+  lowest.forEach(d => lowMap[d.obs_date] = d.value);
+
+  const tbody = document.getElementById('nfem-tbody');
+  closing.forEach(d => {
+    tbody.innerHTML += `<tr>
+      <td>${fmtDay(d.obs_date)}</td>
+      <td class="num">${fmtNGN(d.value)}</td>
+      <td class="num">${fmtNGN(highMap[d.obs_date])}</td>
+      <td class="num">${fmtNGN(lowMap[d.obs_date])}</td>
+      <td class="num">${fmtNGN(wavgMap[d.obs_date])}</td>
+    </tr>`;
+  });
+  document.getElementById('loading-table').style.display = 'none';
+  document.getElementById('nfem-table').style.display = 'table';
+}
+
+load();
+</script>
+<script src="js/nav.js"></script>
+</body>
+</html>
