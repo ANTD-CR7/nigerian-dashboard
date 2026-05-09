@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="shortcut icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBN Financial Statement  -  Nigeria Economic Data Platform</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+    <span class="nav-flag" style="display:none">Nigeria </span>Nigeria Economic Data Platform
+  </a>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-center nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="gdp.html">GDP</a></li>
+    <li><a href="inflation.html">Inflation</a></li>
+    <li><a href="exchange_rate.html">Exchange Rate</a></li>
+    <li><a href="interest_rate.html">Interest Rate</a></li>
+    <li><a href="reserves.html">Reserves</a></li>
+    <li><a href="multicurrency.html">Multi-Currency</a></li>
+    <li><a href="analytics.html">Analytics</a></li>
+    <li><a href="api_docs.html">API Docs</a></li>
+    <li><a href="nfem.html">NFEM Rates</a></li>
+    <li><a href="currency_circulation.html">Currency Circulation</a></li>
+    <li><a href="assets_liabilities.html">Assets &amp; Liabilities</a></li>
+    <li><a href="financial_statement.html" class="active">Financial Statement</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-right caleb-badge">
+    <img src="https://calebuniversity.edu.ng/wp-content/uploads/2021/01/Caleb-University-Logo.png"
+         alt="Caleb University" class="nav-caleb"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
+    <span class="nav-fyp">FYP 2026</span>
+    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY  -  FYP 2026</span>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header page-header-green">
+    <h1>CBN Annual Financial Statement</h1>
+    <p>Central Bank of Nigeria historical financial data  -  1960-2012</p>
+  </div>
+
+  <div class="insight-box">
+    <h3>Key Insight  -  Nigerian Monetary History</h3>
+    <p>The CBN financial statement data spans Nigerian monetary history from independence in 1960. The dramatic growth in external reserves from the 1970s reflects Nigeria's oil boom era. Annual surplus and income data provide a window into decades of central bank policy and performance.</p>
+  </div>
+
+  <div class="card">
+    <h2>External Reserves and Total Assets  -  1960-2012</h2>
+    <div class="chart-container-lg">
+      <p class="chart-loading" id="loading-main">Loading historical data...</p>
+      <canvas id="chart-main" style="display:none"></canvas>
+    </div>
+    <div class="dual-legend">
+      <span><span class="dot" style="background:#0066CC"></span>External Reserves</span>
+      <span><span class="dot" style="background:#006633"></span>Total Assets</span>
+    </div>
+    <p class="source-note">Source: CBN Annual Report and Financial Statements  -  Direct Supabase query</p>
+  </div>
+
+  <div class="card">
+    <h2>Annual Surplus / Deficit  -  1960-2012</h2>
+    <div class="chart-container-lg">
+      <p class="chart-loading" id="loading-surplus">Loading...</p>
+      <canvas id="chart-surplus" style="display:none"></canvas>
+    </div>
+    <p class="source-note">Green bars = surplus. Red bars = deficit. Source: CBN Annual Report.</p>
+  </div>
+
+  <div class="card">
+    <h2>Annual Financial Statement Data</h2>
+    <div id="loading-table" class="loading">Loading data...</div>
+    <div class="table-wrapper">
+      <table class="data-table th-green" id="fs-table" style="display:none">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th class="num">Ext Reserves</th>
+            <th class="num">Currency in Circ</th>
+            <th class="num">Total Assets</th>
+            <th class="num">Surplus</th>
+            <th class="num">Total Income</th>
+          </tr>
+        </thead>
+        <tbody id="fs-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>Nigeria Data Sources: CBN  -  NBS  -  World Bank  |  For educational purposes only  -  Not financial advice</span>
+    <span class="footer-right">Final Year Project  -  Dept of Computer Science  -  Caleb University, Imota, Lagos  -  2026</span>
+  </div>
+</footer>
+
+<script>
+const SB_URL  = 'https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1/observations';
+const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const SB_HDRS = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` };
+
+function fetchSB(id) {
+  return fetch(`${SB_URL}?indicator_id=eq.${id}&order=obs_date.asc`, { headers: SB_HDRS }).then(r => r.json());
+}
+function fmtYear(d) {
+  return d.substring(0, 4);
+}
+function fmtN(v) {
+  if (v == null) return '-';
+  return Number(v).toLocaleString('en-US', { minimumFractionDigits:0, maximumFractionDigits:0 });
+}
+
+const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:true };
+const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+
+async function load() {
+  const [extRes, cin, ta, surplus, income] = await Promise.all([
+    fetchSB('cbn_annual_ext_reserve'),
+    fetchSB('cbn_annual_cin_c'),
+    fetchSB('cbn_annual_total_assets'),
+    fetchSB('cbn_annual_surplus'),
+    fetchSB('cbn_annual_total_income'),
+  ]);
+
+  const labels = extRes.map(d => fmtYear(d.obs_date));
+
+  // Chart 1: External Reserves + Total Assets
+  document.getElementById('loading-main').style.display = 'none';
+  document.getElementById('chart-main').style.display = 'block';
+  const taMap = {};
+  ta.forEach(d => taMap[d.obs_date] = d.value);
+  new Chart(document.getElementById('chart-main'), {
+    data: { labels, datasets: [
+      { type:'line', label:'External Reserves', data: extRes.map(d => d.value), borderColor:'#0066CC', backgroundColor:'transparent', borderWidth:2.5, pointRadius:2, tension:0.3 },
+      { type:'line', label:'Total Assets',      data: extRes.map(d => taMap[d.obs_date] ?? null), borderColor:'#006633', backgroundColor:'transparent', borderWidth:2.5, pointRadius:2, tension:0.3, spanGaps:true },
+    ]},
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`${ctx.dataset.label}: ${fmtN(ctx.parsed.y)}` }}},
+      scales:{ y:{...SY, title:{display:true,text:'Value (local units)',color:'#6B7280',font:{size:12}}}, x:{...SX, ticks:{...SX.ticks,maxTicksLimit:14}} }
+    }
+  });
+
+  // Chart 2: Surplus bar chart
+  document.getElementById('loading-surplus').style.display = 'none';
+  document.getElementById('chart-surplus').style.display = 'block';
+  const surplusLabels = surplus.map(d => fmtYear(d.obs_date));
+  const surplusVals   = surplus.map(d => d.value);
+  new Chart(document.getElementById('chart-surplus'), {
+    type: 'bar',
+    data: { labels: surplusLabels, datasets: [{ label:'Surplus', data: surplusVals,
+      backgroundColor: surplusVals.map(v => v >= 0 ? '#006633' : '#DC2626'),
+      borderWidth:0, barPercentage:0.7 }] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`${ctx.parsed.y >= 0 ? 'Surplus' : 'Deficit'}: ${fmtN(Math.abs(ctx.parsed.y))}` }},
+        annotation:{ annotations:{ zero:{ type:'line', yMin:0, yMax:0, borderColor:'#9CA3AF', borderWidth:1, borderDash:[4,4] }}}
+      },
+      scales:{ y:{...SY, title:{display:true,text:'Surplus / Deficit',color:'#6B7280',font:{size:12}}}, x:{...SX} }
+    }
+  });
+
+  // Table
+  const cinMap={}, taMapT={}, surpMap={}, incMap={};
+  cin.forEach(d => cinMap[d.obs_date] = d.value);
+  ta.forEach(d => taMapT[d.obs_date] = d.value);
+  surplus.forEach(d => surpMap[d.obs_date] = d.value);
+  income.forEach(d => incMap[d.obs_date] = d.value);
+
+  const tbody = document.getElementById('fs-tbody');
+  extRes.forEach(d => {
+    tbody.innerHTML += `<tr>
+      <td>${fmtYear(d.obs_date)}</td>
+      <td class="num">${fmtN(d.value)}</td>
+      <td class="num">${fmtN(cinMap[d.obs_date])}</td>
+      <td class="num">${fmtN(taMapT[d.obs_date])}</td>
+      <td class="num" style="color:${(surpMap[d.obs_date]??0)>=0?'#006633':'#DC2626'}">${fmtN(surpMap[d.obs_date])}</td>
+      <td class="num">${fmtN(incMap[d.obs_date])}</td>
+    </tr>`;
+  });
+  document.getElementById('loading-table').style.display = 'none';
+  document.getElementById('fs-table').style.display = 'table';
+}
+
+load();
+</script>
+<script src="js/nav.js"></script>
+</body>
+</html>

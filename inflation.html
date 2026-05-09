@@ -31,6 +31,10 @@
     <li><a href="multicurrency.html">Multi-Currency</a></li>
     <li><a href="analytics.html">Analytics</a></li>
     <li><a href="api_docs.html">API Docs</a></li>
+    <li><a href="nfem.html">NFEM Rates</a></li>
+    <li><a href="currency_circulation.html">Currency Circulation</a></li>
+    <li><a href="assets_liabilities.html">Assets &amp; Liabilities</a></li>
+    <li><a href="financial_statement.html">Financial Statement</a></li>
     <li><a href="about.html">About</a></li>
   </ul>
   <div class="nav-right caleb-badge">
@@ -61,6 +65,38 @@
       <canvas id="chart-inf" style="display:none"></canvas>
     </div>
     <p class="source-note">Source: NBS Consumer Price Index Report  -  Year-on-year headline inflation</p>
+  </div>
+
+  <div class="card">
+    <h2>Food Inflation (%)  -  Monthly</h2>
+    <div class="chart-container-lg">
+      <p class="chart-loading" id="loading-food">Loading food inflation...</p>
+      <canvas id="chart-food" style="display:none"></canvas>
+    </div>
+    <p class="source-note">Source: NBS CPI Report  -  Year-on-year food inflation  -  Extended history from Supabase direct query</p>
+  </div>
+
+  <div class="card">
+    <h2>Core Inflation (%)  -  Monthly</h2>
+    <div class="chart-container-lg">
+      <p class="chart-loading" id="loading-core">Loading core inflation...</p>
+      <canvas id="chart-core" style="display:none"></canvas>
+    </div>
+    <p class="source-note">Source: NBS CPI Report  -  Core inflation excludes volatile food and energy items</p>
+  </div>
+
+  <div class="card">
+    <h2>Headline vs Food vs Core Inflation 2003–2026</h2>
+    <div class="chart-container-lg">
+      <p class="chart-loading" id="loading-comp">Loading comparison...</p>
+      <canvas id="chart-comp" style="display:none"></canvas>
+    </div>
+    <div class="dual-legend">
+      <span><span class="dot" style="background:#DC2626"></span>Headline</span>
+      <span><span class="dot" style="background:#E8820C"></span>Food</span>
+      <span><span class="dot" style="background:#0066CC"></span>Core</span>
+    </div>
+    <p class="source-note">Source: NBS Consumer Price Index Report  -  Three inflation measures on the same axis</p>
   </div>
 
   <div class="card">
@@ -159,6 +195,74 @@ async function load() {
 }
 
 load();
+
+// ---- Food & Core inflation from Supabase direct ----
+const SB_URL  = 'https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1/observations';
+const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const SB_HDRS = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` };
+
+async function fetchSB(id) {
+  const r = await fetch(`${SB_URL}?indicator_id=eq.${id}&order=obs_date.asc`, { headers: SB_HDRS });
+  return r.json();
+}
+
+async function loadExtra() {
+  const [food, core, headline] = await Promise.all([
+    fetchSB('inflation_food'),
+    fetchSB('inflation_core'),
+    fetchSB('inflation'),
+  ]);
+
+  // Section 2: Food inflation
+  document.getElementById('loading-food').style.display = 'none';
+  document.getElementById('chart-food').style.display = 'block';
+  new Chart(document.getElementById('chart-food'), {
+    type: 'line',
+    data: { labels: food.map(d => fmt(d.obs_date)), datasets: [{ label:'Food Inflation', data: food.map(d => d.value),
+      borderColor:'#E8820C', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`Food: ${ctx.parsed.y.toFixed(2)}%` }}},
+      scales: { y:{...SY, title:{display:true,text:'Food Inflation (%)',color:'#6B7280',font:{size:12}}}, x:{...SX, ticks:{...SX.ticks,maxTicksLimit:14}} }
+    }
+  });
+
+  // Section 3: Core inflation
+  document.getElementById('loading-core').style.display = 'none';
+  document.getElementById('chart-core').style.display = 'block';
+  new Chart(document.getElementById('chart-core'), {
+    type: 'line',
+    data: { labels: core.map(d => fmt(d.obs_date)), datasets: [{ label:'Core Inflation', data: core.map(d => d.value),
+      borderColor:'#0066CC', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`Core: ${ctx.parsed.y.toFixed(2)}%` }}},
+      scales: { y:{...SY, title:{display:true,text:'Core Inflation (%)',color:'#6B7280',font:{size:12}}}, x:{...SX, ticks:{...SX.ticks,maxTicksLimit:14}} }
+    }
+  });
+
+  // Section 4: Comparison chart — align by food dates (longest series)
+  const hlMap = {}, coreMap = {};
+  headline.forEach(d => hlMap[d.obs_date] = d.value);
+  core.forEach(d => coreMap[d.obs_date] = d.value);
+  document.getElementById('loading-comp').style.display = 'none';
+  document.getElementById('chart-comp').style.display = 'block';
+  new Chart(document.getElementById('chart-comp'), {
+    type: 'line',
+    data: {
+      labels: food.map(d => fmt(d.obs_date)),
+      datasets: [
+        { label:'Headline', data: food.map(d => hlMap[d.obs_date] ?? null), borderColor:'#DC2626', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3, spanGaps:true },
+        { label:'Food',     data: food.map(d => d.value),                   borderColor:'#E8820C', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 },
+        { label:'Core',     data: food.map(d => coreMap[d.obs_date] ?? null),borderColor:'#0066CC', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3, spanGaps:true },
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{display:true,position:'top'}, tooltip:{ ...TIP, displayColors:true, callbacks:{ title:i=>i[0].label, label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(2)}%` }}},
+      scales: { y:{...SY, title:{display:true,text:'Inflation Rate (%)',color:'#6B7280',font:{size:12}}}, x:{...SX, ticks:{...SX.ticks,maxTicksLimit:14}} }
+    }
+  });
+}
+
+loadExtra();
 </script>
 <script>
 // Hamburger menu toggle
