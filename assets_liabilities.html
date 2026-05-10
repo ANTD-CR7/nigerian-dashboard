@@ -128,8 +128,18 @@ const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A',
 const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
 const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
 
+// Clamp extreme outliers: cap at 3× the 75th-percentile value
+function clamp(arr) {
+  if (!arr || arr.length === 0) return arr;
+  const sorted = arr.map(d => d.value).filter(v => v != null).sort((a,b) => a-b);
+  const q3  = sorted[Math.floor(sorted.length * 0.75)] || sorted[sorted.length-1];
+  const cap = q3 * 3;
+  return arr.map(d => ({ ...d, value: d.value != null ? Math.min(d.value, cap) : null }));
+}
+
 function mkLine(arr, color) {
-  return { type:'line', data: arr.map(d => d?.value ?? null), borderColor:color, backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, spanGaps:true };
+  const safe = clamp(arr);
+  return { type:'line', data: safe.map(d => d?.value ?? null), borderColor:color, backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, spanGaps:true };
 }
 
 async function load() {
