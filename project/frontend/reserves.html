@@ -169,7 +169,7 @@ async function load() {
         tooltip: { ...TIP, callbacks: { title:i=>i[0].label, label:ctx=>`${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}B` }}
       },
       scales: {
-        y: { ...SY, title:{display:true,text:'USD Billions',color:'#6B7280',font:{size:12}} },
+        y: { ...SY, title:{display:true,text:'USD Billions',color:'#6B7280',font:{size:12}}, ticks:{...SY.ticks, callback: value => '$' + value.toFixed(1) + 'B'} },
         x: { ...SX, ticks:{...SX.ticks,maxTicksLimit:14} }
       }
     }
