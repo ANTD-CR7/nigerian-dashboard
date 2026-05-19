@@ -28,13 +28,18 @@
     <li><a href="exchange_rate.html">Exchange Rate</a></li>
     <li><a href="interest_rate.html">Interest Rate</a></li>
     <li><a href="reserves.html" class="active">Reserves</a></li>
-    <li><a href="multicurrency.html">Multi-Currency</a></li>
-    <li><a href="analytics.html">Analytics</a></li>
-    <li><a href="api_docs.html">API Docs</a></li>
-    <li><a href="nfem.html">NFEM Rates</a></li>
-    <li><a href="currency_circulation.html">Currency Circulation</a></li>
-    <li><a href="assets_liabilities.html">Assets &amp; Liabilities</a></li>
-    <li><a href="financial_statement.html">Financial Statement</a></li>
+    <li class="dropdown">
+      <a href="#">More</a>
+      <div class="dropdown-content">
+        <a href="multicurrency.html">Multi-Currency</a>
+        <a href="analytics.html">Analytics</a>
+        <a href="nfem.html">NFEM Rates</a>
+        <a href="currency_circulation.html">Currency Circulation</a>
+        <a href="assets_liabilities.html">Assets &amp; Liabilities</a>
+        <a href="financial_statement.html">Financial Statement</a>
+        <a href="api_docs.html">API Docs</a>
+      </div>
+    </li>
     <li><a href="about.html">About</a></li>
   </ul>
   <div class="nav-right caleb-badge">
@@ -233,6 +238,32 @@ async function load() {
 }
 
 load();
+</script>
+<script>
+(function(){
+  var btn  = document.querySelector('.hamburger, #nav-toggle, #hamburger, [class*="burger"]');
+  var menu = document.querySelector('#nav-menu, .nav-links, .nav-menu, nav ul');
+  if (btn && menu) {
+    btn.addEventListener('click', function() {
+      menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+      menu.style.flexDirection = 'column';
+      menu.style.position = 'absolute';
+      menu.style.top = '65px';
+      menu.style.left = '0';
+      menu.style.right = '0';
+      menu.style.background = '#006633';
+      menu.style.padding = '10px 0';
+      menu.style.zIndex = '999';
+      menu.style.overflowY = 'auto';
+      menu.style.maxHeight = '80vh';
+    });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('nav') && menu.style.display === 'flex') {
+        menu.style.display = 'none';
+      }
+    });
+  }
+})();
 </script>
 <script src="js/nav.js"></script>
 </body>
