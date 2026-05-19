@@ -26,9 +26,16 @@ nav{background:#006633;border-bottom:3px solid #C8A951;padding:0 1.5rem;display:
 .nav-brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;font-size:.95rem;font-weight:700;color:#fff;letter-spacing:-.2px;white-space:nowrap;flex-shrink:0}
 .nav-coa{height:45px;width:auto;object-fit:contain;flex-shrink:0}
 .nav-flag{font-size:1.1rem}
-.nav-center{display:flex;align-items:stretch;list-style:none;flex:1;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.nav-center::-webkit-scrollbar{display:none}
+.nav-center{display:flex;align-items:stretch;list-style:none;flex:1;justify-content:flex-start}
 .nav-center li{display:flex;align-items:stretch;flex-shrink:0}
+/* ===== DROPDOWN ===== */
+.dropdown{position:relative;display:flex;align-items:stretch;flex-shrink:0}
+.dropdown-content{display:none;position:absolute;top:100%;left:0;background:#006633;min-width:200px;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,.3);border-radius:0 0 6px 6px}
+.dropdown-content a{display:block;padding:10px 16px;color:#fff;text-decoration:none;font-size:13px;border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap;border-bottom-width:1px}
+.dropdown-content a:hover{background:#004d26}
+.dropdown:hover .dropdown-content{display:block}
+.dropdown > a{cursor:pointer}
+.dropdown > a::after{content:' ▾'}
 .nav-center a{display:flex;align-items:center;padding:0 .5rem;font-size:.78rem;font-weight:500;color:rgba(255,255,255,.85);text-decoration:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;white-space:nowrap}
 .nav-center a:hover{color:#fff}
 .nav-center a.active{color:#fff;font-weight:600;border-bottom-color:#fff}
@@ -300,6 +307,10 @@ h2 { font-size: clamp(1rem, 3vw, 1.4rem); }
   .hamburger { display: flex; }
   .nav-links { display: none; flex-direction: column; width: 100%; background: #006633; padding: 0.5rem 0; }
   .nav-links.open, .nav-links.nav-open { display: flex; }
+  /* Show all dropdown items in mobile menu */
+  .dropdown-content { display:block;position:static;box-shadow:none;background:rgba(0,0,0,.15);border-radius:0;min-width:100% }
+  .dropdown-content a { padding:8px 24px;font-size:12px }
+  .dropdown > a::after { content:'' }
   .nav-links li a { padding: 0.75rem 1.5rem; display: block; border-bottom: 1px solid rgba(255,255,255,0.1); }
   nav { flex-wrap: wrap; height: auto; padding: 0.75rem 1rem; }
   .nav-brand { font-size: 0.9rem; }
