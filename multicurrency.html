@@ -119,9 +119,13 @@
 </footer>
 
 <script>
-const API = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-  ? window.location.origin
-  : 'https://web-production-feb5f.up.railway.app';
+const SB  = 'https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const H   = { apikey: KEY, Authorization: 'Bearer ' + KEY };
+async function sb(indicator, extra) {
+  const r = await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`, { headers: H });
+  return (await r.json()).map(row => ({ obs_date: row.obs_date, value: parseFloat(row.value) }));
+}
 
 const CURRENCY_NAMES = {
   usd:'US Dollar', gbp:'British Pound', eur:'Euro', cny:'Chinese Yuan',
@@ -191,7 +195,12 @@ function drawSingleChart(currency) {
 }
 
 async function load() {
-  allData = await fetch(`${API}/api/multicurrency`).then(r => r.json());
+  const _cur = ['usd','gbp','eur','cny','jpy','chf','zar','aed','sar','sdr','cfa','waua'];
+  const _rat = ['buying','central','selling'];
+  const _q = [], _k = [];
+  for (const c of _cur) for (const rate of _rat) { _q.push(sb(`${c}_${rate}`)); _k.push([c,rate]); }
+  const _res = await Promise.all(_q);
+  _res.forEach((data, i) => { const [c,r]=_k[i]; if(!allData[c]) allData[c]={}; allData[c][r]=data; });
 
   // Current rates table
   const order = ['usd','gbp','eur','cny','jpy','chf','zar','aed','sar','sdr','cfa','waua'];

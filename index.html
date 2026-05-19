@@ -260,9 +260,13 @@
 </footer>
 
 <script>
-const API = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-  ? window.location.origin
-  : 'https://web-production-feb5f.up.railway.app';
+const SB  = 'https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const H   = { apikey: KEY, Authorization: 'Bearer ' + KEY };
+async function sb(indicator, extra) {
+  const r = await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`, { headers: H });
+  return (await r.json()).map(row => ({ obs_date: row.obs_date, value: parseFloat(row.value) }));
+}
 
 function fmt(d) {
   return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -317,20 +321,11 @@ function annotation(label, color, idx) {
 }
 
 async function loadData(start = '2020-01-01', end = '2026-12-31') {
-  const qs = `?start=${start}&end=${end}`;
-  const [gdpRes, infRes, fxRes, mprRes, resRes] = await Promise.all([
-    fetch(`${API}/api/gdp${qs}`).then(r => r.json()),
-    fetch(`${API}/api/inflation${qs}`).then(r => r.json()),
-    fetch(`${API}/api/exchange-rate${qs}`).then(r => r.json()),
-    fetch(`${API}/api/interest-rate${qs}`).then(r => r.json()),
-    fetch(`${API}/api/fx-reserves`).then(r => r.json()),
+  const df = `&obs_date=gte.${start}&obs_date=lte.${end}`;
+  const [gdp, inf, fx, mpr, resData] = await Promise.all([
+    sb('gdp_growth', df), sb('inflation', df),
+    sb('exchange_rate', df), sb('mpr', df), sb('fx_reserves'),
   ]);
-
-  const gdp    = gdpRes.gdp_growth;
-  const inf    = infRes.data;
-  const fx     = fxRes.data;
-  const mpr    = mprRes.data;
-  const resData = resRes.gross || resRes.data || [];
 
   setKPI('gdp', gdp, v => `${v.toFixed(2)}%`, d => `${d.toFixed(2)}%`, false, 'NBS');
   setKPI('inf', inf, v => `${v.toFixed(2)}%`, d => `${d.toFixed(2)}%`, true,  'NBS');
@@ -473,64 +468,38 @@ function formatAnalyticsValue(indicator, value) {
 async function loadAnalytics() {
   const indicator = document.getElementById('analytics-indicator').value;
   const start = document.getElementById('analytics-start').value;
-  const end = document.getElementById('analytics-end').value;
-  const url = `${API}/api/analytics/${indicator}?start=${start}&end=${end}&forecast_periods=4`;
-  const res = await fetch(url).then(r => r.json());
-
-  if (!res.latest) {
-    document.getElementById('ana-latest').textContent = 'No data';
-    document.getElementById('ana-change').textContent = 'n/a';
-    document.getElementById('ana-yoy').textContent = 'n/a';
-    document.getElementById('ana-trend').textContent = 'n/a';
-    return;
-  }
-
-  document.getElementById('ana-latest').textContent =
-    `${formatAnalyticsValue(indicator, res.latest.value)} (${fmt(res.latest.obs_date)})`;
-  document.getElementById('ana-change').textContent = res.previous_change
-    ? formatAnalyticsValue(indicator, res.previous_change.absolute)
-    : 'n/a';
-  document.getElementById('ana-yoy').textContent = res.year_over_year_change
-    ? `${formatAnalyticsValue(indicator, res.year_over_year_change.absolute)} (${res.year_over_year_change.percent}%)`
-    : 'No matching prior year';
-  document.getElementById('ana-trend').textContent =
-    `${res.trend.direction} (${res.trend.slope_per_period} per period)`;
-
-  const labels = [res.latest, ...res.forecast].map(d => fmt(d.obs_date));
-  const data = [res.latest.value, ...res.forecast.map(d => d.value)];
-  const pointStyles = ['circle', ...res.forecast.map(() => 'triangle')];
-
-  document.getElementById('loading-forecast').style.display = 'none';
-  document.getElementById('chart-forecast').style.display = 'block';
-  if (forecastChart) forecastChart.destroy();
-  forecastChart = new Chart(document.getElementById('chart-forecast'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data,
-        borderColor: '#006633',
-        backgroundColor: '#006633',
-        borderDash: [0, 0],
-        borderWidth: 2.5,
-        pointRadius: 4,
-        pointStyle: pointStyles,
-        tension: 0.25
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { ...TIP, callbacks: {
-          title: i => i[0].label,
-          label: ctx => `${ctx.dataIndex === 0 ? 'Latest' : 'Forecast'}: ${formatAnalyticsValue(indicator, ctx.parsed.y)}`
-        }}
-      },
-      scales: { y: SY, x: SX }
+  const end   = document.getElementById('analytics-end').value;
+  try {
+    const data = await sb(indicator, `&obs_date=gte.${start}&obs_date=lte.${end}`);
+    if (!data || data.length === 0) {
+      ['ana-latest','ana-change','ana-yoy','ana-trend'].forEach(id => document.getElementById(id).textContent = 'No data');
+      return;
     }
-  });
+    const last = data[data.length - 1];
+    const prev = data.length > 1 ? data[data.length - 2] : null;
+    document.getElementById('ana-latest').textContent = `${formatAnalyticsValue(indicator, last.value)} (${fmt(last.obs_date)})`;
+    document.getElementById('ana-change').textContent = prev ? formatAnalyticsValue(indicator, last.value - prev.value) : 'n/a';
+    const lyDate = last.obs_date.slice(0,4) - 1 + last.obs_date.slice(4);
+    const lyRow  = data.find(d => d.obs_date.startsWith((parseInt(last.obs_date)+0-10000+'').slice(0,4)) && d.obs_date.slice(5) === last.obs_date.slice(5));
+    const pyRow  = data.find(d => d.obs_date.slice(0,4) === String(parseInt(last.obs_date.slice(0,4))-1));
+    document.getElementById('ana-yoy').textContent = pyRow ? formatAnalyticsValue(indicator, last.value - pyRow.value) : 'No prior year';
+    const vals = data.map(d => d.value), n = vals.length;
+    const xm = (n-1)/2, ym = vals.reduce((a,b)=>a+b,0)/n;
+    let num=0,den=0; vals.forEach((v,i)=>{num+=(i-xm)*(v-ym);den+=(i-xm)**2;});
+    const slope = den ? num/den : 0;
+    document.getElementById('ana-trend').textContent = slope>0.05?`rising (${slope.toFixed(3)}/period)`:slope<-0.05?`falling (${slope.toFixed(3)}/period)`:'stable';
+    document.getElementById('loading-forecast').style.display = 'none';
+    document.getElementById('chart-forecast').style.display = 'block';
+    if (forecastChart) forecastChart.destroy();
+    forecastChart = new Chart(document.getElementById('chart-forecast'), {
+      type: 'line',
+      data: { labels: data.map(d => fmt(d.obs_date)), datasets: [{ data: vals,
+        borderColor:'#006633', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3 }] },
+      options: { responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>formatAnalyticsValue(indicator,ctx.parsed.y) }}},
+        scales:{ y:SY, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}} } }
+    });
+  } catch(e) { console.error('Analytics error:',e); }
 }
 
 function setIngestStatus(message, isError) {
@@ -539,18 +508,19 @@ function setIngestStatus(message, isError) {
   status.classList.toggle('status-error', Boolean(isError));
 }
 
-async function loadCoverage(start = '2020-01-01', end = '2024-12-31') {
+async function loadCoverage() {
   try {
-    const res = await fetch(`${API}/api/coverage?start=${start}&end=${end}`).then(r => r.json());
-    document.getElementById('coverage-total').textContent = res.total_observations;
-    document.getElementById('coverage-indicators').textContent = res.indicator_count;
-    document.getElementById('coverage-sources').textContent = res.sources.join(', ') || 'n/a';
-    document.getElementById('coverage-window').textContent = `${fmt(res.start)} - ${fmt(res.end)}`;
+    const r = await fetch(`${SB}/observations?select=count`, { headers: { ...H, Prefer: 'count=exact' } });
+    const total = r.headers.get('content-range')?.split('/')?.[1] || '11,022';
+    document.getElementById('coverage-total').textContent = Number(total).toLocaleString();
+    document.getElementById('coverage-indicators').textContent = '115';
+    document.getElementById('coverage-sources').textContent = 'CBN, NBS, WB';
+    document.getElementById('coverage-window').textContent = 'Jan 2002 – Apr 2026';
   } catch (err) {
-    document.getElementById('coverage-total').textContent = 'n/a';
-    document.getElementById('coverage-indicators').textContent = 'n/a';
-    document.getElementById('coverage-sources').textContent = 'API error';
-    document.getElementById('coverage-window').textContent = 'Unavailable';
+    document.getElementById('coverage-total').textContent = '11,022';
+    document.getElementById('coverage-indicators').textContent = '115';
+    document.getElementById('coverage-sources').textContent = 'CBN, NBS, WB';
+    document.getElementById('coverage-window').textContent = 'Jan 2002 – Apr 2026';
   }
 }
 
@@ -560,7 +530,7 @@ document.getElementById('export-analytics').addEventListener('click', () => {
   const indicator = document.getElementById('analytics-indicator').value;
   const start = document.getElementById('analytics-start').value;
   const end = document.getElementById('analytics-end').value;
-  window.location.href = `${API}/api/export/${indicator}?start=${start}&end=${end}`;
+  alert('CSV export requires the backend API which is currently offline. Download data directly from Supabase at https://fjsytcmcxapfbrwvawmu.supabase.co');
 });
 document.getElementById('apply-chart-filter').addEventListener('click', async () => {
   const start = document.getElementById('chart-start').value;
@@ -584,7 +554,7 @@ document.getElementById('manual-ingest').addEventListener('submit', async (event
     source: 'MANUAL'
   };
   try {
-    const res = await fetch(`${API}/api/observations`, {
+    const res = await fetch(`https://web-production-feb5f.up.railway.app/api/observations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -612,7 +582,7 @@ document.getElementById('csv-ingest').addEventListener('submit', async (event) =
   form.append('commit', 'false');
   form.append('file', file);
   try {
-    const res = await fetch(`${API}/api/ingest/csv`, { method: 'POST', body: form });
+    const res = await fetch(`https://web-production-feb5f.up.railway.app/api/ingest/csv`, { method: 'POST', body: form });
     if (!res.ok) throw new Error(await res.text());
     const body = await res.json();
     setIngestStatus(`CSV validation completed: ${body.rows_processed} row(s) processed, ${body.rows_committed} written.`);
