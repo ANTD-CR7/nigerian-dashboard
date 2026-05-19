@@ -100,9 +100,13 @@
 </footer>
 
 <script>
-const API = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-  ? window.location.origin
-  : 'https://web-production-feb5f.up.railway.app';
+const SB  = 'https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const H   = { apikey: KEY, Authorization: 'Bearer ' + KEY };
+async function sb(indicator, extra) {
+  const r = await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`, { headers: H });
+  return (await r.json()).map(row => ({ obs_date: row.obs_date, value: parseFloat(row.value) }));
+}
 
 function fmt(d) {
   return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -148,14 +152,13 @@ const SECTOR_LABELS = {
 };
 
 async function load() {
-  const [ana, sectorsRaw] = await Promise.all([
-    fetch(`${API}/api/analytics`).then(r => r.json()),
-    fetch(`${API}/api/gdp-sectors`).then(r => r.json()),
+  const _sectors = ['agriculture','industry','services','manufacturing','miningAndQuarrying','construction','trade','financeAndInsurance','informationAndCommunication','realEstate','education','publicAdministration'];
+  const [inf, fx, res, ...sectorArr] = await Promise.all([
+    sb('inflation'), sb('exchange_rate'), sb('fx_reserves'),
+    ..._sectors.map(s => sb('gdp_' + s)),
   ]);
-
-  const inf = ana.inflation     || [];
-  const fx  = ana.exchange_rate || [];
-  const res = ana.fx_reserves   || [];
+  const sectorsRaw = {};
+  _sectors.forEach((s, i) => { sectorsRaw[s] = sectorArr[i]; });
 
   // Section 1: Inflation with regression
   document.getElementById('loading-inf').style.display = 'none';
