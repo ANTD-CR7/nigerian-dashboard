@@ -3,195 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <link rel="icon" type="image/png" href="favicon.png">
-<link rel="shortcut icon" type="image/png" href="favicon.png">
-<link rel="apple-touch-icon" href="favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Currency Circulation  -  Nigeria Economic Data Platform</title>
-<link rel="stylesheet" href="css/style.css">
+<title>Currency Circulation — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
 </head>
 <body>
-<nav>
-  <a class="nav-brand" href="index.html">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
-         onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
-    <span class="nav-flag" style="display:none">Nigeria </span>Nigeria Economic Data Platform
-  </a>
-  <button class="hamburger" id="nav-toggle" aria-label="Toggle menu">
-    <span></span><span></span><span></span>
-  </button>
-  <ul class="nav-center nav-links" id="nav-menu">
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
     <li><a href="index.html">Dashboard</a></li>
-    <li><a href="gdp.html">GDP</a></li>
-    <li><a href="inflation.html">Inflation</a></li>
-    <li><a href="exchange_rate.html">Exchange Rate</a></li>
-    <li><a href="interest_rate.html">Interest Rate</a></li>
-    <li><a href="reserves.html">Reserves</a></li>
-    <li class="dropdown">
-      <a href="#" class="active">More</a>
-      <div class="dropdown-content">
-        <a href="multicurrency.html">Multi-Currency</a>
-        <a href="analytics.html">Analytics</a>
-        <a href="nfem.html">NFEM Rates</a>
-        <a href="currency_circulation.html" class="active">Currency Circulation</a>
-        <a href="assets_liabilities.html">Assets &amp; Liabilities</a>
-        <a href="financial_statement.html">Financial Statement</a>
-        <a href="api_docs.html">API Docs</a>
-      </div>
-    </li>
-    <li><a href="about.html">About</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a></div></li>
+    <li><a href="#" class="active">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html" class="active">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="analytics.html">Analytics</a></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
   </ul>
-  <div class="nav-right caleb-badge">
-    <img src="https://calebuniversity.edu.ng/wp-content/uploads/2021/01/Caleb-University-Logo.png"
-         alt="Caleb University" class="nav-caleb"
-         onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
-    <span class="nav-fyp">FYP 2026</span>
-    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY  -  FYP 2026</span>
-  </div>
+  <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
-
-<main>
-  <div class="page-header page-header-green">
-    <h1>Currency in Circulation</h1>
-    <p>Total Nigerian Naira in circulation  -  Central Bank of Nigeria  -  2002-2024</p>
-  </div>
-
-  <div class="insight-box">
-    <h3>Key Insight  -  Naira Redesign 2023</h3>
-    <p>Currency in circulation dropped sharply in early 2023 following the CBN Naira redesign policy requiring old notes to be returned to banks. It recovered as courts challenged the policy. Long-term trend shows consistent growth from approximately ₦1.4T in 2002 to over ₦4T by 2024.</p>
-  </div>
-
-  <div class="card">
-    <h2>Currency in Circulation  -  2002-2024 (NGN Millions)</h2>
-    <div class="chart-container-lg">
-      <p class="chart-loading" id="loading-chart">Loading data...</p>
-      <canvas id="chart-cin" style="display:none"></canvas>
-    </div>
-    <p class="source-note">Source: CBN Annual Report  -  Currency in Circulation (NGN Millions)</p>
-  </div>
-
-  <div class="card">
-    <h2>Monthly Data Table</h2>
-    <div id="loading-table" class="loading">Loading data...</div>
-    <div class="table-wrapper">
-      <table class="data-table th-green" id="cin-table" style="display:none">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th class="num">Amount (NGN Millions)</th>
-            <th>Change</th>
-          </tr>
-        </thead>
-        <tbody id="cin-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-</main>
-
-<footer>
-  <div class="footer-inner">
-    <span>Nigeria Data Sources: CBN  -  NBS  -  World Bank  |  For educational purposes only  -  Not financial advice</span>
-    <span class="footer-right">Final Year Project  -  Dept of Computer Science  -  Caleb University, Imota, Lagos  -  2026</span>
-  </div>
-</footer>
-
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="analytics.html">Analytics</a><a href="api_docs.html">API Docs</a><a href="about.html">About</a>
+  <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a>
+  <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html" class="active">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+</div>
+<section class="page-hero"><div class="container">
+  <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / CBN Data / Currency Circulation</div>
+  <h1>Currency in Circulation</h1><div class="page-hero-rule"></div>
+  <p>Total Nigerian Naira in circulation — Central Bank of Nigeria · 2002–2024</p>
+</div></section>
+<div class="page-content"><div class="container">
+  <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>Currency in circulation dropped sharply in early 2023 following the CBN Naira redesign policy requiring old notes to be returned to banks. It recovered as courts challenged the policy. Long-term trend shows consistent growth from ₦1.4T in 2002 to over ₦4T by 2024.</p></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Currency in Circulation 2002–2024 (NGN Millions)</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-chart">Loading…</div><canvas id="chart-cin" style="display:none"></canvas></div><div class="source-note">Source: CBN Annual Report · Currency in Circulation (NGN Millions)</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Monthly Data Table</div><div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="cin-table" style="display:none"><thead><tr><th>Date</th><th class="num">Amount (NGN Millions)</th><th>Change</th></tr></thead><tbody id="cin-tbody"></tbody></table></div></div>
+</div></div>
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h4>Data</h4><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h4>Sources</h4><p>Central Bank of Nigeria (CBN)</p><p>National Bureau of Statistics (NBS)</p><p>World Bank Open Data</p></div><div><h4>Project</h4><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
 <script>
-const SB  = 'https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
-const H   = { apikey: KEY, Authorization: 'Bearer ' + KEY };
-async function sb(indicator, extra) {
-  const r = await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`, { headers: H });
-  return (await r.json()).map(row => ({ obs_date: row.obs_date, value: parseFloat(row.value) }));
+const SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const H={apikey:KEY,Authorization:'Bearer '+KEY};
+async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
+function fmt(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
+function fmtM(v){return Number(v).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});}
+const TIP={backgroundColor:'#12141f',titleColor:'#F5F0E8',bodyColor:'rgba(245,240,232,0.7)',borderColor:'rgba(0,135,81,0.25)',borderWidth:1,padding:12,displayColors:false};
+const SX={grid:{display:false},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
+const SY={grid:{color:'rgba(245,240,232,0.06)'},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
+async function load(){
+  const data=await sb('currency_circulation_full');
+  const redesignIdx=data.findIndex(d=>d.obs_date.startsWith('2023-01'));
+  const annots={};
+  if(redesignIdx>=0)annots.redesign={type:'line',xMin:redesignIdx,xMax:redesignIdx,borderColor:'rgba(224,82,82,0.6)',borderWidth:1.5,borderDash:[6,4],label:{display:true,content:'Naira Redesign (Jan 2023)',position:'start',backgroundColor:'#e05252',color:'#fff',font:{size:11,weight:'600'},padding:{x:6,y:3},borderRadius:2}};
+  document.getElementById('loading-chart').style.display='none';
+  const canvas=document.getElementById('chart-cin');
+  canvas.style.display='block';
+  new Chart(canvas,{type:'line',data:{labels:data.map(d=>fmt(d.obs_date)),datasets:[{label:'Currency in Circulation',data:data.map(d=>d.value),borderColor:'#008751',backgroundColor:'rgba(0,135,81,0.06)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`₦${fmtM(ctx.parsed.y)}M`}},annotation:{annotations:annots}},scales:{y:{...SY,title:{display:true,text:'NGN Millions',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  const tbody=document.getElementById('cin-tbody');
+  data.forEach((d,i)=>{const prev=i>0?data[i-1].value:null;const diff=prev!=null?d.value-prev:null;const changeHtml=diff===null?'-':diff>=0?`<span style="color:#008751">+${fmtM(diff)}M</span>`:`<span style="color:#e05252">${fmtM(diff)}M</span>`;tbody.innerHTML+=`<tr><td>${fmt(d.obs_date)}</td><td class="num">₦${fmtM(d.value)}M</td><td>${changeHtml}</td></tr>`;});
+  document.getElementById('loading-table').style.display='none';
+  document.getElementById('cin-table').style.display='table';
 }
-
-function fmt(d) {
-  return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
-}
-function fmtM(v) {
-  return Number(v).toLocaleString('en-US', { minimumFractionDigits:0, maximumFractionDigits:0 });
-}
-
-const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
-const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
-const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
-
-async function load() {
-  const data = await sb('currency_circulation_full');
-
-  // Find Jan 2023 index for annotation
-  const redesignIdx = data.findIndex(d => d.obs_date.startsWith('2023-01'));
-  const annots = {};
-  if (redesignIdx >= 0) annots.redesign = {
-    type:'line', xMin:redesignIdx, xMax:redesignIdx,
-    borderColor:'rgba(220,38,38,0.6)', borderWidth:1.5, borderDash:[6,4],
-    label:{ display:true, content:'Naira Redesign (Jan 2023)', position:'start',
-      backgroundColor:'#DC2626', color:'#fff', font:{size:11,weight:'600'},
-      padding:{x:6,y:3}, borderRadius:2 }
-  };
-
-  document.getElementById('loading-chart').style.display = 'none';
-  const canvas = document.getElementById('chart-cin');
-  canvas.style.display = 'block';
-  new Chart(canvas, {
-    type: 'line',
-    data: { labels: data.map(d => fmt(d.obs_date)), datasets: [{ label:'Currency in Circulation', data: data.map(d => d.value),
-      borderColor:'#006633', backgroundColor:'rgba(0,102,51,0.05)', borderWidth:2.5, pointRadius:0, fill:true, tension:0.3 }] },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins: {
-        legend:{ display:false },
-        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`₦${fmtM(ctx.parsed.y)}M` }},
-        annotation:{ annotations: annots }
-      },
-      scales: {
-        y: { ...SY, title:{display:true,text:'NGN Millions',color:'#6B7280',font:{size:12}} },
-        x: { ...SX, ticks:{...SX.ticks,maxTicksLimit:14} }
-      }
-    }
-  });
-
-  const tbody = document.getElementById('cin-tbody');
-  data.forEach((d, i) => {
-    const prev = i > 0 ? data[i-1].value : null;
-    const diff = prev != null ? d.value - prev : null;
-    const changeHtml = diff === null ? '-'
-      : diff >= 0 ? `<span style="color:#006633">+${fmtM(diff)}M</span>`
-      : `<span style="color:#DC2626">${fmtM(diff)}M</span>`;
-    tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">₦${fmtM(d.value)}M</td><td>${changeHtml}</td></tr>`;
-  });
-  document.getElementById('loading-table').style.display = 'none';
-  document.getElementById('cin-table').style.display = 'table';
-}
-
 load();
 </script>
-<script>
-(function(){
-  var btn  = document.querySelector('.hamburger, #nav-toggle, #hamburger, [class*="burger"]');
-  var menu = document.querySelector('#nav-menu, .nav-links, .nav-menu, nav ul');
-  if (btn && menu) {
-    btn.addEventListener('click', function() {
-      menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-      menu.style.flexDirection = 'column';
-      menu.style.position = 'absolute';
-      menu.style.top = '65px';
-      menu.style.left = '0';
-      menu.style.right = '0';
-      menu.style.background = '#006633';
-      menu.style.padding = '10px 0';
-      menu.style.zIndex = '999';
-      menu.style.overflowY = 'auto';
-      menu.style.maxHeight = '80vh';
-    });
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('nav') && menu.style.display === 'flex') {
-        menu.style.display = 'none';
-      }
-    });
-  }
-})();
-</script>
-<script src="js/nav.js"></script>
-</body>
-</html>
+<script src="shared.js"></script><script src="js/nav.js"></script>
+</body></html>

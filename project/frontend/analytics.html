@@ -3,319 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <link rel="icon" type="image/png" href="favicon.png">
-<link rel="shortcut icon" type="image/png" href="favicon.png">
-<link rel="apple-touch-icon" href="favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Analytics  -  Nigeria Economic Data Platform</title>
-<link rel="stylesheet" href="css/style.css">
+<title>Analytics — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
 </head>
 <body>
-<nav>
-  <a class="nav-brand" href="index.html">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
-         onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
-    <span class="nav-flag" style="display:none">Nigeria </span>Nigeria Economic Data Platform
-  </a>
-  <button class="hamburger" id="nav-toggle" aria-label="Toggle menu">
-    <span></span><span></span><span></span>
-  </button>
-  <ul class="nav-center nav-links" id="nav-menu">
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
     <li><a href="index.html">Dashboard</a></li>
-    <li><a href="gdp.html">GDP</a></li>
-    <li><a href="inflation.html">Inflation</a></li>
-    <li><a href="exchange_rate.html">Exchange Rate</a></li>
-    <li><a href="interest_rate.html">Interest Rate</a></li>
-    <li><a href="reserves.html">Reserves</a></li>
-    <li class="dropdown">
-      <a href="#" class="active">More</a>
-      <div class="dropdown-content">
-        <a href="multicurrency.html">Multi-Currency</a>
-        <a href="analytics.html" class="active">Analytics</a>
-        <a href="nfem.html">NFEM Rates</a>
-        <a href="currency_circulation.html">Currency Circulation</a>
-        <a href="assets_liabilities.html">Assets &amp; Liabilities</a>
-        <a href="financial_statement.html">Financial Statement</a>
-        <a href="api_docs.html">API Docs</a>
-      </div>
-    </li>
-    <li><a href="about.html">About</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a></div></li>
+    <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="analytics.html" class="active">Analytics</a></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
   </ul>
-  <div class="nav-right caleb-badge">
-    <img src="https://calebuniversity.edu.ng/wp-content/uploads/2021/01/Caleb-University-Logo.png"
-         alt="Caleb University" class="nav-caleb"
-         onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
-    <span class="nav-fyp">FYP 2026</span>
-    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY  -  FYP 2026</span>
-  </div>
+  <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
-
-<main>
-  <div class="page-header page-header-green">
-    <h1>Analytics and Insights</h1>
-    <p>Cross-indicator analysis, correlation and trend computed in pure JavaScript  -  2020-2026</p>
-  </div>
-
-  <div class="card">
-    <h2>Section 1  -  Inflation Trend with Linear Regression</h2>
-    <div class="chart-container-lg">
-      <p class="chart-loading" id="loading-inf">Loading...</p>
-      <canvas id="chart-inf" style="display:none"></canvas>
-    </div>
-    <p class="source-note">Source: NBS Consumer Price Index  -  Trend line = Ordinary Least Squares linear regression on monthly data</p>
-  </div>
-
-  <div class="card">
-    <h2>Section 2  -  Pearson Correlation: Inflation vs Exchange Rate</h2>
-    <div id="pearson-result" style="padding:1.5rem 0">
-      <p style="color:#6B7280">Computing Pearson correlation...</p>
-    </div>
-    <p class="source-note">Pearson r calculated on paired monthly observations (NBS inflation vs CBN NGN/USD central rate). n = aligned data points.</p>
-  </div>
-
-  <div class="card">
-    <h2>Section 3  -  FX Reserves vs Exchange Rate (Inverse Relationship)</h2>
-    <div class="chart-container-lg">
-      <p class="chart-loading" id="loading-dual">Loading...</p>
-      <canvas id="chart-dual" style="display:none"></canvas>
-    </div>
-    <div class="dual-legend">
-      <span><span class="dot" style="background:#0066CC"></span>Exchange Rate NGN/USD  -  Left axis</span>
-      <span><span class="dot" style="background:#006633"></span>FX Reserves USD Bn  -  Right axis</span>
-    </div>
-    <p class="source-note">As reserves fall the Naira weakens; as reserves recover the rate stabilises. Source: CBN.</p>
-  </div>
-
-  <div class="card">
-    <h2>Section 4  -  GDP Sectoral Comparison (Latest Annual Values)</h2>
-    <div class="chart-container-lg">
-      <p class="chart-loading" id="loading-sectors">Loading...</p>
-      <canvas id="chart-sectors" style="display:none"></canvas>
-    </div>
-    <p class="source-note">Source: NBS Real GDP by Sector  -  Latest available annual value per sector (NGN Billions at constant 2010 prices)</p>
-  </div>
-</main>
-
-<footer>
-  <div class="footer-inner">
-    <span>Nigeria Data Sources: CBN  -  NBS  -  World Bank  |  For educational purposes only  -  Not financial advice</span>
-    <span class="footer-right">Final Year Project  -  Dept of Computer Science  -  Caleb University, Imota, Lagos  -  2026</span>
-  </div>
-</footer>
-
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="analytics.html" class="active">Analytics</a><a href="api_docs.html">API Docs</a><a href="about.html">About</a>
+  <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a>
+  <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+</div>
+<section class="page-hero"><div class="container">
+  <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / Analytics</div>
+  <h1>Analytics and Insights</h1><div class="page-hero-rule"></div>
+  <p>Cross-indicator analysis, correlation and trend — computed in pure JavaScript · 2020–2026</p>
+</div></section>
+<div class="page-content"><div class="container">
+  <div class="chart-card reveal"><div class="chart-card-title">Inflation Trend with Linear Regression</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-inf">Loading…</div><canvas id="chart-inf" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#e05252"></span>Inflation</span><span><span class="dot" style="background:#F4A017;height:1px;border-radius:0;"></span>OLS Trend</span></div><div class="source-note">Source: NBS · Trend line = Ordinary Least Squares linear regression</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Pearson Correlation: Inflation vs Exchange Rate</div><div id="pearson-result" style="padding:24px 0;"><p style="font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Computing correlation…</p></div><div class="source-note">Pearson r calculated on paired monthly observations. NBS inflation vs CBN NGN/USD.</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">FX Reserves vs Exchange Rate — Inverse Relationship</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-dual">Loading…</div><canvas id="chart-dual" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4FC3F7"></span>Exchange Rate NGN/USD — Left</span><span><span class="dot" style="background:#008751"></span>FX Reserves USD Bn — Right</span></div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">GDP Sectoral Comparison (Latest Values)</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-sectors">Loading…</div><canvas id="chart-sectors" style="display:none"></canvas></div><div class="source-note">Source: NBS Real GDP by Sector · Latest available annual value · NGN Billions at constant 2010 prices</div></div>
+</div></div>
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h4>Data</h4><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h4>Sources</h4><p>Central Bank of Nigeria (CBN)</p><p>National Bureau of Statistics (NBS)</p><p>World Bank Open Data</p></div><div><h4>Project</h4><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
 <script>
-const SB  = 'https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
-const H   = { apikey: KEY, Authorization: 'Bearer ' + KEY };
-async function sb(indicator, extra) {
-  const r = await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`, { headers: H });
-  return (await r.json()).map(row => ({ obs_date: row.obs_date, value: parseFloat(row.value) }));
+const SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const H={apikey:KEY,Authorization:'Bearer '+KEY};
+async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
+function fmt(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
+const TIP={backgroundColor:'#12141f',titleColor:'#F5F0E8',bodyColor:'rgba(245,240,232,0.7)',borderColor:'rgba(0,135,81,0.25)',borderWidth:1,padding:12,displayColors:false};
+const SX={grid:{display:false},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
+const SY={grid:{color:'rgba(245,240,232,0.06)'},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
+function linearRegression(vals){const n=vals.length;if(n<2)return vals.map((v,i)=>v);const xs=vals.map((_,i)=>i);const xm=xs.reduce((a,b)=>a+b,0)/n;const ym=vals.reduce((a,b)=>a+b,0)/n;let num=0,den=0;xs.forEach((x,i)=>{num+=(x-xm)*(vals[i]-ym);den+=(x-xm)**2;});const slope=den?num/den:0;const intercept=ym-slope*xm;return xs.map(x=>slope*x+intercept);}
+function pearson(x,y){const n=Math.min(x.length,y.length);const xs=x.slice(0,n),ys=y.slice(0,n);const xm=xs.reduce((a,b)=>a+b,0)/n;const ym=ys.reduce((a,b)=>a+b,0)/n;let num=0,dx2=0,dy2=0;for(let i=0;i<n;i++){const dx=xs[i]-xm,dy=ys[i]-ym;num+=dx*dy;dx2+=dx*dx;dy2+=dy*dy;}return(dx2&&dy2)?num/Math.sqrt(dx2*dy2):0;}
+const SECTOR_LABELS={agriculture:'Agriculture',industry:'Industry',services:'Services',manufacturing:'Manufacturing',miningAndQuarrying:'Mining & Quarrying',construction:'Construction',trade:'Trade',financeAndInsurance:'Finance & Insurance',informationAndCommunication:'ICT',realEstate:'Real Estate',education:'Education',publicAdministration:'Public Admin'};
+async function load(){
+  const _sectors=['agriculture','industry','services','manufacturing','miningAndQuarrying','construction','trade','financeAndInsurance','informationAndCommunication','realEstate','education','publicAdministration'];
+  const[inf,fx,res,...sectorArr]=await Promise.all([sb('inflation'),sb('exchange_rate'),sb('fx_reserves'),..._sectors.map(s=>sb('gdp_'+s))]);
+  const sectorsRaw={};_sectors.forEach((s,i)=>{sectorsRaw[s]=sectorArr[i];});
+  document.getElementById('loading-inf').style.display='none';
+  const c1=document.getElementById('chart-inf');c1.style.display='block';
+  const infVals=inf.map(d=>d.value);const trendVals=linearRegression(infVals);
+  new Chart(c1,{data:{labels:inf.map(d=>fmt(d.obs_date)),datasets:[{type:'line',label:'Inflation (%)',data:infVals,borderColor:'#e05252',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,tension:0.3},{type:'line',label:'Trend (OLS)',data:trendVals,borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2,pointRadius:0,borderDash:[8,4],tension:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top'},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`}}},scales:{y:{...SY,title:{display:true,text:'Inflation (%)',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  const fxByDate={};fx.forEach(d=>{fxByDate[d.obs_date]=d.value;});
+  const paired=inf.filter(d=>fxByDate[d.obs_date]!=null);
+  const r=pearson(paired.map(d=>d.value),paired.map(d=>fxByDate[d.obs_date]));
+  const rStr=r.toFixed(4),rAbs=Math.abs(r);
+  const strength=rAbs>0.8?'Strong':rAbs>0.5?'Moderate':'Weak';
+  const direction=r>0?'Positive':'Negative';
+  const rColor=rAbs>0.8?'#e05252':rAbs>0.5?'#F4A017':'#008751';
+  document.getElementById('pearson-result').innerHTML=`<div style="display:flex;align-items:flex-start;gap:2rem;flex-wrap:wrap;padding:16px 0"><div><div style="font-family:var(--font-mono);font-size:3rem;font-weight:800;color:${rColor};letter-spacing:-2px;line-height:1">${rStr}</div><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate);text-transform:uppercase;letter-spacing:.1em;margin-top:.3rem">Pearson r</div></div><div style="flex:1;min-width:220px"><div style="font-family:var(--font-display);font-size:1.1rem;color:var(--white);margin-bottom:.5rem">${strength} ${direction} Correlation</div><p style="font-family:var(--font-body);font-size:0.82rem;color:var(--slate);line-height:1.7">Based on <strong style="color:var(--white)">${paired.length}</strong> paired monthly observations. An r of <strong style="color:${rColor}">${rStr}</strong> indicates that as inflation rose, the exchange rate depreciated in near lock-step. The June 2023 FX unification reform was the primary structural break.</p></div></div>`;
+  const resMap={};res.forEach(d=>{resMap[d.obs_date]=d.value;});
+  document.getElementById('loading-dual').style.display='none';
+  const c3=document.getElementById('chart-dual');c3.style.display='block';
+  new Chart(c3,{data:{labels:fx.map(d=>fmt(d.obs_date)),datasets:[{type:'line',label:'Exchange Rate (NGN/USD)',data:fx.map(d=>d.value),borderColor:'#4FC3F7',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,tension:0.3,yAxisID:'y'},{type:'line',label:'FX Reserves (USD Bn)',data:fx.map(d=>resMap[d.obs_date]??null),borderColor:'#008751',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,tension:0.3,yAxisID:'y1',spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,displayColors:true,callbacks:{title:i=>i[0].label,label:ctx=>ctx.datasetIndex===0?`Rate: NGN ${ctx.parsed.y.toFixed(0)}`:`Reserves: $${ctx.parsed.y?.toFixed(1)}B`}}},scales:{y:{...SY,title:{display:true,text:'NGN/USD',color:'rgba(245,240,232,0.4)',font:{size:11}}},y1:{...SY,grid:{display:false},title:{display:true,text:'USD Billions',color:'rgba(245,240,232,0.4)',font:{size:11}},position:'right'},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  const sectorOrder=['agriculture','industry','services','manufacturing','miningAndQuarrying','construction','trade','financeAndInsurance','informationAndCommunication','realEstate','education','publicAdministration'];
+  const sectorLabels=[],sectorValues=[],sectorColors=[];
+  for(const s of sectorOrder){const arr=sectorsRaw[s];if(!arr||arr.length===0)continue;const last=arr[arr.length-1];sectorLabels.push(SECTOR_LABELS[s]||s);sectorValues.push(Number(last.value));sectorColors.push(Number(last.value)>=0?'#008751':'#e05252');}
+  document.getElementById('loading-sectors').style.display='none';
+  const c4=document.getElementById('chart-sectors');c4.style.display='block';
+  new Chart(c4,{type:'bar',data:{labels:sectorLabels,datasets:[{label:'GDP (NGN Bn)',data:sectorValues,backgroundColor:sectorColors,borderWidth:0,barPercentage:0.7}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`GDP: NGN ${ctx.parsed.x.toLocaleString('en-NG',{minimumFractionDigits:0,maximumFractionDigits:0})}B`}}},scales:{x:{...SY,title:{display:true,text:'NGN Billions',color:'rgba(245,240,232,0.4)',font:{size:11}}},y:{...SX,ticks:{color:'rgba(245,240,232,0.7)',font:{size:11}}}}}});
 }
-
-function fmt(d) {
-  return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
-}
-
-const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
-const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
-const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
-
-// ---- Pure JS statistics ----
-function linearRegression(vals) {
-  const n = vals.length;
-  if (n < 2) return vals.map((v, i) => v);
-  const xs = vals.map((_, i) => i);
-  const xm = xs.reduce((a, b) => a + b, 0) / n;
-  const ym = vals.reduce((a, b) => a + b, 0) / n;
-  let num = 0, den = 0;
-  xs.forEach((x, i) => { num += (x - xm) * (vals[i] - ym); den += (x - xm) ** 2; });
-  const slope = den ? num / den : 0;
-  const intercept = ym - slope * xm;
-  return xs.map(x => slope * x + intercept);
-}
-
-function pearson(x, y) {
-  const n = Math.min(x.length, y.length);
-  const xs = x.slice(0, n), ys = y.slice(0, n);
-  const xm = xs.reduce((a, b) => a + b, 0) / n;
-  const ym = ys.reduce((a, b) => a + b, 0) / n;
-  let num = 0, dx2 = 0, dy2 = 0;
-  for (let i = 0; i < n; i++) {
-    const dx = xs[i] - xm, dy = ys[i] - ym;
-    num += dx * dy; dx2 += dx * dx; dy2 += dy * dy;
-  }
-  return (dx2 && dy2) ? num / Math.sqrt(dx2 * dy2) : 0;
-}
-
-const SECTOR_LABELS = {
-  agriculture:'Agriculture', industry:'Industry', services:'Services',
-  manufacturing:'Manufacturing', miningAndQuarrying:'Mining & Quarrying',
-  construction:'Construction', trade:'Trade', financeAndInsurance:'Finance & Insurance',
-  informationAndCommunication:'ICT', realEstate:'Real Estate',
-  education:'Education', publicAdministration:'Public Admin'
-};
-
-async function load() {
-  const _sectors = ['agriculture','industry','services','manufacturing','miningAndQuarrying','construction','trade','financeAndInsurance','informationAndCommunication','realEstate','education','publicAdministration'];
-  const [inf, fx, res, ...sectorArr] = await Promise.all([
-    sb('inflation'), sb('exchange_rate'), sb('fx_reserves'),
-    ..._sectors.map(s => sb('gdp_' + s)),
-  ]);
-  const sectorsRaw = {};
-  _sectors.forEach((s, i) => { sectorsRaw[s] = sectorArr[i]; });
-
-  // Section 1: Inflation with regression
-  document.getElementById('loading-inf').style.display = 'none';
-  const c1 = document.getElementById('chart-inf');
-  c1.style.display = 'block';
-  const infVals = inf.map(d => d.value);
-  const trendVals = linearRegression(infVals);
-  new Chart(c1, {
-    data: {
-      labels: inf.map(d => fmt(d.obs_date)),
-      datasets: [
-        { type:'line', label:'Inflation (%)', data: infVals,
-          borderColor:'#DC2626', backgroundColor:'transparent',
-          borderWidth:2.5, pointRadius:0, tension:0.3 },
-        { type:'line', label:'Trend (OLS)', data: trendVals,
-          borderColor:'#C8A951', backgroundColor:'transparent',
-          borderWidth:2, pointRadius:0, borderDash:[8,4], tension:0 },
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins: {
-        legend:{ display:true, position:'top' },
-        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%` }}
-      },
-      scales: {
-        y: { ...SY, title:{display:true,text:'Inflation (%)',color:'#6B7280',font:{size:12}} },
-        x: { ...SX, ticks:{...SX.ticks,maxTicksLimit:14} }
-      }
-    }
-  });
-
-  // Section 2: Pearson correlation
-  const fxByDate = {};
-  fx.forEach(d => { fxByDate[d.obs_date] = d.value; });
-  const paired = inf.filter(d => fxByDate[d.obs_date] != null);
-  const r = pearson(paired.map(d => d.value), paired.map(d => fxByDate[d.obs_date]));
-  const rStr = r.toFixed(4);
-  const rAbs = Math.abs(r);
-  const strength = rAbs > 0.8 ? 'Strong' : rAbs > 0.5 ? 'Moderate' : 'Weak';
-  const direction = r > 0 ? 'Positive' : 'Negative';
-  const color = rAbs > 0.8 ? '#DC2626' : rAbs > 0.5 ? '#C8A951' : '#006633';
-  document.getElementById('pearson-result').innerHTML = `
-    <div style="display:flex;align-items:flex-start;gap:2rem;flex-wrap:wrap">
-      <div style="min-width:120px">
-        <div style="font-size:3rem;font-weight:800;color:${color};letter-spacing:-2px;line-height:1">${rStr}</div>
-        <div style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.6px;margin-top:.3rem">Pearson r</div>
-      </div>
-      <div style="flex:1;min-width:220px">
-        <div style="font-size:1.1rem;font-weight:700;color:#1A1A1A;margin-bottom:.35rem">${strength} ${direction} Correlation</div>
-        <p style="color:#6B7280;font-size:14px;line-height:1.65">
-          Based on <strong style="color:#1A1A1A">${paired.length}</strong> paired monthly observations of NBS headline inflation and the CBN official NGN/USD rate.
-          An r of <strong style="color:${color}">${rStr}</strong> indicates that as inflation rose, the exchange rate depreciated in near lock-step.
-          The June 2023 FX unification reform was the primary structural break driving this relationship.
-        </p>
-      </div>
-    </div>`;
-
-  // Section 3: Dual axis reserves vs exchange rate
-  const resMap = {};
-  res.forEach(d => { resMap[d.obs_date] = d.value; });
-  document.getElementById('loading-dual').style.display = 'none';
-  const c3 = document.getElementById('chart-dual');
-  c3.style.display = 'block';
-  new Chart(c3, {
-    data: {
-      labels: fx.map(d => fmt(d.obs_date)),
-      datasets: [
-        { type:'line', label:'Exchange Rate (NGN/USD)', data: fx.map(d=>d.value),
-          borderColor:'#0066CC', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y' },
-        { type:'line', label:'FX Reserves (USD Bn)', data: fx.map(d=>resMap[d.obs_date]??null),
-          borderColor:'#006633', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1', spanGaps:true },
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins: {
-        legend:{ display:false },
-        tooltip:{ ...TIP, displayColors:true, callbacks:{ title:i=>i[0].label, label:ctx=>ctx.datasetIndex===0?`Rate: NGN ${ctx.parsed.y.toFixed(0)}`:`Reserves: $${ctx.parsed.y?.toFixed(1)}B` }}
-      },
-      scales: {
-        y:  { ...SY, title:{display:true,text:'NGN/USD',color:'#6B7280',font:{size:12}} },
-        y1: { ...SY, grid:{display:false}, title:{display:true,text:'USD Billions',color:'#6B7280',font:{size:12}}, position:'right' },
-        x:  { ...SX, ticks:{...SX.ticks,maxTicksLimit:14} }
-      }
-    }
-  });
-
-  // Section 4: GDP sectors — latest value per sector
-  const sectorOrder = ['agriculture','industry','services','manufacturing',
-    'miningAndQuarrying','construction','trade','financeAndInsurance',
-    'informationAndCommunication','realEstate','education','publicAdministration'];
-  const sectorLabels = [], sectorValues = [], sectorColors = [];
-  for (const s of sectorOrder) {
-    const arr = sectorsRaw[s];
-    if (!arr || arr.length === 0) continue;
-    const last = arr[arr.length - 1];
-    sectorLabels.push(SECTOR_LABELS[s] || s);
-    sectorValues.push(Number(last.value));
-    sectorColors.push(Number(last.value) >= 0 ? '#006633' : '#DC2626');
-  }
-
-  document.getElementById('loading-sectors').style.display = 'none';
-  const c4 = document.getElementById('chart-sectors');
-  c4.style.display = 'block';
-  new Chart(c4, {
-    type:'bar',
-    data: { labels:sectorLabels, datasets:[{ label:'GDP (NGN Bn)', data:sectorValues,
-      backgroundColor:sectorColors, borderWidth:0, barPercentage:0.7 }] },
-    options: {
-      indexAxis:'y',
-      responsive:true, maintainAspectRatio:false,
-      plugins: {
-        legend:{display:false},
-        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP: NGN ${ctx.parsed.x.toLocaleString('en-NG',{minimumFractionDigits:0,maximumFractionDigits:0})}B` }}
-      },
-      scales: {
-        x: { ...SY, title:{display:true,text:'NGN Billions',color:'#6B7280',font:{size:12}} },
-        y: { ...SX, ticks:{color:'#1A1A1A',font:{size:12}} }
-      }
-    }
-  });
-}
-
 load();
 </script>
-<script>
-(function(){
-  var btn  = document.querySelector('.hamburger, #nav-toggle, #hamburger, [class*="burger"]');
-  var menu = document.querySelector('#nav-menu, .nav-links, .nav-menu, nav ul');
-  if (btn && menu) {
-    btn.addEventListener('click', function() {
-      menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-      menu.style.flexDirection = 'column';
-      menu.style.position = 'absolute';
-      menu.style.top = '65px';
-      menu.style.left = '0';
-      menu.style.right = '0';
-      menu.style.background = '#006633';
-      menu.style.padding = '10px 0';
-      menu.style.zIndex = '999';
-      menu.style.overflowY = 'auto';
-      menu.style.maxHeight = '80vh';
-    });
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('nav') && menu.style.display === 'flex') {
-        menu.style.display = 'none';
-      }
-    });
-  }
-})();
-</script>
-<script src="js/nav.js"></script>
-</body>
-</html>
+<script src="shared.js"></script><script src="js/nav.js"></script>
+</body></html>
