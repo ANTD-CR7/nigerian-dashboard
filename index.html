@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6,264 +6,444 @@
 <link rel="shortcut icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nigeria Economic Data Platform</title>
-<link rel="stylesheet" href="css/style.css">
+<title>NPEDATA — Nigeria Economic Data Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
 </head>
 <body>
 
-<nav>
-  <a class="nav-brand" href="index.html">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Coat_of_arms_of_Nigeria.svg/120px-Coat_of_arms_of_Nigeria.svg.png" alt="Nigeria Coat of Arms" class="nav-coa"
-         onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
-    <span class="nav-flag" style="display:none">Nigeria </span>Nigeria Economic Data Platform
+<!-- ─── NAVBAR ─── -->
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo">
+    <span class="logo-text">NP<span class="logo-e">E</span>DATA</span>
+    <span class="logo-pulse"></span>
+    <span class="logo-live">LIVE</span>
   </a>
-  <button class="hamburger" id="nav-toggle" aria-label="Toggle menu">
-    <span></span><span></span><span></span>
-  </button>
-  <ul class="nav-center nav-links" id="nav-menu">
+  <ul class="nav-links">
     <li><a href="index.html" class="active">Dashboard</a></li>
-    <li><a href="gdp.html">GDP</a></li>
-    <li><a href="inflation.html">Inflation</a></li>
-    <li><a href="exchange_rate.html">Exchange Rate</a></li>
-    <li><a href="interest_rate.html">Interest Rate</a></li>
-    <li><a href="reserves.html">Reserves</a></li>
-    <li class="dropdown">
-      <a href="#">More</a>
-      <div class="dropdown-content">
+    <li>
+      <a href="#">Economy <span class="nav-chevron">▾</span></a>
+      <div class="nav-dropdown">
+        <a href="gdp.html">GDP Growth</a>
+        <a href="inflation.html">Inflation</a>
+        <a href="interest_rate.html">Interest Rate</a>
+      </div>
+    </li>
+    <li>
+      <a href="#">Currency <span class="nav-chevron">▾</span></a>
+      <div class="nav-dropdown">
+        <a href="exchange_rate.html">Exchange Rate</a>
         <a href="multicurrency.html">Multi-Currency</a>
-        <a href="analytics.html">Analytics</a>
         <a href="nfem.html">NFEM Rates</a>
+      </div>
+    </li>
+    <li>
+      <a href="#">CBN Data <span class="nav-chevron">▾</span></a>
+      <div class="nav-dropdown">
+        <a href="reserves.html">FX Reserves</a>
         <a href="currency_circulation.html">Currency Circulation</a>
         <a href="assets_liabilities.html">Assets &amp; Liabilities</a>
         <a href="financial_statement.html">Financial Statement</a>
-        <a href="api_docs.html">API Docs</a>
       </div>
     </li>
+    <li><a href="analytics.html">Analytics</a></li>
+    <li><a href="api_docs.html">API</a></li>
     <li><a href="about.html">About</a></li>
   </ul>
-  <div class="nav-right caleb-badge">
-    <img src="https://calebuniversity.edu.ng/wp-content/uploads/2021/01/Caleb-University-Logo.png"
-         alt="Caleb University" class="nav-caleb"
-         onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.parentElement.querySelector('.nav-caleb-fallback').style.display='inline-flex'">
-    <span class="nav-fyp">FYP 2026</span>
-    <span class="nav-caleb-fallback" style="display:none">CALEB UNIVERSITY  -  FYP 2026</span>
+  <div class="nav-cta">
+    <a href="api_docs.html" class="btn-nav-api">API Docs</a>
   </div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
-<div class="hero">
-  <div class="hero-inner">
-    <h1>Nigerian Public Economic Data Aggregation and Analytics Platform</h1>
-    <p class="hero-gold">Open API Access · Analytics · Multi-Currency Rates · GDP Sectoral Data · 2020–2026</p>
-    <p class="hero-desc">11,022 observations across 115 indicators: GDP growth, inflation, exchange rates, MPR, FX reserves, multi-currency CBN rates (12 currencies), real GDP sectoral breakdown (57 sectors, 1981-2024), CBN balance sheet and NFEM daily rates.</p>
-    <div class="hero-badges">
-      <span>Multi-source ETL</span>
-      <span>Appendable storage</span>
-      <span>Trend analytics</span>
-      <span>Forecasting</span>
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div>
+  <a href="index.html" class="active">Dashboard</a>
+  <a href="analytics.html">Analytics</a>
+  <a href="api_docs.html">API Docs</a>
+  <a href="about.html">About</a>
+  <div class="mob-group">Economy</div>
+  <a href="gdp.html">GDP Growth</a>
+  <a href="inflation.html">Inflation</a>
+  <a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div>
+  <a href="exchange_rate.html">Exchange Rate</a>
+  <a href="multicurrency.html">Multi-Currency</a>
+  <a href="nfem.html">NFEM Rates</a>
+  <div class="mob-group">CBN Data</div>
+  <a href="reserves.html">FX Reserves</a>
+  <a href="currency_circulation.html">Currency Circulation</a>
+  <a href="assets_liabilities.html">Assets &amp; Liabilities</a>
+  <a href="financial_statement.html">Financial Statement</a>
+</div>
+
+<!-- ─── HERO ─── -->
+<section class="hero" id="hero">
+  <canvas id="particle-canvas"></canvas>
+  <div class="hero-glow"></div>
+  <div class="hero-glow-2"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Open Data Platform · CBN · NBS · World Bank</div>
+    <h1 class="hero-h1">Nigeria's Economy,<br><em>Told Through Data.</em></h1>
+    <div class="hero-typewriter"><span id="tw-text"></span><span class="tw-cursor">|</span></div>
+    <div class="hero-ctas">
+      <a href="#kpi-section" class="btn-primary">Explore the Data →</a>
+      <a href="api_docs.html" class="btn-ghost">Open API Docs</a>
     </div>
+    <div class="stat-bar reveal">
+      <div class="stat-item"><div class="s-label">GDP Growth</div><div class="s-value" id="sb-gdp">—</div></div>
+      <div class="stat-item"><div class="s-label">Inflation</div><div class="s-value" id="sb-inf">—</div></div>
+      <div class="stat-item"><div class="s-label">NGN/USD</div><div class="s-value" id="sb-fx">—</div></div>
+      <div class="stat-item"><div class="s-label">MPR</div><div class="s-value" id="sb-mpr">—</div></div>
+      <div class="stat-item"><div class="s-label">Reserves</div><div class="s-value" id="sb-res">—</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── KPI CARDS ─── -->
+<section class="section" id="kpi-section" style="background:var(--black-2);padding-top:72px;padding-bottom:72px;">
+  <div style="max-width:1280px;margin:0 auto;padding:0 clamp(20px,5vw,64px);">
+    <div class="section-label reveal">Live Indicators</div>
+    <h2 class="section-title reveal">Latest Economic Readings</h2>
     <div class="kpi-grid">
-      <div class="kpi-card kpi-gdp">
-        <div class="kpi-label">GDP Growth Rate</div>
-        <div class="kpi-value" id="kpi-gdp"> - </div>
-        <div class="kpi-meta" id="kpi-gdp-meta">Loading...</div>
+      <div class="kpi-card kpi-gdp reveal">
+        <div class="k-label">GDP Growth Rate</div>
+        <div class="k-value" id="kpi-gdp"> — </div>
+        <div class="k-meta" id="kpi-gdp-meta">Loading…</div>
         <div id="kpi-gdp-trend"></div>
       </div>
-      <div class="kpi-card kpi-inf">
-        <div class="kpi-label">Headline Inflation</div>
-        <div class="kpi-value" id="kpi-inf"> - </div>
-        <div class="kpi-meta" id="kpi-inf-meta">Loading...</div>
+      <div class="kpi-card kpi-inf reveal">
+        <div class="k-label">Headline Inflation</div>
+        <div class="k-value" id="kpi-inf"> — </div>
+        <div class="k-meta" id="kpi-inf-meta">Loading…</div>
         <div id="kpi-inf-trend"></div>
       </div>
-      <div class="kpi-card kpi-fx">
-        <div class="kpi-label">Exchange Rate (NGN/USD)</div>
-        <div class="kpi-value" id="kpi-fx"> - </div>
-        <div class="kpi-meta" id="kpi-fx-meta">Loading...</div>
+      <div class="kpi-card kpi-fx reveal">
+        <div class="k-label">Exchange Rate (NGN/USD)</div>
+        <div class="k-value" id="kpi-fx"> — </div>
+        <div class="k-meta" id="kpi-fx-meta">Loading…</div>
         <div id="kpi-fx-trend"></div>
       </div>
-      <div class="kpi-card kpi-mpr">
-        <div class="kpi-label">Monetary Policy Rate</div>
-        <div class="kpi-value" id="kpi-mpr"> - </div>
-        <div class="kpi-meta" id="kpi-mpr-meta">Loading...</div>
+      <div class="kpi-card kpi-mpr reveal">
+        <div class="k-label">Monetary Policy Rate</div>
+        <div class="k-value" id="kpi-mpr"> — </div>
+        <div class="k-meta" id="kpi-mpr-meta">Loading…</div>
         <div id="kpi-mpr-trend"></div>
       </div>
-      <div class="kpi-card kpi-res">
-        <div class="kpi-label">FX Reserves</div>
-        <div class="kpi-value" id="kpi-res"> - </div>
-        <div class="kpi-meta" id="kpi-res-meta">Loading...</div>
+      <div class="kpi-card kpi-res reveal">
+        <div class="k-label">FX Reserves</div>
+        <div class="k-value" id="kpi-res"> — </div>
+        <div class="k-meta" id="kpi-res-meta">Loading…</div>
         <div id="kpi-res-trend"></div>
       </div>
     </div>
   </div>
+</section>
+
+<!-- ─── COVERAGE STRIP ─── -->
+<section style="background:var(--black-3);padding:0 clamp(20px,5vw,64px);">
+  <div style="max-width:1280px;margin:0 auto;">
+    <div class="stats-strip" id="system-strip">
+      <div class="stats-strip-item">
+        <div class="strip-label">Total Observations</div>
+        <div class="strip-value" id="coverage-total">—</div>
+      </div>
+      <div class="stats-strip-item">
+        <div class="strip-label">Indicators</div>
+        <div class="strip-value" id="coverage-indicators">—</div>
+      </div>
+      <div class="stats-strip-item">
+        <div class="strip-label">Sources</div>
+        <div class="strip-value" id="coverage-sources">—</div>
+      </div>
+      <div class="stats-strip-item">
+        <div class="strip-label">Coverage Window</div>
+        <div class="strip-value" id="coverage-window">—</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── INSIGHT ─── -->
+<section class="section" style="background:var(--black);padding-top:64px;padding-bottom:48px;">
+  <div style="max-width:1280px;margin:0 auto;padding:0 clamp(20px,5vw,64px);">
+    <div class="insight-card reveal">
+      <div class="insight-label">Key Insight — 2020–2026</div>
+      <p>Nigeria's economy contracted in 2020 (COVID-19), recovered through 2021–2022, then faced surging inflation and a dramatic Naira depreciation following the June 2023 FX unification reform. The CBN responded with aggressive MPR hikes from 11.5% to 27.5% between 2022 and 2024.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TIMELINE ─── -->
+<section class="section" style="background:var(--black);">
+  <div style="max-width:1280px;margin:0 auto;padding:0 clamp(20px,5vw,64px);">
+    <div class="section-label reveal">The Story</div>
+    <h2 class="section-title reveal">Nigeria's Economic Arc</h2>
+    <div class="timeline">
+      <div class="tl-item reveal">
+        <div class="tl-date">Q2 2020</div>
+        <div class="tl-event">COVID-19 Contraction</div>
+        <div class="tl-stat">GDP Growth: −6.10%</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">Jun 2023</div>
+        <div class="tl-event">CBN FX Unification Reform</div>
+        <div class="tl-stat">NGN/USD: ₦461 → ₦1,600+</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">Jun 2024</div>
+        <div class="tl-event">Inflation Peak — 28-year High</div>
+        <div class="tl-stat">Headline Inflation: 34.80%</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">2025–2026</div>
+        <div class="tl-event">Disinflation &amp; Reserve Recovery</div>
+        <div class="tl-stat">Inflation: 15.38% · Reserves: $48.7B</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── EXPLORE GRID ─── -->
+<section class="section" style="background:var(--black-2);">
+  <div style="max-width:1280px;margin:0 auto;padding:0 clamp(20px,5vw,64px);">
+    <div class="section-label reveal">Explore</div>
+    <h2 class="section-title reveal">Dive Into the Data</h2>
+    <div class="explore-grid">
+      <a href="gdp.html" class="explore-card reveal">
+        <div class="explore-icon" style="background:rgba(0,135,81,0.15);">📈</div>
+        <div class="explore-title">GDP Growth</div>
+        <div class="explore-desc">Quarterly real GDP growth rates and annual nominal GDP in USD billions from NBS and World Bank.</div>
+        <div class="explore-link">Explore →</div>
+      </a>
+      <a href="inflation.html" class="explore-card reveal">
+        <div class="explore-icon" style="background:rgba(224,82,82,0.15);">🔥</div>
+        <div class="explore-title">Inflation Monitor</div>
+        <div class="explore-desc">Headline, food and core inflation trends from the NBS Consumer Price Index. Extended history from 2003.</div>
+        <div class="explore-link">Explore →</div>
+      </a>
+      <a href="exchange_rate.html" class="explore-card reveal">
+        <div class="explore-icon" style="background:rgba(79,195,247,0.15);">💱</div>
+        <div class="explore-title">Exchange Rate</div>
+        <div class="explore-desc">Monthly average NGN/USD official rate capturing the full impact of the June 2023 FX reform.</div>
+        <div class="explore-link">Explore →</div>
+      </a>
+      <a href="reserves.html" class="explore-card reveal">
+        <div class="explore-icon" style="background:rgba(179,157,219,0.15);">🏦</div>
+        <div class="explore-title">FX Reserves</div>
+        <div class="explore-desc">Gross, liquid and blocked foreign exchange reserves — from $32.8B low to $49.7B recovery.</div>
+        <div class="explore-link">Explore →</div>
+      </a>
+      <a href="multicurrency.html" class="explore-card reveal">
+        <div class="explore-icon" style="background:rgba(244,160,23,0.15);">🌍</div>
+        <div class="explore-title">Multi-Currency</div>
+        <div class="explore-desc">CBN buying, central and selling rates for 12 currencies — USD, GBP, EUR, CNY, JPY, and more.</div>
+        <div class="explore-link">Explore →</div>
+      </a>
+      <a href="analytics.html" class="explore-card reveal">
+        <div class="explore-icon" style="background:rgba(0,135,81,0.12);">⚡</div>
+        <div class="explore-title">Analytics</div>
+        <div class="explore-desc">Cross-indicator analysis with Pearson correlation, linear regression, and GDP sectoral breakdown.</div>
+        <div class="explore-link">Explore →</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CHARTS SECTION ─── -->
+<section style="background:var(--black);padding:64px clamp(20px,5vw,64px);">
+  <div style="max-width:1280px;margin:0 auto;">
+    <div class="section-label reveal">Charts</div>
+    <h2 class="section-title reveal" style="margin-bottom:28px;">Inflation vs Exchange Rate — The 2023 Divergence</h2>
+    <div class="chart-card reveal">
+      <div class="chart-card-title">Inflation (left) vs NGN/USD Exchange Rate (right) — 2020–2026</div>
+      <div class="chart-wrap-lg">
+        <div class="chart-loading" id="loading-dual">Loading…</div>
+        <canvas id="chart-dual" style="display:none"></canvas>
+      </div>
+      <div class="dual-legend" style="margin-top:14px;">
+        <span><span class="dot" style="background:#DC2626"></span>Inflation Rate (%) — Left axis</span>
+        <span><span class="dot" style="background:#4FC3F7"></span>NGN/USD Exchange Rate — Right axis</span>
+      </div>
+      <div class="source-note">Source: NBS (inflation) · CBN (exchange rate) · Monthly averages 2020–2026</div>
+    </div>
+    <div class="mini-grid reveal">
+      <div class="chart-card">
+        <div class="chart-card-title">GDP Growth Rate (%)</div>
+        <div class="chart-wrap-sm">
+          <div class="chart-loading" id="loading-gdp">Loading…</div>
+          <canvas id="chart-gdp" style="display:none"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Headline Inflation (%)</div>
+        <div class="chart-wrap-sm">
+          <div class="chart-loading" id="loading-inf">Loading…</div>
+          <canvas id="chart-inf" style="display:none"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Exchange Rate (NGN/USD)</div>
+        <div class="chart-wrap-sm">
+          <div class="chart-loading" id="loading-fx">Loading…</div>
+          <canvas id="chart-fx" style="display:none"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Monetary Policy Rate (%)</div>
+        <div class="chart-wrap-sm">
+          <div class="chart-loading" id="loading-mpr">Loading…</div>
+          <canvas id="chart-mpr" style="display:none"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── ANALYTICS & FILTER PANEL ─── -->
+<section style="background:var(--black-2);padding:48px clamp(20px,5vw,64px);">
+  <div style="max-width:1280px;margin:0 auto;">
+
+    <!-- Date filter -->
+    <div class="ops-card reveal">
+      <h2>Dashboard Filters</h2>
+      <div class="ops-grid">
+        <section class="ops-panel">
+          <label for="chart-start">From</label>
+          <input id="chart-start" type="date" value="2020-01-01">
+        </section>
+        <section class="ops-panel">
+          <label for="chart-end">To</label>
+          <input id="chart-end" type="date" value="2024-12-31">
+        </section>
+        <section class="ops-panel ops-action">
+          <label>&nbsp;</label>
+          <button id="apply-chart-filter" type="button">Apply To Charts</button>
+        </section>
+        <section class="ops-panel">
+          <label>Status</label>
+          <strong class="inline-status" id="chart-filter-status">2020–2026 dataset loaded</strong>
+        </section>
+      </div>
+    </div>
+
+    <!-- Analytics panel -->
+    <div class="ops-card reveal">
+      <h2>Aggregation, Analytics &amp; Update Layer</h2>
+      <div class="ops-grid">
+        <section class="ops-panel">
+          <label for="analytics-indicator">Indicator</label>
+          <select id="analytics-indicator">
+            <option value="inflation">Inflation</option>
+            <option value="exchange_rate">Exchange Rate</option>
+            <option value="gdp_growth">GDP Growth</option>
+            <option value="mpr">Monetary Policy Rate</option>
+          </select>
+        </section>
+        <section class="ops-panel">
+          <label for="analytics-start">From</label>
+          <input id="analytics-start" type="date" value="2020-01-01">
+        </section>
+        <section class="ops-panel">
+          <label for="analytics-end">To</label>
+          <input id="analytics-end" type="date" value="2024-12-31">
+        </section>
+        <section class="ops-panel ops-action">
+          <label>&nbsp;</label>
+          <button id="refresh-analytics" type="button">Run Analytics</button>
+        </section>
+        <section class="ops-panel ops-action">
+          <label>&nbsp;</label>
+          <button id="export-analytics" type="button">Export CSV</button>
+        </section>
+      </div>
+      <div class="analytics-summary" id="analytics-summary">
+        <div><span>Latest</span><strong id="ana-latest">—</strong></div>
+        <div><span>Period Change</span><strong id="ana-change">—</strong></div>
+        <div><span>Year-on-Year</span><strong id="ana-yoy">—</strong></div>
+        <div><span>Trend</span><strong id="ana-trend">—</strong></div>
+      </div>
+      <div class="chart-wrap-sm" style="margin-top:16px;">
+        <div class="chart-loading" id="loading-forecast">Loading…</div>
+        <canvas id="chart-forecast" style="display:none"></canvas>
+      </div>
+      <div class="ingest-grid">
+        <form id="manual-ingest" class="ingest-panel">
+          <h3>Manual / API Demo</h3>
+          <select id="manual-indicator">
+            <option value="inflation">Inflation</option>
+            <option value="exchange_rate">Exchange Rate</option>
+            <option value="gdp_growth">GDP Growth</option>
+            <option value="mpr">Monetary Policy Rate</option>
+          </select>
+          <input id="manual-date" type="date" value="2025-01-01" required>
+          <input id="manual-value" type="number" step="0.0001" placeholder="Value" required>
+          <button type="submit">Validate Row</button>
+        </form>
+        <form id="csv-ingest" class="ingest-panel">
+          <h3>CSV Upload</h3>
+          <select id="csv-indicator">
+            <option value="inflation">Inflation</option>
+            <option value="exchange_rate">Exchange Rate</option>
+            <option value="gdp_growth">GDP Growth</option>
+            <option value="mpr">Monetary Policy Rate</option>
+          </select>
+          <input id="csv-file" type="file" accept=".csv">
+          <button type="submit">Validate CSV</button>
+        </form>
+      </div>
+      <div class="source-note" id="ingest-status" style="margin-top:12px;">Demo-safe mode: entries are normalized and validated without writing to the live database. CSV format: obs_date,value,source.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<div class="footer-wave-wrap">
+  <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/>
+  </svg>
 </div>
-
-<main>
-  <div class="insight-box">
-    <h3>Key Insight  -  2020-2026</h3>
-    <p>Nigeria's economy contracted in 2020 (COVID-19), recovered through 2021-2022, then faced surging inflation and a dramatic Naira depreciation following the June 2023 FX unification reform. The CBN responded with aggressive MPR hikes from 11.5% to 27.5% between 2022 and 2024.</p>
-  </div>
-
-  <div class="system-strip" id="system-strip">
-    <div>
-      <span>Total Observations</span>
-      <strong id="coverage-total">Loading...</strong>
-    </div>
-    <div>
-      <span>Indicators</span>
-      <strong id="coverage-indicators">Loading...</strong>
-    </div>
-    <div>
-      <span>Database Sources</span>
-      <strong id="coverage-sources">Loading...</strong>
-    </div>
-    <div>
-      <span>Coverage Window</span>
-      <strong id="coverage-window">Loading...</strong>
-    </div>
-  </div>
-
-  <div class="card filter-card">
-    <h2>Dashboard Filters</h2>
-    <div class="ops-grid">
-      <section class="ops-panel">
-        <label for="chart-start">From</label>
-        <input id="chart-start" type="date" value="2020-01-01">
-      </section>
-      <section class="ops-panel">
-        <label for="chart-end">To</label>
-        <input id="chart-end" type="date" value="2024-12-31">
-      </section>
-      <section class="ops-panel ops-action">
-        <button id="apply-chart-filter" type="button">Apply To Charts</button>
-      </section>
-      <section class="ops-panel">
-        <label>Filter Status</label>
-        <strong class="inline-status" id="chart-filter-status">2020-2026 dataset loaded</strong>
-      </section>
-    </div>
-  </div>
-
-  <div class="card data-ops-card">
-    <h2>Aggregation, Analytics and Update Layer</h2>
-    <div class="ops-grid">
-      <section class="ops-panel">
-        <label for="analytics-indicator">Indicator</label>
-        <select id="analytics-indicator">
-          <option value="inflation">Inflation</option>
-          <option value="exchange_rate">Exchange Rate</option>
-          <option value="gdp_growth">GDP Growth</option>
-          <option value="mpr">Monetary Policy Rate</option>
-        </select>
-      </section>
-      <section class="ops-panel">
-        <label for="analytics-start">From</label>
-        <input id="analytics-start" type="date" value="2020-01-01">
-      </section>
-      <section class="ops-panel">
-        <label for="analytics-end">To</label>
-        <input id="analytics-end" type="date" value="2024-12-31">
-      </section>
-      <section class="ops-panel ops-action">
-        <button id="refresh-analytics" type="button">Run Analytics</button>
-      </section>
-      <section class="ops-panel ops-action">
-        <button id="export-analytics" type="button">Export CSV</button>
-      </section>
-    </div>
-
-    <div class="analytics-summary" id="analytics-summary">
-      <div><span>Latest</span><strong id="ana-latest">Loading...</strong></div>
-      <div><span>Period Change</span><strong id="ana-change">Loading...</strong></div>
-      <div><span>Year-on-Year</span><strong id="ana-yoy">Loading...</strong></div>
-      <div><span>Trend</span><strong id="ana-trend">Loading...</strong></div>
-    </div>
-
-    <div class="chart-container-sm">
-      <p class="chart-loading" id="loading-forecast">Loading...</p>
-      <canvas id="chart-forecast" style="display:none"></canvas>
-    </div>
-
-    <div class="ingest-grid">
-      <form id="manual-ingest" class="ingest-panel">
-        <h3>Manual/API Demo</h3>
-        <select id="manual-indicator">
-          <option value="inflation">Inflation</option>
-          <option value="exchange_rate">Exchange Rate</option>
-          <option value="gdp_growth">GDP Growth</option>
-          <option value="mpr">Monetary Policy Rate</option>
-        </select>
-        <input id="manual-date" type="date" value="2025-01-01" required>
-        <input id="manual-value" type="number" step="0.0001" placeholder="Value" required>
-        <button type="submit">Validate Row</button>
-      </form>
-      <form id="csv-ingest" class="ingest-panel">
-        <h3>CSV Upload</h3>
-        <select id="csv-indicator">
-          <option value="inflation">Inflation</option>
-          <option value="exchange_rate">Exchange Rate</option>
-          <option value="gdp_growth">GDP Growth</option>
-          <option value="mpr">Monetary Policy Rate</option>
-        </select>
-        <input id="csv-file" type="file" accept=".csv">
-        <button type="submit">Validate CSV</button>
-      </form>
-    </div>
-    <p class="source-note" id="ingest-status">Demo-safe mode: CSV and manual entries are normalized and validated without writing to the live database. CSV format: obs_date,value,source.</p>
-  </div>
-
-  <div class="card">
-    <h2>Inflation vs Exchange Rate  -  The 2023 Divergence</h2>
-    <div class="chart-container-lg">
-      <p class="chart-loading" id="loading-dual">Loading...</p>
-      <canvas id="chart-dual" style="display:none"></canvas>
-    </div>
-    <div class="dual-legend">
-      <span><span class="dot" style="background:#DC2626"></span>Inflation Rate (%)  -  Left axis</span>
-      <span><span class="dot" style="background:#0066CC"></span>NGN/USD Exchange Rate  -  Right axis</span>
-    </div>
-    <p class="source-note">Source: NBS (inflation)  -  CBN (exchange rate)  -  Monthly averages 2020-2026</p>
-  </div>
-
-  <div class="mini-grid">
-    <div class="card">
-      <h2>GDP Growth Rate (%)</h2>
-      <div class="chart-container-sm">
-        <p class="chart-loading" id="loading-gdp">Loading...</p>
-        <canvas id="chart-gdp" style="display:none"></canvas>
-      </div>
-    </div>
-    <div class="card">
-      <h2>Inflation Rate (%)</h2>
-      <div class="chart-container-sm">
-        <p class="chart-loading" id="loading-inf">Loading...</p>
-        <canvas id="chart-inf" style="display:none"></canvas>
-      </div>
-    </div>
-    <div class="card">
-      <h2>Exchange Rate (NGN/USD)</h2>
-      <div class="chart-container-sm">
-        <p class="chart-loading" id="loading-fx">Loading...</p>
-        <canvas id="chart-fx" style="display:none"></canvas>
-      </div>
-    </div>
-    <div class="card">
-      <h2>Monetary Policy Rate (%)</h2>
-      <div class="chart-container-sm">
-        <p class="chart-loading" id="loading-mpr">Loading...</p>
-        <canvas id="chart-mpr" style="display:none"></canvas>
-      </div>
-    </div>
-  </div>
-</main>
-
 <footer>
   <div class="footer-inner">
-    <span>Nigeria Data Sources: CBN  -  NBS  -  World Bank  |  For educational purposes only  -  Not financial advice</span>
-    <span class="footer-right">Final Year Project  -  Dept of Computer Science  -  Caleb University, Imota, Lagos  -  2026</span>
+    <div class="footer-brand">
+      <span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span>
+      <p>Nigeria's premier open economic data platform. Built for researchers, developers, and the public.</p>
+    </div>
+    <div>
+      <h4>Data</h4>
+      <a href="gdp.html">GDP Growth</a>
+      <a href="inflation.html">Inflation</a>
+      <a href="exchange_rate.html">Exchange Rate</a>
+      <a href="reserves.html">FX Reserves</a>
+      <a href="multicurrency.html">Multi-Currency</a>
+      <a href="analytics.html">Analytics</a>
+    </div>
+    <div>
+      <h4>Sources</h4>
+      <p>Central Bank of Nigeria (CBN)</p>
+      <p>National Bureau of Statistics (NBS)</p>
+      <p>World Bank Open Data</p>
+    </div>
+    <div>
+      <h4>Project</h4>
+      <p>Caleb University FYP 2026</p>
+      <p>Computer Science · COSIS</p>
+      <a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span>
+    <span>Data: CBN · NBS · World Bank</span>
   </div>
 </footer>
 
+<!-- ═══ ALL EXISTING DATA JS PRESERVED EXACTLY ═══ -->
 <script>
 const SB  = 'https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
@@ -283,9 +463,9 @@ function badge(v) {
   return '<span class="badge badge-red">Very High</span>';
 }
 
-const TIP = { backgroundColor:'#fff', titleColor:'#006633', bodyColor:'#1A1A1A', borderColor:'#E5E7EB', borderWidth:1, padding:12, displayColors:false };
-const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
-const SY  = { grid:{color:'#F3F4F6'}, border:{display:false}, ticks:{color:'#6B7280',font:{size:12}} };
+const TIP = { backgroundColor:'#12141f', titleColor:'#F5F0E8', bodyColor:'rgba(245,240,232,0.7)', borderColor:'rgba(0,135,81,0.25)', borderWidth:1, padding:12, displayColors:false };
+const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}} };
+const SY  = { grid:{color:'rgba(245,240,232,0.06)'}, border:{display:false}, ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}} };
 
 function showChart(lid, cid) {
   document.getElementById(lid).style.display = 'none';
@@ -305,13 +485,13 @@ function setKPI(id, data, valFn, diffFn, badUp, source) {
   const last = data[data.length - 1];
   const prev = data.length > 1 ? data[data.length - 2].value : null;
   document.getElementById('kpi-' + id).textContent = valFn(last.value);
-  document.getElementById('kpi-' + id + '-meta').textContent = fmt(last.obs_date) + '  -  ' + source;
+  document.getElementById('kpi-' + id + '-meta').textContent = fmt(last.obs_date) + '  ·  ' + source;
   if (prev !== null) {
     const diff = last.value - prev;
     const isUp = diff > 0;
     const bad  = (badUp && isUp) || (!badUp && !isUp);
     document.getElementById('kpi-' + id + '-trend').innerHTML =
-      `<span class="trend-badge ${bad ? 'bad' : 'good'}">${isUp ? 'up' : 'down'} ${diffFn(Math.abs(diff))}</span>`;
+      `<span class="trend-badge ${bad ? 'bad' : 'good'}">${isUp ? '▲' : '▼'} ${diffFn(Math.abs(diff))}</span>`;
   }
 }
 
@@ -345,31 +525,34 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
     const lastFx = fx[fx.length - 1];
     const prevFx = fx.length > 1 ? fx[fx.length - 2].value : null;
     document.getElementById('kpi-fx').textContent = `NGN ${Number(lastFx.value).toFixed(0)}`;
-    document.getElementById('kpi-fx-meta').textContent = fmt(lastFx.obs_date) + '  -  CBN';
+    document.getElementById('kpi-fx-meta').textContent = fmt(lastFx.obs_date) + '  ·  CBN';
     if (prevFx !== null) {
       const diff = lastFx.value - prevFx;
       document.getElementById('kpi-fx-trend').innerHTML =
-        `<span class="trend-badge ${diff > 0 ? 'bad' : 'good'}">${diff > 0 ? 'up' : 'down'} NGN ${Math.abs(diff).toFixed(0)}</span>`;
+        `<span class="trend-badge ${diff > 0 ? 'bad' : 'good'}">${diff > 0 ? '▲' : '▼'} NGN ${Math.abs(diff).toFixed(0)}</span>`;
     }
   }
 
-  // Dual chart annotations
+  // Populate hero stat bar after data loads
+  if (gdp.length)    document.getElementById('sb-gdp').textContent = gdp[gdp.length-1].value.toFixed(2) + '%';
+  if (inf.length)    document.getElementById('sb-inf').textContent = inf[inf.length-1].value.toFixed(2) + '%';
+  if (fx.length)     document.getElementById('sb-fx').textContent  = '₦' + Math.round(fx[fx.length-1].value).toLocaleString();
+  if (mpr.length)    document.getElementById('sb-mpr').textContent = mpr[mpr.length-1].value.toFixed(2) + '%';
+  if (resData.length)document.getElementById('sb-res').textContent = '$' + resData[resData.length-1].value.toFixed(1) + 'B';
+
   const covidIdx = inf.findIndex(d => d.obs_date.startsWith('2020-04'));
   const fxIdx    = inf.findIndex(d => d.obs_date.startsWith('2023-06'));
   const dualAnnots = {};
-  if (covidIdx >= 0) dualAnnots.covid    = annotation('COVID-19',       '#DC2626', covidIdx);
-  if (fxIdx    >= 0) dualAnnots.fxReform = annotation('FX Reform',      '#0066CC', fxIdx);
+  if (covidIdx >= 0) dualAnnots.covid    = annotation('COVID-19',  '#DC2626', covidIdx);
+  if (fxIdx    >= 0) dualAnnots.fxReform = annotation('FX Reform', '#008751', fxIdx);
 
-  // Dual-axis chart
   showChart('loading-dual', 'chart-dual');
   new Chart(document.getElementById('chart-dual'), {
     data: {
       labels: inf.map(d => fmt(d.obs_date)),
       datasets: [
-        { type:'line', data: inf.map(d => d.value), borderColor:'#DC2626', backgroundColor:'transparent',
-          borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y' },
-        { type:'line', data: fx.map(d => d.value),  borderColor:'#0066CC', backgroundColor:'transparent',
-          borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1' },
+        { type:'line', data: inf.map(d => d.value), borderColor:'#e05252', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y' },
+        { type:'line', data: fx.map(d => d.value),  borderColor:'#4FC3F7', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1' },
       ]
     },
     options: {
@@ -378,91 +561,50 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
         legend:{display:false},
         tooltip:{ ...TIP, callbacks:{
           title: i => i[0].label,
-          label: ctx => ctx.datasetIndex === 0
-            ? `Inflation: ${ctx.parsed.y.toFixed(2)}%`
-            : `Rate: NGN ${ctx.parsed.y.toFixed(0)} per USD`
+          label: ctx => ctx.datasetIndex === 0 ? `Inflation: ${ctx.parsed.y.toFixed(2)}%` : `Rate: NGN ${ctx.parsed.y.toFixed(0)}`
         }},
         annotation:{ annotations: dualAnnots }
       },
       scales: {
-        y:  { ...SY, title:{display:true,text:'Inflation (%)',color:'#6B7280',font:{size:12}} },
-        y1: { ...SY, grid:{display:false}, title:{display:true,text:'NGN/USD',color:'#6B7280',font:{size:12}}, position:'right' },
+        y:  { ...SY, title:{display:true,text:'Inflation (%)',color:'rgba(245,240,232,0.4)',font:{size:11}} },
+        y1: { ...SY, grid:{display:false}, title:{display:true,text:'NGN/USD',color:'rgba(245,240,232,0.4)',font:{size:11}}, position:'right' },
         x:  { ...SX, ticks:{...SX.ticks,maxTicksLimit:12} }
       }
     }
   });
 
-  // GDP mini bar
   showChart('loading-gdp', 'chart-gdp');
   new Chart(document.getElementById('chart-gdp'), {
     type:'bar',
     data:{ labels:gdp.map(d => fmt(d.obs_date)), datasets:[{ data:gdp.map(d => d.value),
-      backgroundColor:gdp.map(d => d.value >= 0 ? '#006633' : '#DC2626'),
-      borderWidth:0, barPercentage:0.6 }] },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false},
-        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP: ${ctx.parsed.y.toFixed(2)}%` }},
-        annotation:{ annotations:{ zero:{ type:'line', yMin:0, yMax:0, borderColor:'#9CA3AF', borderWidth:1, borderDash:[4,4] }}}
-      },
-      scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} }
-    }
+      backgroundColor:gdp.map(d => d.value >= 0 ? '#008751' : '#e05252'), borderWidth:0, barPercentage:0.65 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP: ${ctx.parsed.y.toFixed(2)}%` }}, annotation:{ annotations:{ zero:{ type:'line', yMin:0, yMax:0, borderColor:'rgba(245,240,232,0.15)', borderWidth:1, borderDash:[4,4] }}}}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} } }
   });
 
-  // Inflation mini
   showChart('loading-inf', 'chart-inf');
   new Chart(document.getElementById('chart-inf'), {
     type:'line',
-    data:{ labels:inf.map(d => fmt(d.obs_date)), datasets:[{ data:inf.map(d => d.value),
-      borderColor:'#DC2626', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false},
-        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`Inflation: ${ctx.parsed.y.toFixed(2)}%` }}
-      },
-      scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} }
-    }
+    data:{ labels:inf.map(d => fmt(d.obs_date)), datasets:[{ data:inf.map(d => d.value), borderColor:'#e05252', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`Inflation: ${ctx.parsed.y.toFixed(2)}%` }}}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} } }
   });
 
-  // FX mini
   showChart('loading-fx', 'chart-fx');
   new Chart(document.getElementById('chart-fx'), {
     type:'line',
-    data:{ labels:fx.map(d => fmt(d.obs_date)), datasets:[{ data:fx.map(d => d.value),
-      borderColor:'#0066CC', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false},
-        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`NGN ${ctx.parsed.y.toFixed(0)} per USD` }}
-      },
-      scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} }
-    }
+    data:{ labels:fx.map(d => fmt(d.obs_date)), datasets:[{ data:fx.map(d => d.value), borderColor:'#4FC3F7', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`NGN ${ctx.parsed.y.toFixed(0)}` }}}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} } }
   });
 
-  // MPR mini
   showChart('loading-mpr', 'chart-mpr');
   new Chart(document.getElementById('chart-mpr'), {
     type:'line',
-    data:{ labels:mpr.map(d => fmt(d.obs_date)), datasets:[{ data:mpr.map(d => d.value),
-      borderColor:'#C8A951', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, stepped:true }] },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false},
-        tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`MPR: ${ctx.parsed.y.toFixed(2)}%` }}
-      },
-      scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX} }
-    }
+    data:{ labels:mpr.map(d => fmt(d.obs_date)), datasets:[{ data:mpr.map(d => d.value), borderColor:'#F4A017', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, stepped:true }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`MPR: ${ctx.parsed.y.toFixed(2)}%` }}}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX} } }
   });
 }
 
 let forecastChart;
-const INDICATOR_UNITS = {
-  inflation: '%',
-  exchange_rate: ' NGN/USD',
-  gdp_growth: '%',
-  mpr: '%'
-};
-
+const INDICATOR_UNITS = { inflation:'%', exchange_rate:' NGN/USD', gdp_growth:'%', mpr:'%' };
 function formatAnalyticsValue(indicator, value) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return 'n/a';
   const number = Number(value);
@@ -476,17 +618,12 @@ async function loadAnalytics() {
   const end   = document.getElementById('analytics-end').value;
   try {
     const data = await sb(indicator, `&obs_date=gte.${start}&obs_date=lte.${end}`);
-    if (!data || data.length === 0) {
-      ['ana-latest','ana-change','ana-yoy','ana-trend'].forEach(id => document.getElementById(id).textContent = 'No data');
-      return;
-    }
+    if (!data || data.length === 0) { ['ana-latest','ana-change','ana-yoy','ana-trend'].forEach(id => document.getElementById(id).textContent = 'No data'); return; }
     const last = data[data.length - 1];
     const prev = data.length > 1 ? data[data.length - 2] : null;
     document.getElementById('ana-latest').textContent = `${formatAnalyticsValue(indicator, last.value)} (${fmt(last.obs_date)})`;
     document.getElementById('ana-change').textContent = prev ? formatAnalyticsValue(indicator, last.value - prev.value) : 'n/a';
-    const lyDate = last.obs_date.slice(0,4) - 1 + last.obs_date.slice(4);
-    const lyRow  = data.find(d => d.obs_date.startsWith((parseInt(last.obs_date)+0-10000+'').slice(0,4)) && d.obs_date.slice(5) === last.obs_date.slice(5));
-    const pyRow  = data.find(d => d.obs_date.slice(0,4) === String(parseInt(last.obs_date.slice(0,4))-1));
+    const pyRow = data.find(d => d.obs_date.slice(0,4) === String(parseInt(last.obs_date.slice(0,4))-1));
     document.getElementById('ana-yoy').textContent = pyRow ? formatAnalyticsValue(indicator, last.value - pyRow.value) : 'No prior year';
     const vals = data.map(d => d.value), n = vals.length;
     const xm = (n-1)/2, ym = vals.reduce((a,b)=>a+b,0)/n;
@@ -497,12 +634,9 @@ async function loadAnalytics() {
     document.getElementById('chart-forecast').style.display = 'block';
     if (forecastChart) forecastChart.destroy();
     forecastChart = new Chart(document.getElementById('chart-forecast'), {
-      type: 'line',
-      data: { labels: data.map(d => fmt(d.obs_date)), datasets: [{ data: vals,
-        borderColor:'#006633', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3 }] },
-      options: { responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>formatAnalyticsValue(indicator,ctx.parsed.y) }}},
-        scales:{ y:SY, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}} } }
+      type:'line',
+      data:{ labels:data.map(d=>fmt(d.obs_date)), datasets:[{ data:vals, borderColor:'#008751', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>formatAnalyticsValue(indicator,ctx.parsed.y) }}}, scales:{ y:SY, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}} } }
     });
   } catch(e) { console.error('Analytics error:',e); }
 }
@@ -532,114 +666,102 @@ async function loadCoverage() {
 document.getElementById('refresh-analytics').addEventListener('click', loadAnalytics);
 document.getElementById('analytics-indicator').addEventListener('change', loadAnalytics);
 document.getElementById('export-analytics').addEventListener('click', () => {
-  const indicator = document.getElementById('analytics-indicator').value;
-  const start = document.getElementById('analytics-start').value;
-  const end = document.getElementById('analytics-end').value;
   alert('CSV export requires the backend API which is currently offline. Download data directly from Supabase at https://fjsytcmcxapfbrwvawmu.supabase.co');
 });
 document.getElementById('apply-chart-filter').addEventListener('click', async () => {
   const start = document.getElementById('chart-start').value;
   const end = document.getElementById('chart-end').value;
-  document.getElementById('chart-filter-status').textContent = 'Refreshing...';
-  try {
-    await loadData(start, end);
-    await loadCoverage(start, end);
-    document.getElementById('chart-filter-status').textContent = `${fmt(start)} - ${fmt(end)} loaded`;
-  } catch (err) {
-    document.getElementById('chart-filter-status').textContent = 'Filter failed';
-  }
+  document.getElementById('chart-filter-status').textContent = 'Refreshing…';
+  try { await loadData(start, end); await loadCoverage(); document.getElementById('chart-filter-status').textContent = `${fmt(start)} – ${fmt(end)} loaded`; }
+  catch (err) { document.getElementById('chart-filter-status').textContent = 'Filter failed'; }
 });
 
 document.getElementById('manual-ingest').addEventListener('submit', async (event) => {
   event.preventDefault();
-  const payload = {
-    indicator_id: document.getElementById('manual-indicator').value,
-    obs_date: document.getElementById('manual-date').value,
-    value: Number(document.getElementById('manual-value').value),
-    source: 'MANUAL'
-  };
+  const payload = { indicator_id: document.getElementById('manual-indicator').value, obs_date: document.getElementById('manual-date').value, value: Number(document.getElementById('manual-value').value), source: 'MANUAL' };
   try {
-    const res = await fetch(`https://web-production-feb5f.up.railway.app/api/observations`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    const res = await fetch(`https://web-production-feb5f.up.railway.app/api/observations`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
     if (!res.ok) throw new Error(await res.text());
     const body = await res.json();
     setIngestStatus(`${body.observation.action}: ${payload.indicator_id} for ${payload.obs_date}. ${body.observation.note || ''}`);
-    await loadAnalytics();
-    await loadCoverage();
-  } catch (err) {
-    setIngestStatus('Manual update failed. Check the API connection and input value.', true);
-  }
+    await loadAnalytics(); await loadCoverage();
+  } catch (err) { setIngestStatus('Manual update failed. Check the API connection and input value.', true); }
 });
 
 document.getElementById('csv-ingest').addEventListener('submit', async (event) => {
   event.preventDefault();
   const file = document.getElementById('csv-file').files[0];
-  if (!file) {
-    setIngestStatus('Choose a CSV file with obs_date,value,source columns.', true);
-    return;
-  }
+  if (!file) { setIngestStatus('Choose a CSV file with obs_date,value,source columns.', true); return; }
   const form = new FormData();
   form.append('indicator_id', document.getElementById('csv-indicator').value);
-  form.append('source', 'UPLOAD');
-  form.append('commit', 'false');
-  form.append('file', file);
+  form.append('source', 'UPLOAD'); form.append('commit', 'false'); form.append('file', file);
   try {
-    const res = await fetch(`https://web-production-feb5f.up.railway.app/api/ingest/csv`, { method: 'POST', body: form });
+    const res = await fetch(`https://web-production-feb5f.up.railway.app/api/ingest/csv`, { method:'POST', body:form });
     if (!res.ok) throw new Error(await res.text());
     const body = await res.json();
     setIngestStatus(`CSV validation completed: ${body.rows_processed} row(s) processed, ${body.rows_committed} written.`);
-    await loadAnalytics();
-    await loadCoverage();
-  } catch (err) {
-    setIngestStatus('CSV upload failed. Confirm the file contains obs_date and value columns.', true);
-  }
+    await loadAnalytics(); await loadCoverage();
+  } catch (err) { setIngestStatus('CSV upload failed. Confirm the file contains obs_date and value columns.', true); }
 });
 
 loadData();
 loadAnalytics();
 loadCoverage();
 </script>
-<script>
-// Hamburger menu toggle
-const hamburger = document.getElementById('hamburger');
-const navLinks = document.querySelector('.nav-links');
-if (hamburger) {
-  hamburger.addEventListener('click', () => {
-    navLinks.classList.toggle('open');
-  });
-}
-</script>
+
+<!-- ─── PARTICLE NETWORK ─── -->
 <script>
 (function(){
-  var btn  = document.querySelector('.hamburger, #nav-toggle, #hamburger, [class*="burger"]');
-  var menu = document.querySelector('#nav-menu, .nav-links, .nav-menu, nav ul');
-  if (btn && menu) {
-    btn.addEventListener('click', function() {
-      menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-      menu.style.flexDirection = 'column';
-      menu.style.position = 'absolute';
-      menu.style.top = '65px';
-      menu.style.left = '0';
-      menu.style.right = '0';
-      menu.style.background = '#006633';
-      menu.style.padding = '10px 0';
-      menu.style.zIndex = '999';
-      menu.style.overflowY = 'auto';
-      menu.style.maxHeight = '80vh';
+  var canvas = document.getElementById('particle-canvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W, H, nodes = [], mouse = {x:-9999, y:-9999};
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  document.addEventListener('mousemove', function(e){ mouse.x=e.clientX; mouse.y=e.clientY; });
+  for (var i=0;i<65;i++) nodes.push({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.5+1});
+  function draw(){
+    canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    nodes.forEach(function(n){
+      n.x+=n.vx; n.y+=n.vy;
+      if(n.x<0||n.x>canvas.width) n.vx*=-1;
+      if(n.y<0||n.y>canvas.height) n.vy*=-1;
+      var dx=mouse.x-n.x, dy=mouse.y-n.y, d=Math.sqrt(dx*dx+dy*dy);
+      if(d<140){n.x+=dx*.0018;n.y+=dy*.0018;}
+      ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(0,135,81,0.45)';ctx.fill();
     });
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('nav') && menu.style.display === 'flex') {
-        menu.style.display = 'none';
-      }
-    });
+    for(var a=0;a<nodes.length;a++) for(var b=a+1;b<nodes.length;b++){
+      var dx=nodes[a].x-nodes[b].x,dy=nodes[a].y-nodes[b].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<115){ctx.beginPath();ctx.moveTo(nodes[a].x,nodes[a].y);ctx.lineTo(nodes[b].x,nodes[b].y);
+        ctx.strokeStyle='rgba(0,135,81,'+(0.14*(1-d/115))+')';ctx.lineWidth=0.6;ctx.stroke();}
+    }
+    requestAnimationFrame(draw);
   }
+  draw();
 })();
 </script>
+
+<!-- ─── TYPEWRITER ─── -->
+<script>
+(function(){
+  var el=document.getElementById('tw-text'); if(!el) return;
+  var phrases=['GDP Tracker','Inflation Monitor','FX Reserve Analytics','Multi-Currency Dashboard','NFEM Market Rates'];
+  var pi=0,ci=0,del=false;
+  function tick(){
+    var p=phrases[pi];
+    el.textContent=del?p.slice(0,--ci):p.slice(0,++ci);
+    if(!del&&ci===p.length){setTimeout(function(){del=true;},1900);}
+    else if(del&&ci===0){del=false;pi=(pi+1)%phrases.length;}
+    setTimeout(tick,del?55:95);
+  }
+  tick();
+})();
+</script>
+
+<script src="shared.js"></script>
 <script src="js/nav.js"></script>
 </body>
 </html>
-
-
