@@ -116,30 +116,35 @@
         <div class="k-value" id="kpi-gdp"> — </div>
         <div class="k-meta" id="kpi-gdp-meta">Loading…</div>
         <div id="kpi-gdp-trend"></div>
+        <div class="kpi-sparkline"></div>
       </div>
       <div class="kpi-card kpi-inf reveal">
         <div class="k-label">Headline Inflation</div>
         <div class="k-value" id="kpi-inf"> — </div>
         <div class="k-meta" id="kpi-inf-meta">Loading…</div>
         <div id="kpi-inf-trend"></div>
+        <div class="kpi-sparkline" style="background:linear-gradient(to right,rgba(224,82,82,0.18),transparent)"></div>
       </div>
       <div class="kpi-card kpi-fx reveal">
         <div class="k-label">Exchange Rate (NGN/USD)</div>
         <div class="k-value" id="kpi-fx"> — </div>
         <div class="k-meta" id="kpi-fx-meta">Loading…</div>
         <div id="kpi-fx-trend"></div>
+        <div class="kpi-sparkline" style="background:linear-gradient(to right,rgba(79,195,247,0.18),transparent)"></div>
       </div>
       <div class="kpi-card kpi-mpr reveal">
         <div class="k-label">Monetary Policy Rate</div>
         <div class="k-value" id="kpi-mpr"> — </div>
         <div class="k-meta" id="kpi-mpr-meta">Loading…</div>
         <div id="kpi-mpr-trend"></div>
+        <div class="kpi-sparkline" style="background:linear-gradient(to right,rgba(244,160,23,0.18),transparent)"></div>
       </div>
       <div class="kpi-card kpi-res reveal">
         <div class="k-label">FX Reserves</div>
         <div class="k-value" id="kpi-res"> — </div>
         <div class="k-meta" id="kpi-res-meta">Loading…</div>
         <div id="kpi-res-trend"></div>
+        <div class="kpi-sparkline" style="background:linear-gradient(to right,rgba(179,157,219,0.18),transparent)"></div>
       </div>
     </div>
   </div>
@@ -178,6 +183,47 @@
     </div>
   </div>
 </section>
+
+<!-- ─── HORIZONTAL TIMELINE STRIP ─── -->
+<div class="h-timeline-section">
+  <div class="h-timeline-inner">
+    <h2 class="h-timeline-heading reveal">Nigeria's Economic Story — <span>2020 to 2026</span></h2>
+    <div class="h-timeline-track">
+      <div class="h-tl-item reveal">
+        <div class="h-tl-dot"></div>
+        <div>
+          <div class="h-tl-date">Q2 2020</div>
+          <div class="h-tl-event">COVID-19 Contraction</div>
+          <div class="h-tl-stat">GDP −6.10%</div>
+        </div>
+      </div>
+      <div class="h-tl-item reveal">
+        <div class="h-tl-dot"></div>
+        <div>
+          <div class="h-tl-date">Jun 2023</div>
+          <div class="h-tl-event">CBN FX Reform</div>
+          <div class="h-tl-stat">NGN ₦461 → ₦1,600+</div>
+        </div>
+      </div>
+      <div class="h-tl-item reveal">
+        <div class="h-tl-dot"></div>
+        <div>
+          <div class="h-tl-date">Jun 2024</div>
+          <div class="h-tl-event">Inflation Peak</div>
+          <div class="h-tl-stat">34.80%</div>
+        </div>
+      </div>
+      <div class="h-tl-item reveal">
+        <div class="h-tl-dot"></div>
+        <div>
+          <div class="h-tl-date">2025–2026</div>
+          <div class="h-tl-event">Disinflation &amp; Recovery</div>
+          <div class="h-tl-stat">15.38% · $48.7B</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ─── TIMELINE ─── -->
 <section class="section" style="background:var(--black);">
@@ -259,7 +305,8 @@
 <section style="background:var(--black);padding:64px clamp(20px,5vw,64px);">
   <div style="max-width:1280px;margin:0 auto;">
     <div class="section-label reveal">Charts</div>
-    <h2 class="section-title reveal" style="margin-bottom:28px;">Inflation vs Exchange Rate — The 2023 Divergence</h2>
+    <h2 class="section-title reveal" style="margin-bottom:12px;">Inflation vs Exchange Rate — The 2023 Divergence</h2>
+    <p class="pearson-subtitle reveal">Pearson correlation r = 0.94 — the strongest statistical relationship in Nigeria's 2020–2026 economic data</p>
     <div class="chart-card reveal">
       <div class="chart-card-title">Inflation (left) vs NGN/USD Exchange Rate (right) — 2020–2026</div>
       <div class="chart-wrap-lg">
@@ -761,6 +808,59 @@ loadCoverage();
 })();
 </script>
 
+<script>
+/* ─── Counter animation for hero stat bar ─── */
+(function(){
+  function countUp(elId, target, decimals, prefix, suffix) {
+    var el = document.getElementById(elId);
+    if (!el) return;
+    var start = null, dur = 2000;
+    function ease(t) { return 1 - Math.pow(1 - t, 3); }
+    function step(ts) {
+      if (!start) start = ts;
+      var p = Math.min((ts - start) / dur, 1);
+      var val = ease(p) * target;
+      el.textContent = prefix + val.toFixed(decimals) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  window.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      countUp('sb-gdp',  3.97,  2, '',  '%');
+      countUp('sb-inf',  15.38, 2, '',  '%');
+      countUp('sb-fx',   1361,  0, '₦', '');
+      countUp('sb-mpr',  26.25, 2, '',  '%');
+      countUp('sb-res',  48.7,  1, '$', 'B');
+    }, 400);
+  });
+})();
+
+/* ─── IntersectionObserver for kpi-card and explore-card fadeUp ─── */
+(function(){
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.kpi-card,.explore-card').forEach(function(el){
+      el.classList.add('visible');
+      el.style.animationDelay = '0s';
+    });
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e, i){
+      if (e.isIntersecting) {
+        var el = e.target;
+        var delay = (Array.from(el.parentElement.children).indexOf(el) * 80) + 'ms';
+        el.style.animationDelay = delay;
+        el.classList.add('visible');
+        io.unobserve(el);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.kpi-card,.explore-card').forEach(function(el){
+    io.observe(el);
+  });
+})();
+</script>
 <script src="shared.js"></script>
 <script src="js/nav.js"></script>
 </body>
