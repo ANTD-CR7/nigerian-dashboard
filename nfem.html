@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -47,15 +47,17 @@ const H={apikey:KEY,Authorization:'Bearer '+KEY};
 async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
 function fmtDay(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});}
 function fmtNGN(v){if(v==null)return'-';return '₦'+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
-const TIP={backgroundColor:'#12141f',titleColor:'#F5F0E8',bodyColor:'rgba(245,240,232,0.7)',borderColor:'rgba(0,135,81,0.25)',borderWidth:1,padding:12,displayColors:true};
-const SX={grid:{display:false},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
-const SY={grid:{color:'rgba(245,240,232,0.06)'},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
+const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true};
+const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
+const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
+Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 async function load(){
   const[closing,highest,lowest,wavg]=await Promise.all([sb('nfem_closing'),sb('nfem_highest'),sb('nfem_lowest'),sb('nfem_weighted_avg')]);
   document.getElementById('loading-nfem').style.display='none';
   const canvas=document.getElementById('chart-nfem');
   canvas.style.display='block';
-  new Chart(canvas,{data:{labels:closing.map(d=>fmtDay(d.obs_date)),datasets:[{type:'line',label:'Closing',data:closing.map(d=>d.value),borderColor:'#4FC3F7',backgroundColor:'transparent',borderWidth:2,pointRadius:0,tension:0.2},{type:'line',label:'Highest',data:highest.map(d=>d.value),borderColor:'#008751',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.2},{type:'line',label:'Lowest',data:lowest.map(d=>d.value),borderColor:'#e05252',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ${fmtNGN(ctx.parsed.y)}`}}},scales:{y:{...SY,title:{display:true,text:'NGN per USD',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:16}}}}});
+  new Chart(canvas,{data:{labels:closing.map(d=>fmtDay(d.obs_date)),datasets:[{type:'line',label:'Closing',data:closing.map(d=>d.value),borderColor:'#4a9eff',backgroundColor:'transparent',borderWidth:2,pointRadius:0,tension:0.2},{type:'line',label:'Highest',data:highest.map(d=>d.value),borderColor:'#00C896',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.2},{type:'line',label:'Lowest',data:lowest.map(d=>d.value),borderColor:'#FF6B6B',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ${fmtNGN(ctx.parsed.y)}`}}},scales:{y:{...SY,title:{display:true,text:'NGN per USD',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:16}}}}});
   const wavgMap={},highMap={},lowMap={};
   wavg.forEach(d=>wavgMap[d.obs_date]=d.value);highest.forEach(d=>highMap[d.obs_date]=d.value);lowest.forEach(d=>lowMap[d.obs_date]=d.value);
   const tbody=document.getElementById('nfem-tbody');

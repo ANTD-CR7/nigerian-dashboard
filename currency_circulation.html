@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -48,9 +48,11 @@ const H={apikey:KEY,Authorization:'Bearer '+KEY};
 async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
 function fmt(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
 function fmtM(v){return Number(v).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});}
-const TIP={backgroundColor:'#12141f',titleColor:'#F5F0E8',bodyColor:'rgba(245,240,232,0.7)',borderColor:'rgba(0,135,81,0.25)',borderWidth:1,padding:12,displayColors:false};
-const SX={grid:{display:false},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
-const SY={grid:{color:'rgba(245,240,232,0.06)'},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
+const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:false};
+const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
+const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
+Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 async function load(){
   const data=await sb('currency_circulation_full');
   const redesignIdx=data.findIndex(d=>d.obs_date.startsWith('2023-01'));
@@ -59,7 +61,7 @@ async function load(){
   document.getElementById('loading-chart').style.display='none';
   const canvas=document.getElementById('chart-cin');
   canvas.style.display='block';
-  new Chart(canvas,{type:'line',data:{labels:data.map(d=>fmt(d.obs_date)),datasets:[{label:'Currency in Circulation',data:data.map(d=>d.value),borderColor:'#008751',backgroundColor:'rgba(0,135,81,0.06)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`₦${fmtM(ctx.parsed.y)}M`}},annotation:{annotations:annots}},scales:{y:{...SY,title:{display:true,text:'NGN Millions',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  new Chart(canvas,{type:'line',data:{labels:data.map(d=>fmt(d.obs_date)),datasets:[{label:'Currency in Circulation',data:data.map(d=>d.value),borderColor:'#00C896',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(0,200,150,0.22)','rgba(0,200,150,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,fill:true,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`₦${fmtM(ctx.parsed.y)}M`}},annotation:{annotations:annots}},scales:{y:{...SY,title:{display:true,text:'NGN Millions',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
   const tbody=document.getElementById('cin-tbody');
   data.forEach((d,i)=>{const prev=i>0?data[i-1].value:null;const diff=prev!=null?d.value-prev:null;const changeHtml=diff===null?'-':diff>=0?`<span style="color:#008751">+${fmtM(diff)}M</span>`:`<span style="color:#e05252">${fmtM(diff)}M</span>`;tbody.innerHTML+=`<tr><td>${fmt(d.obs_date)}</td><td class="num">₦${fmtM(d.value)}M</td><td>${changeHtml}</td></tr>`;});
   document.getElementById('loading-table').style.display='none';

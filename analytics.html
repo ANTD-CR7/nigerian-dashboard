@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -48,9 +48,11 @@ const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 const H={apikey:KEY,Authorization:'Bearer '+KEY};
 async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
 function fmt(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
-const TIP={backgroundColor:'#12141f',titleColor:'#F5F0E8',bodyColor:'rgba(245,240,232,0.7)',borderColor:'rgba(0,135,81,0.25)',borderWidth:1,padding:12,displayColors:false};
-const SX={grid:{display:false},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
-const SY={grid:{color:'rgba(245,240,232,0.06)'},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
+const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:false};
+const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
+const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
+Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 function linearRegression(vals){const n=vals.length;if(n<2)return vals.map((v,i)=>v);const xs=vals.map((_,i)=>i);const xm=xs.reduce((a,b)=>a+b,0)/n;const ym=vals.reduce((a,b)=>a+b,0)/n;let num=0,den=0;xs.forEach((x,i)=>{num+=(x-xm)*(vals[i]-ym);den+=(x-xm)**2;});const slope=den?num/den:0;const intercept=ym-slope*xm;return xs.map(x=>slope*x+intercept);}
 function pearson(x,y){const n=Math.min(x.length,y.length);const xs=x.slice(0,n),ys=y.slice(0,n);const xm=xs.reduce((a,b)=>a+b,0)/n;const ym=ys.reduce((a,b)=>a+b,0)/n;let num=0,dx2=0,dy2=0;for(let i=0;i<n;i++){const dx=xs[i]-xm,dy=ys[i]-ym;num+=dx*dy;dx2+=dx*dx;dy2+=dy*dy;}return(dx2&&dy2)?num/Math.sqrt(dx2*dy2):0;}
 const SECTOR_LABELS={agriculture:'Agriculture',industry:'Industry',services:'Services',manufacturing:'Manufacturing',miningAndQuarrying:'Mining & Quarrying',construction:'Construction',trade:'Trade',financeAndInsurance:'Finance & Insurance',informationAndCommunication:'ICT',realEstate:'Real Estate',education:'Education',publicAdministration:'Public Admin'};
@@ -61,7 +63,7 @@ async function load(){
   document.getElementById('loading-inf').style.display='none';
   const c1=document.getElementById('chart-inf');c1.style.display='block';
   const infVals=inf.map(d=>d.value);const trendVals=linearRegression(infVals);
-  new Chart(c1,{data:{labels:inf.map(d=>fmt(d.obs_date)),datasets:[{type:'line',label:'Inflation (%)',data:infVals,borderColor:'#e05252',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,tension:0.3},{type:'line',label:'Trend (OLS)',data:trendVals,borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2,pointRadius:0,borderDash:[8,4],tension:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top'},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`}}},scales:{y:{...SY,title:{display:true,text:'Inflation (%)',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  new Chart(c1,{data:{labels:inf.map(d=>fmt(d.obs_date)),datasets:[{type:'line',label:'Inflation (%)',data:infVals,borderColor:'#FF6B6B',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,tension:0.3},{type:'line',label:'Trend (OLS)',data:trendVals,borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2,pointRadius:0,borderDash:[8,4],tension:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top'},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`}}},scales:{y:{...SY,title:{display:true,text:'Inflation (%)',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
   const fxByDate={};fx.forEach(d=>{fxByDate[d.obs_date]=d.value;});
   const paired=inf.filter(d=>fxByDate[d.obs_date]!=null);
   const r=pearson(paired.map(d=>d.value),paired.map(d=>fxByDate[d.obs_date]));
@@ -73,7 +75,7 @@ async function load(){
   const resMap={};res.forEach(d=>{resMap[d.obs_date]=d.value;});
   document.getElementById('loading-dual').style.display='none';
   const c3=document.getElementById('chart-dual');c3.style.display='block';
-  new Chart(c3,{data:{labels:fx.map(d=>fmt(d.obs_date)),datasets:[{type:'line',label:'Exchange Rate (NGN/USD)',data:fx.map(d=>d.value),borderColor:'#4FC3F7',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,tension:0.3,yAxisID:'y'},{type:'line',label:'FX Reserves (USD Bn)',data:fx.map(d=>resMap[d.obs_date]??null),borderColor:'#008751',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,tension:0.3,yAxisID:'y1',spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,displayColors:true,callbacks:{title:i=>i[0].label,label:ctx=>ctx.datasetIndex===0?`Rate: NGN ${ctx.parsed.y.toFixed(0)}`:`Reserves: $${ctx.parsed.y?.toFixed(1)}B`}}},scales:{y:{...SY,title:{display:true,text:'NGN/USD',color:'rgba(245,240,232,0.4)',font:{size:11}}},y1:{...SY,grid:{display:false},title:{display:true,text:'USD Billions',color:'rgba(245,240,232,0.4)',font:{size:11}},position:'right'},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  new Chart(c3,{data:{labels:fx.map(d=>fmt(d.obs_date)),datasets:[{type:'line',label:'Exchange Rate (NGN/USD)',data:fx.map(d=>d.value),borderColor:'#4a9eff',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,tension:0.3,yAxisID:'y'},{type:'line',label:'FX Reserves (USD Bn)',data:fx.map(d=>resMap[d.obs_date]??null),borderColor:'#00C896',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,tension:0.3,yAxisID:'y1',spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,displayColors:true,callbacks:{title:i=>i[0].label,label:ctx=>ctx.datasetIndex===0?`Rate: NGN ${ctx.parsed.y.toFixed(0)}`:`Reserves: $${ctx.parsed.y?.toFixed(1)}B`}}},scales:{y:{...SY,title:{display:true,text:'NGN/USD',color:'rgba(245,240,232,0.4)',font:{size:11}}},y1:{...SY,grid:{display:false},title:{display:true,text:'USD Billions',color:'rgba(245,240,232,0.4)',font:{size:11}},position:'right'},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
   const sectorOrder=['agriculture','industry','services','manufacturing','miningAndQuarrying','construction','trade','financeAndInsurance','informationAndCommunication','realEstate','education','publicAdministration'];
   const sectorLabels=[],sectorValues=[],sectorColors=[];
   for(const s of sectorOrder){const arr=sectorsRaw[s];if(!arr||arr.length===0)continue;const last=arr[arr.length-1];sectorLabels.push(SECTOR_LABELS[s]||s);sectorValues.push(Number(last.value));sectorColors.push(Number(last.value)>=0?'#008751':'#e05252');}

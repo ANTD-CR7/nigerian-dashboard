@@ -494,19 +494,28 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 
 /* ─── Chart Cards ─── */
 .chart-card {
-  background: var(--black-3);
+  background: #0d0f18;
   border: 1px solid rgba(245,240,232,0.06);
-  border-radius: 12px; padding: 26px; margin-bottom: 22px;
+  border-radius: 16px; padding: 28px; margin-bottom: 22px;
+  position: relative; overflow: hidden;
 }
-.chart-card-title {
+.chart-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,135,81,0.4), transparent);
+}
+.chart-card-title, .chart-title {
   display: flex; align-items: center; gap: 10px;
-  font-family: var(--font-mono); font-size: 0.63rem;
-  color: var(--slate); text-transform: uppercase; letter-spacing: 0.12em;
-  margin-bottom: 22px;
+  font-family: var(--font-mono); font-size: 0.68rem; font-weight: 500;
+  color: rgba(245,240,232,0.4); text-transform: uppercase; letter-spacing: 0.12em;
+  margin-bottom: 24px;
 }
-.chart-card-title::before {
-  content: ''; display: block; width: 12px; height: 3px;
+.chart-card-title::before, .chart-title::before {
+  content: ''; display: inline-block; width: 20px; height: 2px;
   background: var(--gold); border-radius: 2px; flex-shrink: 0;
+}
+.chart-wrapper {
+  position: relative; height: 340px;
 }
 .chart-wrap   { position: relative; height: 320px; }
 .chart-wrap-lg { position: relative; height: 400px; }
@@ -541,24 +550,33 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   margin-bottom: 22px;
 }
 .data-table { width: 100%; border-collapse: collapse; }
-.data-table thead tr { background: rgba(0,135,81,0.14); }
+.data-table thead tr { background: rgba(0,135,81,0.1); }
 .data-table th {
-  padding: 12px 16px; text-align: left;
-  font-family: var(--font-mono); font-size: 0.62rem; font-weight: 500;
-  color: var(--slate); text-transform: uppercase; letter-spacing: 0.08em;
-  border-bottom: 1px solid rgba(245,240,232,0.06); white-space: nowrap;
+  background: rgba(0,135,81,0.1);
+  color: rgba(245,240,232,0.6);
+  font-family: var(--font-mono); font-size: 0.68rem; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 14px 16px; text-align: left;
+  border-bottom: 1px solid rgba(0,135,81,0.2); white-space: nowrap;
+}
+.data-table tbody tr {
+  border-bottom: 1px solid rgba(245,240,232,0.04);
+  transition: background 0.2s, border-left 0.2s;
+}
+.data-table tbody tr:hover {
+  background: rgba(0,135,81,0.06);
+  border-left: 2px solid #008751;
 }
 .data-table td {
-  padding: 11px 16px;
-  font-family: var(--font-mono); font-size: 0.78rem; color: var(--white);
+  padding: 12px 16px;
+  font-family: var(--font-mono); font-size: 0.82rem;
+  color: rgba(245,240,232,0.85);
   border-bottom: 1px solid rgba(245,240,232,0.04);
-  border-left: 2px solid transparent;
-  transition: background 0.14s, border-left-color 0.14s;
 }
-.data-table tr:nth-child(even) td { background: rgba(18,20,31,0.6); }
-.data-table tr:hover td { background: rgba(0,135,81,0.07); border-left-color: var(--green); }
 .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .data-table .src { font-size: 0.65rem; color: var(--slate); white-space: nowrap; }
+.data-table td.positive { color: #00C896; }
+.data-table td.negative { color: #FF6B6B; }
 
 /* ─── Badges ─── */
 .badge {

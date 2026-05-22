@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -48,9 +48,11 @@ const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 const H={apikey:KEY,Authorization:'Bearer '+KEY};
 async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
 function fmt(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
-const TIP={backgroundColor:'#12141f',titleColor:'#F5F0E8',bodyColor:'rgba(245,240,232,0.7)',borderColor:'rgba(0,135,81,0.25)',borderWidth:1,padding:12,displayColors:true};
-const SX={grid:{display:false},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
-const SY={grid:{color:'rgba(245,240,232,0.06)'},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
+const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true};
+const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
+const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
+Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 function latestOf(arr){return arr&&arr.length>0?arr[arr.length-1]:null;}
 async function load(){
   const[gross,liquid,blocked,blockPct]=await Promise.all([sb('fx_reserves'),sb('reserves_liquid'),sb('reserves_blocked'),sb('reserves_block_pct')]);
@@ -58,7 +60,7 @@ async function load(){
   if(latestGross){document.getElementById('stat-gross').textContent=`$${Number(latestGross.value).toFixed(2)}B`;document.getElementById('stat-date').textContent=fmt(latestGross.obs_date)+' · CBN';}
   document.getElementById('loading-main').style.display='none';
   const c1=document.getElementById('chart-main');c1.style.display='block';
-  new Chart(c1,{data:{labels:gross.map(d=>fmt(d.obs_date)),datasets:[{type:'line',label:'Gross Reserves',data:gross.map(d=>d.value),borderColor:'#4FC3F7',backgroundColor:'rgba(79,195,247,0.05)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.3},{type:'line',label:'Liquid Reserves',data:liquid.map(d=>d.value),borderColor:'#008751',backgroundColor:'rgba(0,135,81,0.05)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}B`}}},scales:{y:{...SY,title:{display:true,text:'USD Billions',color:'rgba(245,240,232,0.4)',font:{size:11}},ticks:{...SY.ticks,callback:v=>'$'+v.toFixed(1)+'B'}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  new Chart(c1,{data:{labels:gross.map(d=>fmt(d.obs_date)),datasets:[{type:'line',label:'Gross Reserves',data:gross.map(d=>d.value),borderColor:'#00C896',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(0,200,150,0.22)','rgba(0,200,150,0)'),borderWidth:2.5,pointRadius:0,fill:true,tension:0.3},{type:'line',label:'Liquid Reserves',data:liquid.map(d=>d.value),borderColor:'#F4A017',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(244,160,23,0.18)','rgba(244,160,23,0)'),borderWidth:2.5,pointRadius:0,fill:true,tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}B`}}},scales:{y:{...SY,title:{display:true,text:'USD Billions',color:'rgba(245,240,232,0.4)',font:{size:11}},ticks:{...SY.ticks,callback:v=>'$'+v.toFixed(1)+'B'}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
   document.getElementById('loading-blocked').style.display='none';
   const c2=document.getElementById('chart-blocked');c2.style.display='block';
   new Chart(c2,{data:{labels:blocked.map(d=>fmt(d.obs_date)),datasets:[{type:'bar',label:'Blocked (USD Bn)',data:blocked.map(d=>d.value/1e9),backgroundColor:'rgba(224,82,82,0.6)',borderWidth:0,barPercentage:0.7,yAxisID:'y'},{type:'line',label:'Block %',data:blockPct.map(d=>d.value),borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,tension:0.3,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top'},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>ctx.datasetIndex===0?`Blocked: $${ctx.parsed.y.toFixed(2)}B`:`Block %: ${ctx.parsed.y.toFixed(2)}%`}}},scales:{y:{...SY,title:{display:true,text:'USD Billions',color:'rgba(245,240,232,0.4)',font:{size:11}}},y1:{...SY,grid:{display:false},title:{display:true,text:'Block %',color:'rgba(245,240,232,0.4)',font:{size:11}},position:'right'},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
