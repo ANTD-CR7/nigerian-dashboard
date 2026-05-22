@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -510,9 +510,11 @@ function badge(v) {
   return '<span class="badge badge-red">Very High</span>';
 }
 
-const TIP = { backgroundColor:'#12141f', titleColor:'#F5F0E8', bodyColor:'rgba(245,240,232,0.7)', borderColor:'rgba(0,135,81,0.25)', borderWidth:1, padding:12, displayColors:false };
-const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}} };
-const SY  = { grid:{color:'rgba(245,240,232,0.06)'}, border:{display:false}, ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}} };
+const TIP = { backgroundColor:'rgba(13,15,24,0.95)', borderColor:'rgba(0,135,81,0.4)', borderWidth:1, titleColor:'#F4A017', bodyColor:'rgba(245,240,232,0.85)', titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'}, bodyFont:{family:"'IBM Plex Mono'",size:13}, padding:14, cornerRadius:8, displayColors:false };
+const SX  = { grid:{color:'rgba(245,240,232,0.04)',drawBorder:false}, ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10}, border:{display:false} };
+const SY  = { grid:{color:'rgba(245,240,232,0.04)',drawBorder:false}, ticks:{color:'rgba(245,240,232,0.4)'}, border:{display:false} };
+Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 
 function showChart(lid, cid) {
   document.getElementById(lid).style.display = 'none';
@@ -598,8 +600,8 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
     data: {
       labels: inf.map(d => fmt(d.obs_date)),
       datasets: [
-        { type:'line', data: inf.map(d => d.value), borderColor:'#e05252', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y' },
-        { type:'line', data: fx.map(d => d.value),  borderColor:'#4FC3F7', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1' },
+        { type:'line', data: inf.map(d => d.value), borderColor:'#FF6B6B', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(255,107,107,0.2)','rgba(255,107,107,0)'), borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y' },
+        { type:'line', data: fx.map(d => d.value),  borderColor:'#4a9eff', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.2)','rgba(74,158,255,0)'), borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1' },
       ]
     },
     options: {
@@ -631,21 +633,21 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
   showChart('loading-inf', 'chart-inf');
   new Chart(document.getElementById('chart-inf'), {
     type:'line',
-    data:{ labels:inf.map(d => fmt(d.obs_date)), datasets:[{ data:inf.map(d => d.value), borderColor:'#e05252', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
+    data:{ labels:inf.map(d => fmt(d.obs_date)), datasets:[{ data:inf.map(d => d.value), borderColor:'#FF6B6B', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(255,107,107,0.2)','rgba(255,107,107,0)'), borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`Inflation: ${ctx.parsed.y.toFixed(2)}%` }}}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} } }
   });
 
   showChart('loading-fx', 'chart-fx');
   new Chart(document.getElementById('chart-fx'), {
     type:'line',
-    data:{ labels:fx.map(d => fmt(d.obs_date)), datasets:[{ data:fx.map(d => d.value), borderColor:'#4FC3F7', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
+    data:{ labels:fx.map(d => fmt(d.obs_date)), datasets:[{ data:fx.map(d => d.value), borderColor:'#4a9eff', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.2)','rgba(74,158,255,0)'), borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`NGN ${ctx.parsed.y.toFixed(0)}` }}}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} } }
   });
 
   showChart('loading-mpr', 'chart-mpr');
   new Chart(document.getElementById('chart-mpr'), {
     type:'line',
-    data:{ labels:mpr.map(d => fmt(d.obs_date)), datasets:[{ data:mpr.map(d => d.value), borderColor:'#F4A017', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, fill:false, stepped:true }] },
+    data:{ labels:mpr.map(d => fmt(d.obs_date)), datasets:[{ data:mpr.map(d => d.value), borderColor:'#F4A017', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(244,160,23,0.15)','rgba(244,160,23,0)'), borderWidth:2.5, pointRadius:0, fill:true, stepped:true }] },
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`MPR: ${ctx.parsed.y.toFixed(2)}%` }}}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX} } }
   });
 }

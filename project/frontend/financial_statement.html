@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -49,15 +49,17 @@ const SB_HDRS={apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`};
 function fetchSB(id){return fetch(`${SB_URL}?indicator_id=eq.${id}&order=obs_date.asc`,{headers:SB_HDRS}).then(r=>r.json());}
 function fmtYear(d){return d.substring(0,4);}
 function fmtN(v){if(v==null)return'-';return Number(v).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});}
-const TIP={backgroundColor:'#12141f',titleColor:'#F5F0E8',bodyColor:'rgba(245,240,232,0.7)',borderColor:'rgba(0,135,81,0.25)',borderWidth:1,padding:12,displayColors:true};
-const SX={grid:{display:false},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
-const SY={grid:{color:'rgba(245,240,232,0.06)'},border:{display:false},ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}}};
+const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true};
+const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
+const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
+Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 async function load(){
   const[extRes,cin,ta,surplus,income]=await Promise.all([fetchSB('cbn_annual_ext_reserve'),fetchSB('cbn_annual_cin_c'),fetchSB('cbn_annual_total_assets'),fetchSB('cbn_annual_surplus'),fetchSB('cbn_annual_total_income')]);
   const labels=extRes.map(d=>fmtYear(d.obs_date));
   document.getElementById('loading-main').style.display='none';document.getElementById('chart-main').style.display='block';
   const taMap={};ta.forEach(d=>taMap[d.obs_date]=d.value);
-  new Chart(document.getElementById('chart-main'),{data:{labels,datasets:[{type:'line',label:'External Reserves',data:extRes.map(d=>d.value),borderColor:'#4FC3F7',backgroundColor:'transparent',borderWidth:2.5,pointRadius:2,tension:0.3},{type:'line',label:'Total Assets',data:extRes.map(d=>taMap[d.obs_date]??null),borderColor:'#008751',backgroundColor:'transparent',borderWidth:2.5,pointRadius:2,tension:0.3,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ${fmtN(ctx.parsed.y)}`}}},scales:{y:{...SY,title:{display:true,text:'Value (local units)',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  new Chart(document.getElementById('chart-main'),{data:{labels,datasets:[{type:'line',label:'External Reserves',data:extRes.map(d=>d.value),borderColor:'#4a9eff',backgroundColor:'transparent',borderWidth:2.5,pointRadius:2,tension:0.3},{type:'line',label:'Total Assets',data:extRes.map(d=>taMap[d.obs_date]??null),borderColor:'#00C896',backgroundColor:'transparent',borderWidth:2.5,pointRadius:2,tension:0.3,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ${fmtN(ctx.parsed.y)}`}}},scales:{y:{...SY,title:{display:true,text:'Value (local units)',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
   document.getElementById('loading-surplus').style.display='none';document.getElementById('chart-surplus').style.display='block';
   const surplusLabels=surplus.map(d=>fmtYear(d.obs_date));const surplusVals=surplus.map(d=>d.value);
   new Chart(document.getElementById('chart-surplus'),{type:'bar',data:{labels:surplusLabels,datasets:[{label:'Surplus',data:surplusVals,backgroundColor:surplusVals.map(v=>v>=0?'#008751':'#e05252'),borderWidth:0,barPercentage:0.7}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.parsed.y>=0?'Surplus':'Deficit'}: ${fmtN(Math.abs(ctx.parsed.y))}`}},annotation:{annotations:{zero:{type:'line',yMin:0,yMax:0,borderColor:'rgba(245,240,232,0.15)',borderWidth:1,borderDash:[4,4]}}}},scales:{y:{...SY,title:{display:true,text:'Surplus / Deficit',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:SX}}});

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -115,9 +115,11 @@ function badge(v) {
   if (v < 20) return '<span class="badge badge-blue">High</span>';
   return '<span class="badge badge-red">Very High</span>';
 }
-const TIP = { backgroundColor:'#12141f', titleColor:'#F5F0E8', bodyColor:'rgba(245,240,232,0.7)', borderColor:'rgba(0,135,81,0.25)', borderWidth:1, padding:12, displayColors:false };
-const SX  = { grid:{display:false}, border:{display:false}, ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}} };
-const SY  = { grid:{color:'rgba(245,240,232,0.06)'}, border:{display:false}, ticks:{color:'rgba(245,240,232,0.45)',font:{size:11}} };
+const TIP = { backgroundColor:'rgba(13,15,24,0.95)', borderColor:'rgba(0,135,81,0.4)', borderWidth:1, titleColor:'#F4A017', bodyColor:'rgba(245,240,232,0.85)', titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'}, bodyFont:{family:"'IBM Plex Mono'",size:13}, padding:14, cornerRadius:8, displayColors:false };
+const SX  = { grid:{color:'rgba(245,240,232,0.04)',drawBorder:false}, ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10}, border:{display:false} };
+const SY  = { grid:{color:'rgba(245,240,232,0.04)',drawBorder:false}, ticks:{color:'rgba(245,240,232,0.4)'}, border:{display:false} };
+Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 function showChart(lid, cid) { document.getElementById(lid).style.display = 'none'; document.getElementById(cid).style.display = 'block'; }
 async function load() {
   const [growth, usd] = await Promise.all([sb('gdp_growth'), sb('gdp_usd')]);
@@ -129,7 +131,7 @@ async function load() {
   showChart('loading-growth', 'chart-growth');
   new Chart(document.getElementById('chart-growth'), {
     type: 'bar',
-    data: { labels: growth.map(d => fmt(d.obs_date)), datasets: [{ label: 'Real GDP Growth (%)', data: growth.map(d => d.value), backgroundColor: growth.map(d => d.value >= 0 ? '#008751' : '#e05252'), borderWidth: 0, barPercentage: 0.6 }] },
+    data: { labels: growth.map(d => fmt(d.obs_date)), datasets: [{ label: 'Real GDP Growth (%)', data: growth.map(d => d.value), backgroundColor: (ctx) => ctx.raw >= 0 ? 'rgba(0,200,150,0.85)' : 'rgba(255,107,107,0.85)', hoverBackgroundColor: (ctx) => ctx.raw >= 0 ? '#00C896' : '#FF6B6B', borderRadius: 4, borderSkipped: false, borderWidth: 0, barPercentage: 0.65 }] },
     options: { responsive:true, maintainAspectRatio:false, plugins: { legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP Growth: ${ctx.parsed.y.toFixed(2)}%` }}, annotation:{ annotations:{ zero:{ type:'line', yMin:0, yMax:0, borderColor:'rgba(245,240,232,0.15)', borderWidth:1, borderDash:[4,4] }, ...growthAnnots }}}, scales:{ y:{ ...SY, title:{display:true,text:'Growth Rate (%)',color:'rgba(245,240,232,0.4)',font:{size:11}} }, x:SX } }
   });
   showChart('loading-usd', 'chart-usd');
