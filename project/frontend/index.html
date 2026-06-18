@@ -419,32 +419,6 @@
         <div class="chart-loading" id="loading-forecast">Loading…</div>
         <canvas id="chart-forecast" style="display:none"></canvas>
       </div>
-      <div class="ingest-grid">
-        <form id="manual-ingest" class="ingest-panel">
-          <h3>Manual / API Demo</h3>
-          <select id="manual-indicator">
-            <option value="inflation">Inflation</option>
-            <option value="exchange_rate">Exchange Rate</option>
-            <option value="gdp_growth">GDP Growth</option>
-            <option value="mpr">Monetary Policy Rate</option>
-          </select>
-          <input id="manual-date" type="date" value="2025-01-01" required>
-          <input id="manual-value" type="number" step="0.0001" placeholder="Value" required>
-          <button type="submit">Validate Row</button>
-        </form>
-        <form id="csv-ingest" class="ingest-panel">
-          <h3>CSV Upload</h3>
-          <select id="csv-indicator">
-            <option value="inflation">Inflation</option>
-            <option value="exchange_rate">Exchange Rate</option>
-            <option value="gdp_growth">GDP Growth</option>
-            <option value="mpr">Monetary Policy Rate</option>
-          </select>
-          <input id="csv-file" type="file" accept=".csv">
-          <button type="submit">Validate CSV</button>
-        </form>
-      </div>
-      <div class="source-note" id="ingest-status" style="margin-top:12px;">Demo-safe mode: entries are normalized and validated without writing to the live database. CSV format: obs_date,value,source.</div>
     </div>
 
   </div>
@@ -516,6 +490,21 @@ const SY  = { grid:{color:'rgba(245,240,232,0.04)',drawBorder:false}, ticks:{col
 Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
 function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 
+function countUp(elId, target, decimals, prefix, suffix) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  var start = null, dur = 2000;
+  function ease(t) { return 1 - Math.pow(1 - t, 3); }
+  function step(ts) {
+    if (!start) start = ts;
+    var p = Math.min((ts - start) / dur, 1);
+    var val = ease(p) * target;
+    el.textContent = prefix + val.toFixed(decimals) + suffix;
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 function showChart(lid, cid) {
   document.getElementById(lid).style.display = 'none';
   const canvas = document.getElementById(cid);
@@ -582,12 +571,12 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
     }
   }
 
-  // Populate hero stat bar after data loads
-  if (gdp.length)    document.getElementById('sb-gdp').textContent = gdp[gdp.length-1].value.toFixed(2) + '%';
-  if (inf.length)    document.getElementById('sb-inf').textContent = inf[inf.length-1].value.toFixed(2) + '%';
-  if (fx.length)     document.getElementById('sb-fx').textContent  = '₦' + Math.round(fx[fx.length-1].value).toLocaleString();
-  if (mpr.length)    document.getElementById('sb-mpr').textContent = mpr[mpr.length-1].value.toFixed(2) + '%';
-  if (resData.length)document.getElementById('sb-res').textContent = '$' + resData[resData.length-1].value.toFixed(1) + 'B';
+  // Animate hero stat bar to real fetched values
+  if (gdp.length)     countUp('sb-gdp', gdp[gdp.length-1].value, 2, '', '%');
+  if (inf.length)     countUp('sb-inf', inf[inf.length-1].value, 2, '', '%');
+  if (fx.length)       countUp('sb-fx', fx[fx.length-1].value, 0, '₦', '');
+  if (mpr.length)     countUp('sb-mpr', mpr[mpr.length-1].value, 2, '', '%');
+  if (resData.length) countUp('sb-res', resData[resData.length-1].value, 1, '$', 'B');
 
   const covidIdx = inf.findIndex(d => d.obs_date.startsWith('2020-04'));
   const fxIdx    = inf.findIndex(d => d.obs_date.startsWith('2023-06'));
@@ -690,12 +679,6 @@ async function loadAnalytics() {
   } catch(e) { console.error('Analytics error:',e); }
 }
 
-function setIngestStatus(message, isError) {
-  const status = document.getElementById('ingest-status');
-  status.textContent = message;
-  status.classList.toggle('status-error', Boolean(isError));
-}
-
 async function loadCoverage() {
   try {
     const r = await fetch(`${SB}/observations?select=count`, { headers: { ...H, Prefer: 'count=exact' } });
@@ -723,34 +706,6 @@ document.getElementById('apply-chart-filter').addEventListener('click', async ()
   document.getElementById('chart-filter-status').textContent = 'Refreshing…';
   try { await loadData(start, end); await loadCoverage(); document.getElementById('chart-filter-status').textContent = `${fmt(start)} – ${fmt(end)} loaded`; }
   catch (err) { document.getElementById('chart-filter-status').textContent = 'Filter failed'; }
-});
-
-document.getElementById('manual-ingest').addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const payload = { indicator_id: document.getElementById('manual-indicator').value, obs_date: document.getElementById('manual-date').value, value: Number(document.getElementById('manual-value').value), source: 'MANUAL' };
-  try {
-    const res = await fetch(`https://web-production-feb5f.up.railway.app/api/observations`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-    if (!res.ok) throw new Error(await res.text());
-    const body = await res.json();
-    setIngestStatus(`${body.observation.action}: ${payload.indicator_id} for ${payload.obs_date}. ${body.observation.note || ''}`);
-    await loadAnalytics(); await loadCoverage();
-  } catch (err) { setIngestStatus('Manual update failed. Check the API connection and input value.', true); }
-});
-
-document.getElementById('csv-ingest').addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const file = document.getElementById('csv-file').files[0];
-  if (!file) { setIngestStatus('Choose a CSV file with obs_date,value,source columns.', true); return; }
-  const form = new FormData();
-  form.append('indicator_id', document.getElementById('csv-indicator').value);
-  form.append('source', 'UPLOAD'); form.append('commit', 'false'); form.append('file', file);
-  try {
-    const res = await fetch(`https://web-production-feb5f.up.railway.app/api/ingest/csv`, { method:'POST', body:form });
-    if (!res.ok) throw new Error(await res.text());
-    const body = await res.json();
-    setIngestStatus(`CSV validation completed: ${body.rows_processed} row(s) processed, ${body.rows_committed} written.`);
-    await loadAnalytics(); await loadCoverage();
-  } catch (err) { setIngestStatus('CSV upload failed. Confirm the file contains obs_date and value columns.', true); }
 });
 
 loadData();
@@ -798,46 +753,29 @@ loadCoverage();
 (function(){
   var el=document.getElementById('tw-text'); if(!el) return;
   var phrases=['GDP Tracker','Inflation Monitor','FX Reserve Analytics','Multi-Currency Dashboard','NFEM Market Rates'];
-  var pi=0,ci=0,del=false;
+  var pi=0,ci=0,phase='typing';
   function tick(){
     var p=phrases[pi];
-    el.textContent=del?p.slice(0,--ci):p.slice(0,++ci);
-    if(!del&&ci===p.length){setTimeout(function(){del=true;},1900);}
-    else if(del&&ci===0){del=false;pi=(pi+1)%phrases.length;}
-    setTimeout(tick,del?55:95);
+    if(phase==='typing'){
+      ci++;
+      el.textContent=p.slice(0,ci);
+      if(ci===p.length){phase='pause';setTimeout(tick,1900);return;}
+      setTimeout(tick,95);
+    }else if(phase==='pause'){
+      phase='deleting';
+      setTimeout(tick,55);
+    }else{
+      ci--;
+      el.textContent=p.slice(0,ci);
+      if(ci===0){phase='typing';pi=(pi+1)%phrases.length;setTimeout(tick,95);return;}
+      setTimeout(tick,55);
+    }
   }
   tick();
 })();
 </script>
 
 <script>
-/* ─── Counter animation for hero stat bar ─── */
-(function(){
-  function countUp(elId, target, decimals, prefix, suffix) {
-    var el = document.getElementById(elId);
-    if (!el) return;
-    var start = null, dur = 2000;
-    function ease(t) { return 1 - Math.pow(1 - t, 3); }
-    function step(ts) {
-      if (!start) start = ts;
-      var p = Math.min((ts - start) / dur, 1);
-      var val = ease(p) * target;
-      el.textContent = prefix + val.toFixed(decimals) + suffix;
-      if (p < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-  window.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-      countUp('sb-gdp',  3.97,  2, '',  '%');
-      countUp('sb-inf',  15.38, 2, '',  '%');
-      countUp('sb-fx',   1361,  0, '₦', '');
-      countUp('sb-mpr',  26.25, 2, '',  '%');
-      countUp('sb-res',  48.7,  1, '$', 'B');
-    }, 400);
-  });
-})();
-
 /* ─── IntersectionObserver for kpi-card and explore-card fadeUp ─── */
 (function(){
   if (!('IntersectionObserver' in window)) {
@@ -864,6 +802,6 @@ loadCoverage();
 })();
 </script>
 <script src="shared.js"></script>
-<script src="js/nav.js"></script>
+
 </body>
 </html>
