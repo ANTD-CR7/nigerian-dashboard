@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Entry — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a></div></li>
+    <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="analytics.html">Analytics</a></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="analytics.html">Analytics</a><a href="api_docs.html">API Docs</a><a href="about.html">About</a>
+  <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a>
+  <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+</div>
+<section class="page-hero"><div class="container">
+  <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / Data Entry</div>
+  <h1>Manual Data Entry &amp; CSV Upload</h1><div class="page-hero-rule"></div>
+  <p>Internal demo tool for validating manual observations and CSV batches against the ingest API. Not linked from site navigation.</p>
+</div></section>
+<div class="page-content"><div class="container">
+  <div class="ops-card reveal">
+    <h2>Manual / API Demo &amp; CSV Upload</h2>
+    <div class="ingest-grid">
+      <form id="manual-ingest" class="ingest-panel">
+        <h3>Manual / API Demo</h3>
+        <select id="manual-indicator">
+          <option value="inflation">Inflation</option>
+          <option value="exchange_rate">Exchange Rate</option>
+          <option value="gdp_growth">GDP Growth</option>
+          <option value="mpr">Monetary Policy Rate</option>
+        </select>
+        <input id="manual-date" type="date" value="2025-01-01" required>
+        <input id="manual-value" type="number" step="0.0001" placeholder="Value" required>
+        <button type="submit">Validate Row</button>
+      </form>
+      <form id="csv-ingest" class="ingest-panel">
+        <h3>CSV Upload</h3>
+        <select id="csv-indicator">
+          <option value="inflation">Inflation</option>
+          <option value="exchange_rate">Exchange Rate</option>
+          <option value="gdp_growth">GDP Growth</option>
+          <option value="mpr">Monetary Policy Rate</option>
+        </select>
+        <input id="csv-file" type="file" accept=".csv">
+        <button type="submit">Validate CSV</button>
+      </form>
+    </div>
+    <div class="source-note" id="ingest-status" style="margin-top:12px;">Demo-safe mode: entries are normalized and validated without writing to the live database. CSV format: obs_date,value,source.</div>
+  </div>
+</div></div>
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h4>Data</h4><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h4>Sources</h4><p>Central Bank of Nigeria (CBN)</p><p>National Bureau of Statistics (NBS)</p><p>World Bank Open Data</p></div><div><h4>Project</h4><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<script>
+function setIngestStatus(message, isError) {
+  const status = document.getElementById('ingest-status');
+  status.textContent = message;
+  status.classList.toggle('status-error', Boolean(isError));
+}
+
+document.getElementById('manual-ingest').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const payload = { indicator_id: document.getElementById('manual-indicator').value, obs_date: document.getElementById('manual-date').value, value: Number(document.getElementById('manual-value').value), source: 'MANUAL' };
+  try {
+    const res = await fetch(`https://web-production-feb5f.up.railway.app/api/observations`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    if (!res.ok) throw new Error(await res.text());
+    const body = await res.json();
+    setIngestStatus(`${body.observation.action}: ${payload.indicator_id} for ${payload.obs_date}. ${body.observation.note || ''}`);
+  } catch (err) { setIngestStatus('Manual update failed. Check the API connection and input value.', true); }
+});
+
+document.getElementById('csv-ingest').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const file = document.getElementById('csv-file').files[0];
+  if (!file) { setIngestStatus('Choose a CSV file with obs_date,value,source columns.', true); return; }
+  const form = new FormData();
+  form.append('indicator_id', document.getElementById('csv-indicator').value);
+  form.append('source', 'UPLOAD'); form.append('commit', 'false'); form.append('file', file);
+  try {
+    const res = await fetch(`https://web-production-feb5f.up.railway.app/api/ingest/csv`, { method:'POST', body:form });
+    if (!res.ok) throw new Error(await res.text());
+    const body = await res.json();
+    setIngestStatus(`CSV validation completed: ${body.rows_processed} row(s) processed, ${body.rows_committed} written.`);
+  } catch (err) { setIngestStatus('CSV upload failed. Confirm the file contains obs_date and value columns.', true); }
+});
+</script>
+<script src="shared.js"></script>
+</body></html>
