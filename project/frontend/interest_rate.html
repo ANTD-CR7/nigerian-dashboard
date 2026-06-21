@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 </head>
 <body>
 <nav class="navbar" id="navbar">
@@ -36,7 +38,7 @@
 </div></section>
 <div class="page-content"><div class="container">
   <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>Current MPR: <strong id="stat-mpr">—</strong>. The CBN raised the MPR from 11.5% to 27.5% between 2022 and 2024 — a cumulative 1,600 basis point tightening to combat surging inflation following the June 2023 FX reform.</p></div>
-  <div class="chart-card reveal"><div class="chart-card-title">CBN Monetary Policy Rate (%) — MPC Decision Dates</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-mpr">Loading…</div><canvas id="chart-mpr" style="display:none"></canvas></div><div class="source-note">Source: CBN MPC communiques · Stepped line = rate held flat between meetings</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">CBN Monetary Policy Rate (%) — MPC Decision Dates</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-mpr">Loading…</div><canvas id="chart-mpr" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-mpr">↺ Reset Zoom</button><div class="source-note">Source: CBN MPC communiques · Stepped line = rate held flat between meetings</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">MPR Decision History</div><div id="loading" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="mpr-table" style="display:none"><thead><tr><th>MPC Decision Date</th><th class="num">MPR (%)</th><th>Change</th><th>Source</th></tr></thead><tbody id="mpr-tbody"></tbody></table></div></div>
 </div></div>
 <div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
@@ -47,22 +49,27 @@ const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 const H={apikey:KEY,Authorization:'Bearer '+KEY};
 async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
 function fmt(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
-const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:false};
+const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true,usePointStyle:true,boxWidth:8,boxHeight:8};
+const ZOOM={zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'},pan:{enabled:true,mode:'x'},limits:{x:{min:'original',max:'original'}}};
 const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
 const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
 Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
 function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 async function load(){
+ try{
   const data=await sb('mpr');
   const latest=data[data.length-1];
   document.getElementById('stat-mpr').textContent=`${Number(latest.value).toFixed(2)}%`;
   document.getElementById('loading-mpr').style.display='none';
   document.getElementById('chart-mpr').style.display='block';
-  new Chart(document.getElementById('chart-mpr'),{type:'line',data:{labels:data.map(d=>fmt(d.obs_date)),datasets:[{label:'MPR (%)',data:data.map(d=>d.value),borderColor:'#F4A017',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(244,160,23,0.18)','rgba(244,160,23,0)'),borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#F4A017',pointBorderColor:'#07080d',pointBorderWidth:2,fill:true,stepped:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`MPR: ${ctx.parsed.y.toFixed(2)}%`}}},scales:{y:{...SY,min:10,title:{display:true,text:'Rate (%)',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:SX}}});
+  window.chartMpr=new Chart(document.getElementById('chart-mpr'),{type:'line',data:{labels:data.map(d=>fmt(d.obs_date)),datasets:[{label:'MPR (%)',data:data.map(d=>d.value),borderColor:'#F4A017',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(244,160,23,0.18)','rgba(244,160,23,0)'),borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#F4A017',pointBorderColor:'#07080d',pointBorderWidth:2,pointHoverRadius:8,pointHoverBackgroundColor:'#F4A017',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,stepped:true}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`MPR: ${ctx.parsed.y.toFixed(2)}%`}},zoom:ZOOM},scales:{y:{...SY,min:10,title:{display:true,text:'Rate (%)',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:SX}}});
+  document.getElementById('reset-mpr').addEventListener('click',()=>window.chartMpr.resetZoom());
   const tbody=document.getElementById('mpr-tbody');
   data.forEach((d,i)=>{const prev=i>0?data[i-1].value:null;const diff=prev?d.value-prev:0;let change=' - ';if(i>0){if(diff>0)change=`<span class="badge badge-red">up +${diff.toFixed(2)}%</span>`;else if(diff<0)change=`<span class="badge badge-green">down ${diff.toFixed(2)}%</span>`;else change='<span class="badge badge-gold">Held</span>';}tbody.innerHTML+=`<tr><td>${fmt(d.obs_date)}</td><td class="num">${Number(d.value).toFixed(2)}%</td><td>${change}</td><td class="src">CBN</td></tr>`;});
   document.getElementById('loading').style.display='none';
   document.getElementById('mpr-table').style.display='table';
+  attachSortableTable(document.getElementById('mpr-table'));
+ }catch(err){showLoadError(err);}
 }
 load();
 </script>

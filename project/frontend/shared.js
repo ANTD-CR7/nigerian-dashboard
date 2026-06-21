@@ -84,3 +84,41 @@
   });
 
 })();
+
+/* ─── Shared data-load error fallback ─── */
+function showLoadError(err) {
+  console.error('Load failed:', err);
+  document.querySelectorAll('[id^="loading"]').forEach(function(el) {
+    el.style.display = 'block';
+    el.textContent = 'Unable to load data — please refresh';
+  });
+}
+
+/* ─── Click-to-sort table columns ─── */
+function attachSortableTable(table) {
+  if (!table) return;
+  table.querySelectorAll('thead th').forEach(function(th, col) {
+    var asc = true;
+    th.title = 'Click to sort';
+    th.addEventListener('click', function() {
+      var tbody = th.closest('table').querySelector('tbody');
+      var rows = Array.from(tbody.querySelectorAll('tr'));
+      rows.sort(function(a, b) {
+        var aVal = a.cells[col].textContent.replace(/[^0-9.-]/g, '');
+        var bVal = b.cells[col].textContent.replace(/[^0-9.-]/g, '');
+        var aNum = parseFloat(aVal), bNum = parseFloat(bVal);
+        if (!isNaN(aNum) && !isNaN(bNum) && aVal !== '' && bVal !== '') return asc ? aNum - bNum : bNum - aNum;
+        var aText = a.cells[col].textContent, bText = b.cells[col].textContent;
+        return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+      });
+      rows.forEach(function(r) { tbody.appendChild(r); });
+      table.querySelectorAll('thead th').forEach(function(h) {
+        h.textContent = h.textContent.replace(' ↑', '').replace(' ↓', '');
+        h.classList.remove('sorted-col');
+      });
+      th.textContent += asc ? ' ↑' : ' ↓';
+      th.classList.add('sorted-col');
+      asc = !asc;
+    });
+  });
+}
