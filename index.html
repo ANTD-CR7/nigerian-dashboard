@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 </head>
 <body>
 
@@ -317,6 +319,7 @@
         <span><span class="dot" style="background:#DC2626"></span>Inflation Rate (%) — Left axis</span>
         <span><span class="dot" style="background:#4FC3F7"></span>NGN/USD Exchange Rate — Right axis</span>
       </div>
+      <button class="btn-chart-reset" id="reset-dual">↺ Reset Zoom</button>
       <div class="source-note">Source: NBS (inflation) · CBN (exchange rate) · Monthly averages 2020–2026</div>
     </div>
     <div class="mini-grid reveal">
@@ -333,6 +336,7 @@
           <div class="chart-loading" id="loading-inf">Loading…</div>
           <canvas id="chart-inf" style="display:none"></canvas>
         </div>
+        <button class="btn-chart-reset" id="reset-inf">↺ Reset Zoom</button>
       </div>
       <div class="chart-card">
         <div class="chart-card-title">Exchange Rate (NGN/USD)</div>
@@ -340,6 +344,7 @@
           <div class="chart-loading" id="loading-fx">Loading…</div>
           <canvas id="chart-fx" style="display:none"></canvas>
         </div>
+        <button class="btn-chart-reset" id="reset-fx">↺ Reset Zoom</button>
       </div>
       <div class="chart-card">
         <div class="chart-card-title">Monetary Policy Rate (%)</div>
@@ -347,6 +352,7 @@
           <div class="chart-loading" id="loading-mpr">Loading…</div>
           <canvas id="chart-mpr" style="display:none"></canvas>
         </div>
+        <button class="btn-chart-reset" id="reset-mpr">↺ Reset Zoom</button>
       </div>
     </div>
   </div>
@@ -484,7 +490,8 @@ function badge(v) {
   return '<span class="badge badge-red">Very High</span>';
 }
 
-const TIP = { backgroundColor:'rgba(13,15,24,0.95)', borderColor:'rgba(0,135,81,0.4)', borderWidth:1, titleColor:'#F4A017', bodyColor:'rgba(245,240,232,0.85)', titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'}, bodyFont:{family:"'IBM Plex Mono'",size:13}, padding:14, cornerRadius:8, displayColors:false };
+const TIP = { backgroundColor:'rgba(13,15,24,0.95)', borderColor:'rgba(0,135,81,0.4)', borderWidth:1, titleColor:'#F4A017', bodyColor:'rgba(245,240,232,0.85)', titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'}, bodyFont:{family:"'IBM Plex Mono'",size:13}, padding:14, cornerRadius:8, displayColors:true, usePointStyle:true, boxWidth:8, boxHeight:8 };
+const ZOOM = { zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'}, pan:{enabled:true,mode:'x'}, limits:{x:{min:'original',max:'original'}} };
 const SX  = { grid:{color:'rgba(245,240,232,0.04)',drawBorder:false}, ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10}, border:{display:false} };
 const SY  = { grid:{color:'rgba(245,240,232,0.04)',drawBorder:false}, ticks:{color:'rgba(245,240,232,0.4)'}, border:{display:false} };
 Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
@@ -544,6 +551,7 @@ function annotation(label, color, idx) {
 }
 
 async function loadData(start = '2020-01-01', end = '2026-12-31') {
+ try {
   const df = `&obs_date=gte.${start}&obs_date=lte.${end}`;
   const [gdp, inf, fx, mpr, resData] = await Promise.all([
     sb('gdp_growth', df), sb('inflation', df),
@@ -585,23 +593,25 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
   if (fxIdx    >= 0) dualAnnots.fxReform = annotation('FX Reform', '#008751', fxIdx);
 
   showChart('loading-dual', 'chart-dual');
-  new Chart(document.getElementById('chart-dual'), {
+  window.chartDual = new Chart(document.getElementById('chart-dual'), {
     data: {
       labels: inf.map(d => fmt(d.obs_date)),
       datasets: [
-        { type:'line', data: inf.map(d => d.value), borderColor:'#FF6B6B', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(255,107,107,0.2)','rgba(255,107,107,0)'), borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y' },
-        { type:'line', data: fx.map(d => d.value),  borderColor:'#4a9eff', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.2)','rgba(74,158,255,0)'), borderWidth:2.5, pointRadius:0, tension:0.3, yAxisID:'y1' },
+        { type:'line', data: inf.map(d => d.value), borderColor:'#FF6B6B', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(255,107,107,0.2)','rgba(255,107,107,0)'), borderWidth:2.5, pointRadius:0, pointHoverRadius:6, pointHoverBackgroundColor:'#FF6B6B', pointHoverBorderColor:'#fff', pointHoverBorderWidth:2, tension:0.3, yAxisID:'y' },
+        { type:'line', data: fx.map(d => d.value),  borderColor:'#4a9eff', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.2)','rgba(74,158,255,0)'), borderWidth:2.5, pointRadius:0, pointHoverRadius:6, pointHoverBackgroundColor:'#4a9eff', pointHoverBorderColor:'#fff', pointHoverBorderWidth:2, tension:0.3, yAxisID:'y1' },
       ]
     },
     options: {
       responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false}, hover:{mode:'index',intersect:false},
       plugins: {
         legend:{display:false},
         tooltip:{ ...TIP, callbacks:{
           title: i => i[0].label,
           label: ctx => ctx.datasetIndex === 0 ? `Inflation: ${ctx.parsed.y.toFixed(2)}%` : `Rate: NGN ${ctx.parsed.y.toFixed(0)}`
         }},
-        annotation:{ annotations: dualAnnots }
+        annotation:{ annotations: dualAnnots },
+        zoom: ZOOM
       },
       scales: {
         y:  { ...SY, title:{display:true,text:'Inflation (%)',color:'rgba(245,240,232,0.4)',font:{size:11}} },
@@ -616,29 +626,30 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
     type:'bar',
     data:{ labels:gdp.map(d => fmt(d.obs_date)), datasets:[{ data:gdp.map(d => d.value),
       backgroundColor:gdp.map(d => d.value >= 0 ? '#008751' : '#e05252'), borderWidth:0, barPercentage:0.65 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP: ${ctx.parsed.y.toFixed(2)}%` }}, annotation:{ annotations:{ zero:{ type:'line', yMin:0, yMax:0, borderColor:'rgba(245,240,232,0.15)', borderWidth:1, borderDash:[4,4] }}}}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} } }
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, hover:{mode:'index',intersect:false}, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP: ${ctx.parsed.y.toFixed(2)}%` }}, annotation:{ annotations:{ zero:{ type:'line', yMin:0, yMax:0, borderColor:'rgba(245,240,232,0.15)', borderWidth:1, borderDash:[4,4] }}}}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} } }
   });
 
   showChart('loading-inf', 'chart-inf');
-  new Chart(document.getElementById('chart-inf'), {
+  window.chartInf = new Chart(document.getElementById('chart-inf'), {
     type:'line',
-    data:{ labels:inf.map(d => fmt(d.obs_date)), datasets:[{ data:inf.map(d => d.value), borderColor:'#FF6B6B', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(255,107,107,0.2)','rgba(255,107,107,0)'), borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`Inflation: ${ctx.parsed.y.toFixed(2)}%` }}}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} } }
+    data:{ labels:inf.map(d => fmt(d.obs_date)), datasets:[{ data:inf.map(d => d.value), borderColor:'#FF6B6B', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(255,107,107,0.2)','rgba(255,107,107,0)'), borderWidth:2.5, pointRadius:0, pointHoverRadius:6, pointHoverBackgroundColor:'#FF6B6B', pointHoverBorderColor:'#fff', pointHoverBorderWidth:2, fill:false, tension:0.3 }] },
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, hover:{mode:'index',intersect:false}, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`Inflation: ${ctx.parsed.y.toFixed(2)}%` }}, zoom:ZOOM}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} } }
   });
 
   showChart('loading-fx', 'chart-fx');
-  new Chart(document.getElementById('chart-fx'), {
+  window.chartFx = new Chart(document.getElementById('chart-fx'), {
     type:'line',
-    data:{ labels:fx.map(d => fmt(d.obs_date)), datasets:[{ data:fx.map(d => d.value), borderColor:'#4a9eff', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.2)','rgba(74,158,255,0)'), borderWidth:2.5, pointRadius:0, fill:false, tension:0.3 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`NGN ${ctx.parsed.y.toFixed(0)}` }}}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} } }
+    data:{ labels:fx.map(d => fmt(d.obs_date)), datasets:[{ data:fx.map(d => d.value), borderColor:'#4a9eff', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.2)','rgba(74,158,255,0)'), borderWidth:2.5, pointRadius:0, pointHoverRadius:6, pointHoverBackgroundColor:'#4a9eff', pointHoverBorderColor:'#fff', pointHoverBorderWidth:2, fill:false, tension:0.3 }] },
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, hover:{mode:'index',intersect:false}, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`NGN ${ctx.parsed.y.toFixed(0)}` }}, zoom:ZOOM}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:6}} } }
   });
 
   showChart('loading-mpr', 'chart-mpr');
-  new Chart(document.getElementById('chart-mpr'), {
+  window.chartMpr = new Chart(document.getElementById('chart-mpr'), {
     type:'line',
-    data:{ labels:mpr.map(d => fmt(d.obs_date)), datasets:[{ data:mpr.map(d => d.value), borderColor:'#F4A017', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(244,160,23,0.15)','rgba(244,160,23,0)'), borderWidth:2.5, pointRadius:0, fill:true, stepped:true }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`MPR: ${ctx.parsed.y.toFixed(2)}%` }}}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX} } }
+    data:{ labels:mpr.map(d => fmt(d.obs_date)), datasets:[{ data:mpr.map(d => d.value), borderColor:'#F4A017', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(244,160,23,0.15)','rgba(244,160,23,0)'), borderWidth:2.5, pointRadius:0, pointHoverRadius:6, pointHoverBackgroundColor:'#F4A017', pointHoverBorderColor:'#fff', pointHoverBorderWidth:2, fill:true, stepped:true }] },
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, hover:{mode:'index',intersect:false}, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`MPR: ${ctx.parsed.y.toFixed(2)}%` }}, zoom:ZOOM}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX} } }
   });
+ } catch(err) { showLoadError(err); }
 }
 
 let forecastChart;
@@ -706,6 +717,12 @@ document.getElementById('apply-chart-filter').addEventListener('click', async ()
   document.getElementById('chart-filter-status').textContent = 'Refreshing…';
   try { await loadData(start, end); await loadCoverage(); document.getElementById('chart-filter-status').textContent = `${fmt(start)} – ${fmt(end)} loaded`; }
   catch (err) { document.getElementById('chart-filter-status').textContent = 'Filter failed'; }
+});
+
+['dual','inf','fx','mpr'].forEach(id => {
+  const btn = document.getElementById('reset-' + id);
+  const key = 'chart' + id[0].toUpperCase() + id.slice(1);
+  if (btn) btn.addEventListener('click', () => window[key] && window[key].resetZoom());
 });
 
 loadData();

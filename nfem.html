@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 </head>
 <body>
 <nav class="navbar" id="navbar">
@@ -35,7 +37,7 @@
 </div></section>
 <div class="page-content"><div class="container">
   <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>Latest NFEM closing rate: <strong id="stat-nfem">—</strong> (<span id="stat-nfem-date">—</span>). The Nigerian Foreign Exchange Market (NFEM) is the interbank market where authorised dealers trade foreign currency at market-determined rates — unlike the CBN administrative rate, NFEM rates reflect actual market supply and demand. Data covers December 2024 to April 2026 — 354 daily trading sessions.</p></div>
-  <div class="chart-card reveal"><div class="chart-card-title">NFEM Daily Exchange Rates — Dec 2024 to Apr 2026</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-nfem">Loading…</div><canvas id="chart-nfem" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4a9eff"></span>Closing Rate</span><span><span class="dot" style="background:#00C896"></span>Highest</span><span><span class="dot" style="background:#FF6B6B"></span>Lowest</span><span><span class="dot" style="background:#F4A017"></span>Weighted Avg</span></div><div class="source-note">Source: CBN NFEM Daily Report · Rates in NGN per USD</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">NFEM Daily Exchange Rates — Dec 2024 to Apr 2026</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-nfem">Loading…</div><canvas id="chart-nfem" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4a9eff"></span>Closing Rate</span><span><span class="dot" style="background:#00C896"></span>Highest</span><span><span class="dot" style="background:#FF6B6B"></span>Lowest</span><span><span class="dot" style="background:#F4A017"></span>Weighted Avg</span></div><button class="btn-chart-reset" id="reset-nfem">↺ Reset Zoom</button><div class="source-note">Source: CBN NFEM Daily Report · Rates in NGN per USD</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">NFEM Daily Data Table</div><div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="nfem-table" style="display:none"><thead><tr><th>Date</th><th class="num">Closing (NGN)</th><th class="num">Highest (NGN)</th><th class="num">Lowest (NGN)</th><th class="num">Weighted Avg (NGN)</th></tr></thead><tbody id="nfem-tbody"></tbody></table></div></div>
 </div></div>
 <div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
@@ -47,24 +49,29 @@ const H={apikey:KEY,Authorization:'Bearer '+KEY};
 async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
 function fmtDay(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});}
 function fmtNGN(v){if(v==null)return'-';return '₦'+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
-const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true};
+const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true,usePointStyle:true,boxWidth:8,boxHeight:8};
+const ZOOM={zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'},pan:{enabled:true,mode:'x'},limits:{x:{min:'original',max:'original'}}};
 const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
 const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
 Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
 function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 async function load(){
+ try{
   const[closing,highest,lowest,wavg]=await Promise.all([sb('nfem_closing'),sb('nfem_highest'),sb('nfem_lowest'),sb('nfem_weighted_avg')]);
   if(closing.length){const latest=closing[closing.length-1];document.getElementById('stat-nfem').textContent=fmtNGN(latest.value);document.getElementById('stat-nfem-date').textContent=fmtDay(latest.obs_date);}
   document.getElementById('loading-nfem').style.display='none';
   const canvas=document.getElementById('chart-nfem');
   canvas.style.display='block';
-  new Chart(canvas,{data:{labels:closing.map(d=>fmtDay(d.obs_date)),datasets:[{type:'line',label:'Closing',data:closing.map(d=>d.value),borderColor:'#4a9eff',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.2)','rgba(74,158,255,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,fill:true,tension:0.4},{type:'line',label:'Highest',data:highest.map(d=>d.value),borderColor:'#00C896',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,fill:false,tension:0.4},{type:'line',label:'Lowest',data:lowest.map(d=>d.value),borderColor:'#FF6B6B',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,fill:false,tension:0.4},{type:'line',label:'Weighted Avg',data:wavg.map(d=>d.value),borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2,pointRadius:0,pointHoverRadius:6,fill:false,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ${fmtNGN(ctx.parsed.y)}`}}},scales:{y:{...SY,title:{display:true,text:'NGN per USD',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:16}}}}});
+  window.chartNfem=new Chart(canvas,{data:{labels:closing.map(d=>fmtDay(d.obs_date)),datasets:[{type:'line',label:'Closing',data:closing.map(d=>d.value),borderColor:'#4a9eff',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.2)','rgba(74,158,255,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#4a9eff',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.4},{type:'line',label:'Highest',data:highest.map(d=>d.value),borderColor:'#00C896',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#00C896',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:false,tension:0.4},{type:'line',label:'Lowest',data:lowest.map(d=>d.value),borderColor:'#FF6B6B',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#FF6B6B',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:false,tension:0.4},{type:'line',label:'Weighted Avg',data:wavg.map(d=>d.value),borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#F4A017',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:false,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ${fmtNGN(ctx.parsed.y)}`}},zoom:ZOOM},scales:{y:{...SY,title:{display:true,text:'NGN per USD',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:16}}}}});
+  document.getElementById('reset-nfem').addEventListener('click',()=>window.chartNfem.resetZoom());
   const wavgMap={},highMap={},lowMap={};
   wavg.forEach(d=>wavgMap[d.obs_date]=d.value);highest.forEach(d=>highMap[d.obs_date]=d.value);lowest.forEach(d=>lowMap[d.obs_date]=d.value);
   const tbody=document.getElementById('nfem-tbody');
   closing.forEach(d=>{tbody.innerHTML+=`<tr><td>${fmtDay(d.obs_date)}</td><td class="num">${fmtNGN(d.value)}</td><td class="num">${fmtNGN(highMap[d.obs_date])}</td><td class="num">${fmtNGN(lowMap[d.obs_date])}</td><td class="num">${fmtNGN(wavgMap[d.obs_date])}</td></tr>`;});
   document.getElementById('loading-table').style.display='none';
   document.getElementById('nfem-table').style.display='table';
+  attachSortableTable(document.getElementById('nfem-table'));
+ }catch(err){showLoadError(err);}
 }
 load();
 </script>

@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 </head>
 <body>
 <nav class="navbar" id="navbar">
@@ -64,6 +66,7 @@
         <div class="chart-loading" id="loading-usd">Loading…</div>
         <canvas id="chart-usd" style="display:none"></canvas>
       </div>
+      <button class="btn-chart-reset" id="reset-usd">↺ Reset Zoom</button>
       <div class="source-note">Source: World Bank Open Data · NY.GDP.MKTP.CD</div>
     </div>
     <div class="chart-card reveal">
@@ -115,13 +118,15 @@ function badge(v) {
   if (v < 20) return '<span class="badge badge-blue">High</span>';
   return '<span class="badge badge-red">Very High</span>';
 }
-const TIP = { backgroundColor:'rgba(13,15,24,0.95)', borderColor:'rgba(0,135,81,0.4)', borderWidth:1, titleColor:'#F4A017', bodyColor:'rgba(245,240,232,0.85)', titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'}, bodyFont:{family:"'IBM Plex Mono'",size:13}, padding:14, cornerRadius:8, displayColors:false };
+const TIP = { backgroundColor:'rgba(13,15,24,0.95)', borderColor:'rgba(0,135,81,0.4)', borderWidth:1, titleColor:'#F4A017', bodyColor:'rgba(245,240,232,0.85)', titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'}, bodyFont:{family:"'IBM Plex Mono'",size:13}, padding:14, cornerRadius:8, displayColors:true, usePointStyle:true, boxWidth:8, boxHeight:8 };
+const ZOOM = { zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'}, pan:{enabled:true,mode:'x'}, limits:{x:{min:'original',max:'original'}} };
 const SX  = { grid:{color:'rgba(245,240,232,0.04)',drawBorder:false}, ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10}, border:{display:false} };
 const SY  = { grid:{color:'rgba(245,240,232,0.04)',drawBorder:false}, ticks:{color:'rgba(245,240,232,0.4)'}, border:{display:false} };
 Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
 function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 function showChart(lid, cid) { document.getElementById(lid).style.display = 'none'; document.getElementById(cid).style.display = 'block'; }
 async function load() {
+ try {
   const [growth, usd] = await Promise.all([sb('gdp_growth'), sb('gdp_usd')]);
   const latestGDP = growth[growth.length - 1];
   document.getElementById('stat-gdp').textContent = `${Number(latestGDP.value).toFixed(2)}%`;
@@ -132,21 +137,25 @@ async function load() {
   new Chart(document.getElementById('chart-growth'), {
     type: 'bar',
     data: { labels: growth.map(d => fmt(d.obs_date)), datasets: [{ label: 'Real GDP Growth (%)', data: growth.map(d => d.value), backgroundColor: (ctx) => ctx.raw >= 0 ? '#00C896' : '#FF6B6B', hoverBackgroundColor: (ctx) => ctx.raw >= 0 ? '#00C896' : '#FF6B6B', borderRadius: 5, borderSkipped: false, borderWidth: 0, barPercentage: 0.65 }] },
-    options: { responsive:true, maintainAspectRatio:false, plugins: { legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP Growth: ${ctx.parsed.y.toFixed(2)}%` }}, annotation:{ annotations:{ zero:{ type:'line', yMin:0, yMax:0, borderColor:'rgba(245,240,232,0.15)', borderWidth:1, borderDash:[4,4] }, ...growthAnnots }}}, scales:{ y:{ ...SY, title:{display:true,text:'Growth Rate (%)',color:'rgba(245,240,232,0.4)',font:{size:11}} }, x:SX } }
+    options: { responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, hover:{mode:'index',intersect:false}, plugins: { legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP Growth: ${ctx.parsed.y.toFixed(2)}%` }}, annotation:{ annotations:{ zero:{ type:'line', yMin:0, yMax:0, borderColor:'rgba(245,240,232,0.15)', borderWidth:1, borderDash:[4,4] }, ...growthAnnots }}}, scales:{ y:{ ...SY, title:{display:true,text:'Growth Rate (%)',color:'rgba(245,240,232,0.4)',font:{size:11}} }, x:SX } }
   });
   showChart('loading-usd', 'chart-usd');
-  new Chart(document.getElementById('chart-usd'), {
+  window.chartUsd=new Chart(document.getElementById('chart-usd'), {
     type:'line',
-    data:{ labels:usd.map(d=>fmtYear(d.obs_date)), datasets:[{ label:'Nominal GDP (USD Bn)', data:usd.map(d=>d.value), borderColor:'#4FC3F7', backgroundColor:'transparent', borderWidth:2.5, pointRadius:5, pointBackgroundColor:'#4FC3F7', pointBorderColor:'#07080d', pointBorderWidth:2, fill:false, tension:0.3 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP: $${ctx.parsed.y.toFixed(2)}B` }}}, scales:{ y:{ ...SY, title:{display:true,text:'USD Billions',color:'rgba(245,240,232,0.4)',font:{size:11}} }, x:SX } }
+    data:{ labels:usd.map(d=>fmtYear(d.obs_date)), datasets:[{ label:'Nominal GDP (USD Bn)', data:usd.map(d=>d.value), borderColor:'#4FC3F7', backgroundColor:'transparent', borderWidth:2.5, pointRadius:5, pointBackgroundColor:'#4FC3F7', pointBorderColor:'#07080d', pointBorderWidth:2, pointHoverRadius:8, pointHoverBackgroundColor:'#4FC3F7', pointHoverBorderColor:'#fff', pointHoverBorderWidth:2, fill:false, tension:0.3 }] },
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, hover:{mode:'index',intersect:false}, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP: $${ctx.parsed.y.toFixed(2)}B` }}, zoom:ZOOM}, scales:{ y:{ ...SY, title:{display:true,text:'USD Billions',color:'rgba(245,240,232,0.4)',font:{size:11}} }, x:SX } }
   });
+  document.getElementById('reset-usd').addEventListener('click',()=>window.chartUsd.resetZoom());
   const tbody = document.getElementById('gdp-tbody');
   growth.forEach(d => { tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">${Number(d.value).toFixed(2)}%</td><td>${badge(d.value)}</td><td class="src">NBS</td></tr>`; });
   document.getElementById('loading-table').style.display = 'none';
   document.getElementById('gdp-table').style.display = 'table';
+  attachSortableTable(document.getElementById('gdp-table'));
   const usdTbody = document.getElementById('usd-tbody');
   usd.forEach((d,i) => { const prev=i>0?usd[i-1].value:null; const diff=prev?d.value-prev:0; const change=i===0?' - ':diff>0?`<span style="color:#e05252">up $${diff.toFixed(2)}B</span>`:`<span style="color:#008751">down $${Math.abs(diff).toFixed(2)}B</span>`; usdTbody.innerHTML+=`<tr><td>${fmtYear(d.obs_date)}</td><td class="num">$${Number(d.value).toFixed(2)}B</td><td>${change}</td><td class="src">World Bank</td></tr>`; });
   document.getElementById('usd-table').style.display = 'table';
+  attachSortableTable(document.getElementById('usd-table'));
+ } catch(err) { showLoadError(err); }
 }
 load();
 </script>

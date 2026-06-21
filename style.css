@@ -577,6 +577,32 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .data-table .src { font-size: 0.65rem; color: var(--slate); white-space: nowrap; }
 .data-table td.positive { color: #00C896; }
 .data-table td.negative { color: #FF6B6B; }
+.data-table th { cursor: pointer; user-select: none; transition: color 0.2s; }
+.data-table th:hover { color: var(--white); }
+.data-table th.sorted-col { color: var(--gold); }
+
+/* ─── Chart Reset Zoom Button ─── */
+.btn-chart-reset {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px; background: transparent;
+  border: 1px solid rgba(0,135,81,0.4); color: rgba(245,240,232,0.6);
+  font-family: var(--font-mono); font-size: 0.7rem;
+  padding: 6px 14px; border-radius: 6px; cursor: pointer;
+  letter-spacing: 0.06em; transition: all 0.2s;
+}
+.btn-chart-reset:hover { border-color: var(--green); color: var(--white); }
+
+/* ─── Currency Toggle Legend (multicurrency.html) ─── */
+.dual-legend span.toggle-off { opacity: 0.35; }
+
+/* ─── GDP Sector Filter Input ─── */
+.sector-filter-input {
+  width: 100%; max-width: 320px; background: var(--black-2);
+  color: var(--white); border: 1px solid rgba(245,240,232,0.15);
+  border-radius: 6px; padding: 9px 14px; font-family: var(--font-mono);
+  font-size: 0.8rem; margin-bottom: 16px;
+}
+.sector-filter-input::placeholder { color: var(--slate); }
 
 /* ─── Badges ─── */
 .badge {
