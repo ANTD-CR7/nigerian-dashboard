@@ -69,7 +69,7 @@ def get_multicurrency(currency:Optional[str]=Query(default=None),start:Optional[
 
 @app.get("/api/v1/gdp-sectors")
 def get_gdp_sectors(start:Optional[str]=Query(default="2020-01-01"),end:Optional[str]=Query(default="2026-12-31")):
-    sectors=["gdp_agriculture","gdp_industry","gdp_services","gdp_manufacturing","gdp_telecoms","gdp_construction","gdp_trade"]
+    sectors=["gdp_agriculture","gdp_industry","gdp_services","gdp_manufacturing","gdp_telecommunicationsAndInformationServices","gdp_construction","gdp_trade"]
     return {"data":{s:fetch(s,start,end) for s in sectors},"unit":"Naira Billions constant prices","source":"NBS GDP Report"}
 
 @app.get("/api/v1/cbn-balance-sheet")
