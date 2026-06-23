@@ -45,6 +45,7 @@
     <p>Quarterly real GDP growth rate and annual nominal GDP in USD billions — NBS &amp; World Bank · 2020–2026</p>
   </div>
 </section>
+<div class="last-updated" id="last-updated">Loading…</div>
 
 <div class="page-content">
   <div class="container">
@@ -54,6 +55,7 @@
     </div>
     <div class="chart-card reveal">
       <div class="chart-card-title">Real GDP Growth Rate (%) — Quarterly</div>
+      <p class="chart-context">Nigeria's quarterly real GDP growth rate — from the COVID-19 contraction of -6.10% in Q2 2020 to the recovery of 3.97% by Q4 2024.</p>
       <div class="chart-wrap">
         <div class="chart-loading" id="loading-growth">Loading…</div>
         <canvas id="chart-growth" style="display:none"></canvas>
@@ -157,6 +159,7 @@ async function load() {
   attachSortableTable(document.getElementById('usd-table'));
  } catch(err) { showLoadError(err); }
 }
+document.addEventListener('DOMContentLoaded', function(){ attachLastUpdated('last-updated', 'gdp_growth', 'NBS'); });
 load();
 </script>
 <script src="shared.js"></script>

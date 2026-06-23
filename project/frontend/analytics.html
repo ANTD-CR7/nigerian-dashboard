@@ -38,7 +38,25 @@
 </div></section>
 <div class="page-content"><div class="container">
   <div class="chart-card reveal"><div class="chart-card-title">Inflation Trend with Linear Regression</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-inf">Loading…</div><canvas id="chart-inf" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#e05252"></span>Inflation</span><span><span class="dot" style="background:#F4A017;height:1px;border-radius:0;"></span>OLS Trend</span></div><button class="btn-chart-reset" id="reset-inf">↺ Reset Zoom</button><div class="source-note">Source: NBS · Trend line = Ordinary Least Squares linear regression</div></div>
-  <div class="chart-card reveal"><div class="chart-card-title">Pearson Correlation: Inflation vs Exchange Rate</div><div id="pearson-result" style="padding:24px 0;"><p style="font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Computing correlation…</p></div><div class="source-note">Pearson r calculated on paired monthly observations. NBS inflation vs CBN NGN/USD.</div></div>
+  <div class="ops-card reveal">
+    <h2>Pearson Correlation: Inflation vs Exchange Rate</h2>
+    <div class="ops-grid">
+      <section class="ops-panel">
+        <label for="pearson-start">From</label>
+        <input id="pearson-start" type="date" value="2020-01-01">
+      </section>
+      <section class="ops-panel">
+        <label for="pearson-end">To</label>
+        <input id="pearson-end" type="date" value="2026-12-31">
+      </section>
+      <section class="ops-panel ops-action">
+        <label>&nbsp;</label>
+        <button id="pearson-compute" type="button">Compute</button>
+      </section>
+    </div>
+    <div id="pearson-result" style="padding:24px 0;"><p style="font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Computing correlation…</p></div>
+    <div class="source-note">Pearson r calculated on paired monthly observations within the selected date range. NBS inflation vs CBN NGN/USD.</div>
+  </div>
   <div class="chart-card reveal"><div class="chart-card-title">FX Reserves vs Exchange Rate — Inverse Relationship</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-dual">Loading…</div><canvas id="chart-dual" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4FC3F7"></span>Exchange Rate NGN/USD — Left</span><span><span class="dot" style="background:#008751"></span>FX Reserves USD Bn — Right</span></div><button class="btn-chart-reset" id="reset-dual">↺ Reset Zoom</button></div>
   <div class="chart-card reveal"><div class="chart-card-title">GDP Sectoral Comparison (Latest Values)</div><input type="text" id="sector-filter" class="sector-filter-input" placeholder="Filter sectors (e.g. agri, trade)…"><div class="chart-wrap-lg"><div class="chart-loading" id="loading-sectors">Loading…</div><canvas id="chart-sectors" style="display:none"></canvas></div><div class="source-note">Source: NBS Real GDP by Sector · Latest available annual value · NGN Billions at constant 2010 prices</div></div>
 </div></div>
@@ -57,7 +75,25 @@ const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'r
 Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
 function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 function linearRegression(vals){const n=vals.length;if(n<2)return vals.map((v,i)=>v);const xs=vals.map((_,i)=>i);const xm=xs.reduce((a,b)=>a+b,0)/n;const ym=vals.reduce((a,b)=>a+b,0)/n;let num=0,den=0;xs.forEach((x,i)=>{num+=(x-xm)*(vals[i]-ym);den+=(x-xm)**2;});const slope=den?num/den:0;const intercept=ym-slope*xm;return xs.map(x=>slope*x+intercept);}
-function pearson(x,y){const n=Math.min(x.length,y.length);const xs=x.slice(0,n),ys=y.slice(0,n);const xm=xs.reduce((a,b)=>a+b,0)/n;const ym=ys.reduce((a,b)=>a+b,0)/n;let num=0,dx2=0,dy2=0;for(let i=0;i<n;i++){const dx=xs[i]-xm,dy=ys[i]-ym;num+=dx*dy;dx2+=dx*dx;dy2+=dy*dy;}return(dx2&&dy2)?num/Math.sqrt(dx2*dy2):0;}
+function computePearson(xArr, yArr) {
+  const n = xArr.length;
+  if (n < 2) return 0;
+  const mx = xArr.reduce((a,b)=>a+b)/n;
+  const my = yArr.reduce((a,b)=>a+b)/n;
+  const num = xArr.reduce((s,x,i)=>s+(x-mx)*(yArr[i]-my),0);
+  const den = Math.sqrt(xArr.reduce((s,x)=>s+(x-mx)**2,0)*yArr.reduce((s,y)=>s+(y-my)**2,0));
+  return den ? (num/den).toFixed(4) : 0;
+}
+function renderPearson(inf, fx) {
+  const fxByDate={};fx.forEach(d=>{fxByDate[d.obs_date]=d.value;});
+  const paired=inf.filter(d=>fxByDate[d.obs_date]!=null);
+  const rStr=computePearson(paired.map(d=>d.value),paired.map(d=>fxByDate[d.obs_date]));
+  const r=Number(rStr),rAbs=Math.abs(r);
+  const strength=rAbs>0.8?'Strong':rAbs>0.5?'Moderate':'Weak';
+  const direction=r>0?'Positive':'Negative';
+  const rColor=rAbs>0.8?'#e05252':rAbs>0.5?'#F4A017':'#008751';
+  document.getElementById('pearson-result').innerHTML=`<div style="display:flex;align-items:flex-start;gap:2rem;flex-wrap:wrap;padding:16px 0"><div><div style="font-family:var(--font-mono);font-size:3rem;font-weight:800;color:${rColor};letter-spacing:-2px;line-height:1">${rStr}</div><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate);text-transform:uppercase;letter-spacing:.1em;margin-top:.3rem">Pearson r</div></div><div style="flex:1;min-width:220px"><div style="font-family:var(--font-display);font-size:1.1rem;color:var(--white);margin-bottom:.5rem">${strength} ${direction} Correlation</div><p style="font-family:var(--font-body);font-size:0.82rem;color:var(--slate);line-height:1.7">Based on <strong style="color:var(--white)">${paired.length}</strong> paired monthly observations. An r of <strong style="color:${rColor}">${rStr}</strong> indicates that as inflation rose, the exchange rate depreciated in near lock-step. The June 2023 FX unification reform was the primary structural break.</p></div></div>`;
+}
 const SECTOR_LABELS={agriculture:'Agriculture',industry:'Industry',services:'Services',manufacturing:'Manufacturing',miningAndQuarrying:'Mining & Quarrying',construction:'Construction',trade:'Trade',financeAndInsurance:'Finance & Insurance',informationAndCommunication:'ICT'};
 async function load(){
  try{
@@ -69,14 +105,23 @@ async function load(){
   const infVals=inf.map(d=>d.value);const trendVals=linearRegression(infVals);
   window.chartInf=new Chart(c1,{data:{labels:inf.map(d=>fmt(d.obs_date)),datasets:[{type:'line',label:'Inflation (%)',data:infVals,borderColor:'#FF6B6B',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#FF6B6B',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},{type:'line',label:'Trend (OLS)',data:trendVals,borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2,pointRadius:0,borderDash:[8,4],tension:0}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top'},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`}},zoom:ZOOM},scales:{y:{...SY,title:{display:true,text:'Inflation (%)',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
   document.getElementById('reset-inf').addEventListener('click',()=>window.chartInf.resetZoom());
-  const fxByDate={};fx.forEach(d=>{fxByDate[d.obs_date]=d.value;});
-  const paired=inf.filter(d=>fxByDate[d.obs_date]!=null);
-  const r=pearson(paired.map(d=>d.value),paired.map(d=>fxByDate[d.obs_date]));
-  const rStr=r.toFixed(4),rAbs=Math.abs(r);
-  const strength=rAbs>0.8?'Strong':rAbs>0.5?'Moderate':'Weak';
-  const direction=r>0?'Positive':'Negative';
-  const rColor=rAbs>0.8?'#e05252':rAbs>0.5?'#F4A017':'#008751';
-  document.getElementById('pearson-result').innerHTML=`<div style="display:flex;align-items:flex-start;gap:2rem;flex-wrap:wrap;padding:16px 0"><div><div style="font-family:var(--font-mono);font-size:3rem;font-weight:800;color:${rColor};letter-spacing:-2px;line-height:1">${rStr}</div><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate);text-transform:uppercase;letter-spacing:.1em;margin-top:.3rem">Pearson r</div></div><div style="flex:1;min-width:220px"><div style="font-family:var(--font-display);font-size:1.1rem;color:var(--white);margin-bottom:.5rem">${strength} ${direction} Correlation</div><p style="font-family:var(--font-body);font-size:0.82rem;color:var(--slate);line-height:1.7">Based on <strong style="color:var(--white)">${paired.length}</strong> paired monthly observations. An r of <strong style="color:${rColor}">${rStr}</strong> indicates that as inflation rose, the exchange rate depreciated in near lock-step. The June 2023 FX unification reform was the primary structural break.</p></div></div>`;
+  window.lastInf=inf; window.lastFx=fx;
+  renderPearson(inf, fx);
+  document.getElementById('pearson-compute').addEventListener('click', async () => {
+    const start = document.getElementById('pearson-start').value;
+    const end   = document.getElementById('pearson-end').value;
+    document.getElementById('pearson-result').innerHTML = '<p style="font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Computing…</p>';
+    try {
+      const [newInf, newFx] = await Promise.all([
+        sb('inflation', `&obs_date=gte.${start}&obs_date=lte.${end}`),
+        sb('exchange_rate', `&obs_date=gte.${start}&obs_date=lte.${end}`)
+      ]);
+      renderPearson(newInf, newFx);
+    } catch (err) {
+      console.error('Recompute failed:', err);
+      document.getElementById('pearson-result').innerHTML = '<div class="error-state"><span>⚠</span><p>Could not recompute. <button onclick="location.reload()">Retry</button></p></div>';
+    }
+  });
   const resMap={};res.forEach(d=>{resMap[d.obs_date]=d.value;});
   document.getElementById('loading-dual').style.display='none';
   const c3=document.getElementById('chart-dual');c3.style.display='block';

@@ -90,8 +90,28 @@ function showLoadError(err) {
   console.error('Load failed:', err);
   document.querySelectorAll('[id^="loading"]').forEach(function(el) {
     el.style.display = 'block';
-    el.textContent = 'Unable to load data — please refresh';
+    el.innerHTML = '<div class="error-state"><span>⚠</span><p>Data temporarily unavailable. <button onclick="location.reload()">Retry</button></p></div>';
   });
+}
+
+/* ─── Last-updated timestamp ─── */
+var SHARED_SB  = 'https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+var SHARED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+function attachLastUpdated(elId, indicatorId, sourceLabel) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  fetch(SHARED_SB + '/observations?indicator_id=eq.' + indicatorId + '&select=obs_date&order=obs_date.desc&limit=1', {
+    headers: { apikey: SHARED_KEY, Authorization: 'Bearer ' + SHARED_KEY }
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(rows) {
+      if (!rows || !rows.length) return;
+      var d = new Date(rows[0].obs_date + 'T00:00:00Z');
+      var month = d.toLocaleDateString('en-GB', { month: 'short', timeZone: 'UTC' });
+      var year = d.getUTCFullYear();
+      el.textContent = 'Data current to: ' + month + ' ' + year + ' · Source: ' + sourceLabel;
+    })
+    .catch(function() {});
 }
 
 /* ─── Click-to-sort table columns ─── */

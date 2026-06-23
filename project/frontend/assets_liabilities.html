@@ -35,6 +35,7 @@
   <h1>CBN Assets and Liabilities</h1><div class="page-hero-rule"></div>
   <p>Central Bank of Nigeria balance sheet — Monthly 2005–2023</p>
 </div></section>
+<div class="last-updated" id="last-updated">Loading…</div>
 <div class="page-content"><div class="container">
   <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>The CBN balance sheet expanded from approximately ₦6T in 2005 to over ₦40T by 2023 driven by oil revenue growth, monetary policy operations and FX interventions. Gold holdings represent Nigeria's international gold reserve position.</p></div>
   <div class="chart-card reveal"><div class="chart-card-title">Total Assets and Liabilities (NGN Billions)</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-main">Loading…</div><canvas id="chart-main" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4FC3F7"></span>Total Assets</span><span><span class="dot" style="background:#e05252"></span>Total Liabilities</span></div><button class="btn-chart-reset" id="reset-main">↺ Reset Zoom</button></div>
@@ -76,6 +77,7 @@ async function load(){
   attachSortableTable(document.getElementById('al-table'));
  }catch(err){showLoadError(err);}
 }
+document.addEventListener('DOMContentLoaded', function(){ attachLastUpdated('last-updated', 'cbn_total_assets', 'CBN'); });
 load();
 </script>
 <script src="shared.js"></script>

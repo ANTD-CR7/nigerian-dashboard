@@ -35,9 +35,10 @@
   <h1>NFEM Daily Exchange Rates</h1><div class="page-hero-rule"></div>
   <p>Nigerian Foreign Exchange Market interbank rates — CBN · Dec 2024 to Apr 2026 · 354 trading sessions</p>
 </div></section>
+<div class="last-updated" id="last-updated">Loading…</div>
 <div class="page-content"><div class="container">
   <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>Latest NFEM closing rate: <strong id="stat-nfem">—</strong> (<span id="stat-nfem-date">—</span>). The Nigerian Foreign Exchange Market (NFEM) is the interbank market where authorised dealers trade foreign currency at market-determined rates — unlike the CBN administrative rate, NFEM rates reflect actual market supply and demand. Data covers December 2024 to April 2026 — 354 daily trading sessions.</p></div>
-  <div class="chart-card reveal"><div class="chart-card-title">NFEM Daily Exchange Rates — Dec 2024 to Apr 2026</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-nfem">Loading…</div><canvas id="chart-nfem" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4a9eff"></span>Closing Rate</span><span><span class="dot" style="background:#00C896"></span>Highest</span><span><span class="dot" style="background:#FF6B6B"></span>Lowest</span><span><span class="dot" style="background:#F4A017"></span>Weighted Avg</span></div><button class="btn-chart-reset" id="reset-nfem">↺ Reset Zoom</button><div class="source-note">Source: CBN NFEM Daily Report · Rates in NGN per USD</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">NFEM Daily Exchange Rates — Dec 2024 to Apr 2026</div><p class="chart-context">Daily Nigerian Foreign Exchange Market rates showing actual interbank trading prices — distinct from the CBN administrative rate.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-nfem">Loading…</div><canvas id="chart-nfem" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4a9eff"></span>Closing Rate</span><span><span class="dot" style="background:#00C896"></span>Highest</span><span><span class="dot" style="background:#FF6B6B"></span>Lowest</span><span><span class="dot" style="background:#F4A017"></span>Weighted Avg</span></div><button class="btn-chart-reset" id="reset-nfem">↺ Reset Zoom</button><div class="source-note">Source: CBN NFEM Daily Report · Rates in NGN per USD</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">NFEM Daily Data Table</div><div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="nfem-table" style="display:none"><thead><tr><th>Date</th><th class="num">Closing (NGN)</th><th class="num">Highest (NGN)</th><th class="num">Lowest (NGN)</th><th class="num">Weighted Avg (NGN)</th></tr></thead><tbody id="nfem-tbody"></tbody></table></div></div>
 </div></div>
 <div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
@@ -73,6 +74,7 @@ async function load(){
   attachSortableTable(document.getElementById('nfem-table'));
  }catch(err){showLoadError(err);}
 }
+document.addEventListener('DOMContentLoaded', function(){ attachLastUpdated('last-updated', 'nfem_closing', 'CBN'); });
 load();
 </script>
 <script src="shared.js"></script>
