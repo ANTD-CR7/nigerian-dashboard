@@ -524,6 +524,60 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-mono); font-size: 0.72rem; color: var(--slate);
+  background: linear-gradient(90deg, #1a1d2e 25%, #22263a 50%, #1a1d2e 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius);
+}
+
+/* ─── Skeleton Loading ─── */
+.skeleton {
+  background: linear-gradient(90deg, #1a1d2e 25%, #22263a 50%, #1a1d2e 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+  height: 32px;
+  width: 120px;
+  display: inline-block;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Error State ─── */
+.error-state {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 16px; text-align: center;
+  font-family: var(--font-body); font-size: 0.8rem; color: var(--slate);
+}
+.error-state span {
+  font-size: 1.1rem; color: var(--red-accent); flex-shrink: 0;
+}
+.error-state button {
+  font-family: var(--font-mono); font-size: 0.68rem; color: var(--green);
+  border: 1px solid rgba(0,135,81,0.4); border-radius: 6px;
+  padding: 4px 10px; margin-left: 6px; cursor: pointer; transition: all 0.2s;
+}
+.error-state button:hover { background: rgba(0,135,81,0.1); color: var(--white); }
+
+/* ─── Chart Context ─── */
+.chart-context {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.85rem;
+  color: rgba(245,240,232,0.55);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  padding-left: 12px;
+  border-left: 2px solid rgba(244,160,23,0.4);
+}
+
+/* ─── Last Updated ─── */
+.last-updated {
+  font-family: var(--font-mono); font-size: 0.68rem;
+  color: var(--slate); letter-spacing: 0.04em;
+  padding: 14px clamp(20px,5vw,64px) 0;
+  max-width: 1280px; margin: 0 auto;
 }
 
 /* ─── Insight Card ─── */
@@ -548,6 +602,7 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   overflow-x: auto; border-radius: var(--radius);
   border: 1px solid rgba(245,240,232,0.06);
   margin-bottom: 22px;
+  -webkit-overflow-scrolling: touch;
 }
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table thead tr { background: rgba(0,135,81,0.1); }
@@ -562,6 +617,9 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .data-table tbody tr {
   border-bottom: 1px solid rgba(245,240,232,0.04);
   transition: background 0.2s, border-left 0.2s;
+}
+.data-table tbody tr:nth-child(even) {
+  background: rgba(245,240,232,0.018);
 }
 .data-table tbody tr:hover {
   background: rgba(0,135,81,0.06);
@@ -888,12 +946,15 @@ footer p {
   .chart-wrap { height: 250px; }
 }
 @media (max-width: 480px) {
+  html { font-size: 85%; }
   .kpi-grid { grid-template-columns: 1fr 1fr; }
   .hero-h1 { font-size: 2.4rem; }
   .hero-ctas { flex-direction: column; align-items: center; }
   .ops-grid { grid-template-columns: 1fr; }
   .analytics-summary { grid-template-columns: 1fr 1fr; }
   .stats-strip { grid-template-columns: 1fr; }
+  .page-hero { padding: 24px 16px; }
+  .chart-wrapper, .chart-wrap, .chart-wrap-lg, .chart-wrap-sm { height: 240px; }
 }
 
 /* ─── Sparkline placeholder ─── */

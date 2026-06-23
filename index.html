@@ -115,35 +115,35 @@
     <div class="kpi-grid">
       <div class="kpi-card kpi-gdp reveal">
         <div class="k-label">GDP Growth Rate</div>
-        <div class="k-value" id="kpi-gdp"> — </div>
+        <div class="k-value" id="kpi-gdp"><span class="skeleton"></span></div>
         <div class="k-meta" id="kpi-gdp-meta">Loading…</div>
         <div id="kpi-gdp-trend"></div>
         <div class="kpi-sparkline"></div>
       </div>
       <div class="kpi-card kpi-inf reveal">
         <div class="k-label">Headline Inflation</div>
-        <div class="k-value" id="kpi-inf"> — </div>
+        <div class="k-value" id="kpi-inf"><span class="skeleton"></span></div>
         <div class="k-meta" id="kpi-inf-meta">Loading…</div>
         <div id="kpi-inf-trend"></div>
         <div class="kpi-sparkline" style="background:linear-gradient(to right,rgba(224,82,82,0.18),transparent)"></div>
       </div>
       <div class="kpi-card kpi-fx reveal">
         <div class="k-label">Exchange Rate (NGN/USD)</div>
-        <div class="k-value" id="kpi-fx"> — </div>
+        <div class="k-value" id="kpi-fx"><span class="skeleton"></span></div>
         <div class="k-meta" id="kpi-fx-meta">Loading…</div>
         <div id="kpi-fx-trend"></div>
         <div class="kpi-sparkline" style="background:linear-gradient(to right,rgba(79,195,247,0.18),transparent)"></div>
       </div>
       <div class="kpi-card kpi-mpr reveal">
         <div class="k-label">Monetary Policy Rate</div>
-        <div class="k-value" id="kpi-mpr"> — </div>
+        <div class="k-value" id="kpi-mpr"><span class="skeleton"></span></div>
         <div class="k-meta" id="kpi-mpr-meta">Loading…</div>
         <div id="kpi-mpr-trend"></div>
         <div class="kpi-sparkline" style="background:linear-gradient(to right,rgba(244,160,23,0.18),transparent)"></div>
       </div>
       <div class="kpi-card kpi-res reveal">
         <div class="k-label">FX Reserves</div>
-        <div class="k-value" id="kpi-res"> — </div>
+        <div class="k-value" id="kpi-res"><span class="skeleton"></span></div>
         <div class="k-meta" id="kpi-res-meta">Loading…</div>
         <div id="kpi-res-trend"></div>
         <div class="kpi-sparkline" style="background:linear-gradient(to right,rgba(179,157,219,0.18),transparent)"></div>
@@ -649,7 +649,12 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
     data:{ labels:mpr.map(d => fmt(d.obs_date)), datasets:[{ data:mpr.map(d => d.value), borderColor:'#F4A017', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(244,160,23,0.15)','rgba(244,160,23,0)'), borderWidth:2.5, pointRadius:0, pointHoverRadius:6, pointHoverBackgroundColor:'#F4A017', pointHoverBorderColor:'#fff', pointHoverBorderWidth:2, fill:true, stepped:true }] },
     options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, hover:{mode:'index',intersect:false}, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`MPR: ${ctx.parsed.y.toFixed(2)}%` }}, zoom:ZOOM}, scales:{ y:{...SY,ticks:{...SY.ticks,maxTicksLimit:5}}, x:{...SX} } }
   });
- } catch(err) { showLoadError(err); }
+ } catch(err) {
+  showLoadError(err);
+  ['kpi-gdp','kpi-inf','kpi-fx','kpi-mpr','kpi-res'].forEach(id => {
+    document.getElementById(id).innerHTML = '<div class="error-state"><span>⚠</span><p>Unavailable. <button onclick="location.reload()">Retry</button></p></div>';
+  });
+ }
 }
 
 let forecastChart;

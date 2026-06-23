@@ -36,10 +36,11 @@
   <h1>Multi-Currency Exchange Rates</h1><div class="page-hero-rule"></div>
   <p>CBN buying, central and selling rates for 12 currencies — 2020–2026</p>
 </div></section>
+<div class="last-updated" id="last-updated">Loading…</div>
 <div class="page-content"><div class="container">
   <div class="insight-card reveal"><div class="insight-label">Key Insight — FX Reform</div><p>The June 2023 CBN foreign exchange unification reform caused simultaneous Naira depreciation against all major currencies. NGN/USD moved from ₦461 to over ₦1,600 within months. By April 2026 the Naira had partially stabilised at approximately ₦1,361 per Dollar, reflecting improved oil revenues and CBN FX management reforms.</p></div>
   <div class="chart-card reveal"><div class="chart-card-title">Current Rates — Latest Available (NGN per unit)</div><div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading CBN rates…</div><div class="data-table-wrap"><table class="data-table" id="rates-table" style="display:none"><thead><tr><th>Currency</th><th class="num">Buying Rate</th><th class="num">Central Rate</th><th class="num">Selling Rate</th></tr></thead><tbody id="rates-tbody"></tbody></table></div><div class="source-note">Source: CBN Official Exchange Rates · 2020–2026</div></div>
-  <div class="chart-card reveal"><div class="chart-card-title">Historical Trend — NGN/USD, NGN/GBP, NGN/EUR (Central Rate)</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-trend">Loading…</div><canvas id="chart-trend" style="display:none"></canvas></div><div class="dual-legend" id="trend-legend" style="cursor:pointer;"><span data-idx="0"><span class="dot" style="background:#00C896"></span>NGN/USD</span><span data-idx="1"><span class="dot" style="background:#F4A017"></span>NGN/GBP</span><span data-idx="2"><span class="dot" style="background:#4a9eff"></span>NGN/EUR</span></div><button class="btn-chart-reset" id="reset-trend">↺ Reset Zoom</button><div class="source-note">Click a legend item to toggle that currency on/off the chart.</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Historical Trend — NGN/USD, NGN/GBP, NGN/EUR (Central Rate)</div><p class="chart-context">CBN official buying, central, and selling rates for 12 currencies — all impacted simultaneously by the June 2023 FX reform.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-trend">Loading…</div><canvas id="chart-trend" style="display:none"></canvas></div><div class="dual-legend" id="trend-legend" style="cursor:pointer;"><span data-idx="0"><span class="dot" style="background:#00C896"></span>NGN/USD</span><span data-idx="1"><span class="dot" style="background:#F4A017"></span>NGN/GBP</span><span data-idx="2"><span class="dot" style="background:#4a9eff"></span>NGN/EUR</span></div><button class="btn-chart-reset" id="reset-trend">↺ Reset Zoom</button><div class="source-note">Click a legend item to toggle that currency on/off the chart.</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">Currency History — Select a Currency</div>
     <select id="currency-select" style="background:var(--black-2);color:var(--white);border:1px solid rgba(245,240,232,0.15);border-radius:6px;padding:9px 14px;font-family:var(--font-mono);font-size:0.8rem;margin-bottom:16px;cursor:pointer;">
       <option value="usd">USD — US Dollar</option><option value="gbp">GBP — British Pound</option><option value="eur">EUR — Euro</option>
@@ -111,6 +112,7 @@ async function load(){
   document.getElementById('currency-select').addEventListener('change',e=>{drawSingleChart(e.target.value);});
  }catch(err){showLoadError(err);}
 }
+document.addEventListener('DOMContentLoaded', function(){ attachLastUpdated('last-updated', 'usd_central', 'CBN'); });
 load();
 </script>
 <script src="shared.js"></script>

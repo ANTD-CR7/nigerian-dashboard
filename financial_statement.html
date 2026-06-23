@@ -36,6 +36,7 @@
   <h1>CBN Annual Financial Statement</h1><div class="page-hero-rule"></div>
   <p>Central Bank of Nigeria historical financial data — 1960–2012</p>
 </div></section>
+<div class="last-updated" id="last-updated">Loading…</div>
 <div class="page-content"><div class="container">
   <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>The CBN financial statement data spans Nigerian monetary history from independence in 1960. The dramatic growth in external reserves from the 1970s reflects Nigeria's oil boom era. Annual surplus and income data provide a window into decades of central bank policy and performance.</p></div>
   <div class="chart-card reveal"><div class="chart-card-title">External Reserves and Total Assets — 1960–2012</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-main">Loading…</div><canvas id="chart-main" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4FC3F7"></span>External Reserves</span><span><span class="dot" style="background:#008751"></span>Total Assets</span></div><button class="btn-chart-reset" id="reset-main">↺ Reset Zoom</button></div>
@@ -76,6 +77,7 @@ async function load(){
   attachSortableTable(document.getElementById('fs-table'));
  }catch(err){showLoadError(err);}
 }
+document.addEventListener('DOMContentLoaded', function(){ attachLastUpdated('last-updated', 'cbn_annual_ext_reserve', 'CBN'); });
 load();
 </script>
 <script src="shared.js"></script>

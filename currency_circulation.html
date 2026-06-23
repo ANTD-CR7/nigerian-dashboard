@@ -36,6 +36,7 @@
   <h1>Currency in Circulation</h1><div class="page-hero-rule"></div>
   <p>Total Nigerian Naira in circulation — Central Bank of Nigeria · 2002–2024</p>
 </div></section>
+<div class="last-updated" id="last-updated">Loading…</div>
 <div class="page-content"><div class="container">
   <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>Currency in circulation dropped sharply in early 2023 following the CBN Naira redesign policy requiring old notes to be returned to banks. It recovered as courts challenged the policy. Long-term trend shows consistent growth from ₦1.4T in 2002 to over ₦4T by 2024.</p></div>
   <div class="chart-card reveal"><div class="chart-card-title">Currency in Circulation 2002–2024 (NGN Millions)</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-chart">Loading…</div><canvas id="chart-cin" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-cin">↺ Reset Zoom</button><div class="source-note">Source: CBN Annual Report · Currency in Circulation (NGN Millions)</div></div>
@@ -74,6 +75,7 @@ async function load(){
   attachSortableTable(document.getElementById('cin-table'));
  }catch(err){showLoadError(err);}
 }
+document.addEventListener('DOMContentLoaded', function(){ attachLastUpdated('last-updated', 'currency_circulation_full', 'CBN'); });
 load();
 </script>
 <script src="shared.js"></script>

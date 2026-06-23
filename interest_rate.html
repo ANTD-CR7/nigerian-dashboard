@@ -36,9 +36,10 @@
   <h1>Monetary Policy Rate</h1><div class="page-hero-rule"></div>
   <p>CBN benchmark interest rate at each MPC decision — Central Bank of Nigeria · 2020–2026</p>
 </div></section>
+<div class="last-updated" id="last-updated">Loading…</div>
 <div class="page-content"><div class="container">
   <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>Current MPR: <strong id="stat-mpr">—</strong>. The CBN raised the MPR from 11.5% to 27.5% between 2022 and 2024 — a cumulative 1,600 basis point tightening to combat surging inflation following the June 2023 FX reform.</p></div>
-  <div class="chart-card reveal"><div class="chart-card-title">CBN Monetary Policy Rate (%) — MPC Decision Dates</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-mpr">Loading…</div><canvas id="chart-mpr" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-mpr">↺ Reset Zoom</button><div class="source-note">Source: CBN MPC communiques · Stepped line = rate held flat between meetings</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">CBN Monetary Policy Rate (%) — MPC Decision Dates</div><p class="chart-context">The CBN raised the Monetary Policy Rate aggressively from 11.5% in 2022 to 27.5% in 2024 to combat surging inflation.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-mpr">Loading…</div><canvas id="chart-mpr" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-mpr">↺ Reset Zoom</button><div class="source-note">Source: CBN MPC communiques · Stepped line = rate held flat between meetings</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">MPR Decision History</div><div id="loading" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="mpr-table" style="display:none"><thead><tr><th>MPC Decision Date</th><th class="num">MPR (%)</th><th>Change</th><th>Source</th></tr></thead><tbody id="mpr-tbody"></tbody></table></div></div>
 </div></div>
 <div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
@@ -71,6 +72,7 @@ async function load(){
   attachSortableTable(document.getElementById('mpr-table'));
  }catch(err){showLoadError(err);}
 }
+document.addEventListener('DOMContentLoaded', function(){ attachLastUpdated('last-updated', 'mpr', 'CBN'); });
 load();
 </script>
 <script src="shared.js"></script>
