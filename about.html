@@ -29,18 +29,18 @@
 <section class="page-hero"><div class="container">
   <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / About</div>
   <h1>About This System</h1><div class="page-hero-rule"></div>
-  <p>Design and Implementation of a Web-Based Financial Data Aggregation and Analytics System Using Nigerian Public Economic Data</p>
+  <p>A Nigerian Public Economic Data Aggregation and Analytics Platform with Open API Access</p>
 </div></section>
 <div class="page-content"><div class="container">
   <div class="insight-card reveal" style="border-left-color:var(--green);background:rgba(0,135,81,0.06);">
     <div class="insight-label">Mission</div>
-    <p>"This system aggregates 11,022 observations across 115 indicators from the CBN, NBS and World Bank into a single interactive web dashboard — making Nigeria's public economic data accessible to researchers, developers, students and the general public."</p>
+    <p>"This platform aggregates 13,535 records across 122 indicators from the CBN, NBS and World Bank into a single interactive dashboard, with a separate free Open API for programmatic access — making Nigeria's public economic data accessible to researchers, developers, students and the general public."</p>
   </div>
 
   <div class="chart-card reveal">
     <div class="chart-card-title">System Overview</div>
-    <p style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.75;margin-bottom:16px;">This system aggregates four core Nigerian macroeconomic indicators from three official public data sources for the period January 2020 to December 2026. It presents the data through an interactive web dashboard with line charts and summary tables that any user can access through a standard web browser.</p>
-    <p style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.75;">This project was developed as a Final Year Project at Caleb University, Imota, Lagos, in the Department of Computer Science. Its contribution is a free, open-source, and academically documented implementation built on a teachable technology stack. The database now contains 11,022 observations across 115 indicators, covering GDP sectoral breakdown (57 sectors, 1981–2024), multi-currency CBN rates (12 currencies), FX reserves, CBN balance sheet, NFEM daily rates and the original four core macro indicators.</p>
+    <p style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.75;margin-bottom:16px;">This platform aggregates 122 indicators across eight data groups from three official public sources — the Central Bank of Nigeria (CBN), the National Bureau of Statistics (NBS), and the World Bank. The primary case study period is 2020 to 2026; select groups (the CBN Five-Year Financial Statement, Currency in Circulation, and Real GDP by Sector) extend further back, to 1960. The dashboard presents the data through interactive Chart.js charts, sortable data tables, and a live analytics page, running directly against a public Supabase PostgreSQL database — no custom backend mediates the dashboard's own data access. A separate, independently-deployed Python FastAPI Open API at <a href="https://npedata-api.onrender.com/api/v1/" style="color:var(--green);">npedata-api.onrender.com/api/v1</a> provides free, documented, third-party programmatic access to the same dataset.</p>
+    <p style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.75;">This project was developed as a Final Year Project at Caleb University, Imota, Lagos, in the Department of Computer Science. Its contribution is a free, open-source, and academically documented implementation built on a teachable technology stack. The database contains 13,535 records across 122 indicators, covering GDP sectoral breakdown (57 sectors, 1981–2024), multi-currency CBN rates (11 currencies), FX reserves, the CBN balance sheet, NFEM daily rates, and the core macroeconomic indicators.</p>
   </div>
 
   <div class="chart-card reveal">
@@ -52,7 +52,7 @@
           <tr><td>Central Bank of Nigeria (CBN)</td><td>Exchange Rate (NGN/USD)</td><td>Daily → monthly avg</td><td>2020–2026</td></tr>
           <tr><td>Central Bank of Nigeria (CBN)</td><td>Monetary Policy Rate (MPR)</td><td>Per MPC meeting</td><td>2020–2026</td></tr>
           <tr><td>Central Bank of Nigeria (CBN)</td><td>FX Reserves (gross, liquid, blocked)</td><td>Monthly</td><td>2020–2026</td></tr>
-          <tr><td>Central Bank of Nigeria (CBN)</td><td>12-currency buying/central/selling rates</td><td>Monthly</td><td>2020–2026</td></tr>
+          <tr><td>Central Bank of Nigeria (CBN)</td><td>11-currency buying/central/selling rates</td><td>Monthly</td><td>2020–2026</td></tr>
           <tr><td>Central Bank of Nigeria (CBN)</td><td>NFEM daily rates</td><td>Daily</td><td>Dec 2024–Apr 2026</td></tr>
           <tr><td>Central Bank of Nigeria (CBN)</td><td>CBN Balance Sheet (6 items)</td><td>Monthly</td><td>2005–2023</td></tr>
           <tr><td>Central Bank of Nigeria (CBN)</td><td>Annual Financial Statement</td><td>Annual</td><td>1960–2012</td></tr>
@@ -73,7 +73,7 @@
         <thead><tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr></thead>
         <tbody>
           <tr><td>Backend Language</td><td style="font-family:var(--font-mono);">Python 3.11</td><td>Server logic and data processing</td></tr>
-          <tr><td>Backend Framework</td><td style="font-family:var(--font-mono);">FastAPI</td><td>REST API with automatic Swagger documentation</td></tr>
+          <tr><td>Open API Framework</td><td style="font-family:var(--font-mono);">FastAPI</td><td>Standalone REST API with automatic Swagger documentation — independent of the dashboard's own direct Supabase access</td></tr>
           <tr><td>Database</td><td style="font-family:var(--font-mono);">Supabase (PostgreSQL)</td><td>Stores all aggregated economic data</td></tr>
           <tr><td>Data Processing</td><td style="font-family:var(--font-mono);">Python Pandas</td><td>ETL — clean and transform Excel/CSV files</td></tr>
           <tr><td>Frontend Structure</td><td style="font-family:var(--font-mono);">HTML5</td><td>Web page structure</td></tr>
@@ -81,7 +81,7 @@
           <tr><td>Frontend Logic</td><td style="font-family:var(--font-mono);">Vanilla JavaScript (ES6+)</td><td>Supabase direct fetch, charts, analytics</td></tr>
           <tr><td>Data Visualisation</td><td style="font-family:var(--font-mono);">Chart.js v4</td><td>Interactive line, bar and dual-axis charts</td></tr>
           <tr><td>Typography</td><td style="font-family:var(--font-mono);">Playfair Display · IBM Plex Mono · Sora</td><td>Display / data / body fonts via Google Fonts</td></tr>
-          <tr><td>Hosting</td><td style="font-family:var(--font-mono);">Railway.app + GitHub Pages</td><td>API backend + static frontend CDN</td></tr>
+          <tr><td>Hosting</td><td style="font-family:var(--font-mono);">Render.com + GitHub Pages</td><td>Open API + static frontend CDN</td></tr>
         </tbody>
       </table>
     </div>

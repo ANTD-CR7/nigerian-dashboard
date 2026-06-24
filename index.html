@@ -210,7 +210,7 @@
       <div class="h-tl-item reveal">
         <div class="h-tl-dot"></div>
         <div>
-          <div class="h-tl-date">Jun 2024</div>
+          <div class="h-tl-date">Dec 2024</div>
           <div class="h-tl-event">Inflation Peak</div>
           <div class="h-tl-stat">34.80%</div>
         </div>
@@ -244,7 +244,7 @@
         <div class="tl-stat">NGN/USD: ₦461 → ₦1,600+</div>
       </div>
       <div class="tl-item reveal">
-        <div class="tl-date">Jun 2024</div>
+        <div class="tl-date">Dec 2024</div>
         <div class="tl-event">Inflation Peak — 28-year High</div>
         <div class="tl-stat">Headline Inflation: 34.80%</div>
       </div>
@@ -284,13 +284,13 @@
       <a href="reserves.html" class="explore-card reveal">
         <div class="explore-icon" style="background:rgba(179,157,219,0.15);">🏦</div>
         <div class="explore-title">FX Reserves</div>
-        <div class="explore-desc">Gross, liquid and blocked foreign exchange reserves — from $32.8B low to $49.7B recovery.</div>
+        <div class="explore-desc">Gross, liquid and blocked foreign exchange reserves — from $32.8B low to $48.7B recovery.</div>
         <div class="explore-link">Explore →</div>
       </a>
       <a href="multicurrency.html" class="explore-card reveal">
         <div class="explore-icon" style="background:rgba(244,160,23,0.15);">🌍</div>
         <div class="explore-title">Multi-Currency</div>
-        <div class="explore-desc">CBN buying, central and selling rates for 12 currencies — USD, GBP, EUR, CNY, JPY, and more.</div>
+        <div class="explore-desc">CBN buying, central and selling rates for 11 currencies — USD, GBP, EUR, CNY, CHF, and more.</div>
         <div class="explore-link">Explore →</div>
       </a>
       <a href="analytics.html" class="explore-card reveal">
@@ -308,7 +308,7 @@
   <div style="max-width:1280px;margin:0 auto;">
     <div class="section-label reveal">Charts</div>
     <h2 class="section-title reveal" style="margin-bottom:12px;">Inflation vs Exchange Rate — The 2023 Divergence</h2>
-    <p class="pearson-subtitle reveal">Pearson correlation r = 0.94 — the strongest statistical relationship in Nigeria's 2020–2026 economic data</p>
+    <p class="pearson-subtitle reveal">Pearson correlation r = 0.9581 during the 2023–2024 FX reform window — the strongest statistical relationship in Nigeria's 2020–2026 economic data</p>
     <div class="chart-card reveal">
       <div class="chart-card-title">Inflation (left) vs NGN/USD Exchange Rate (right) — 2020–2026</div>
       <div class="chart-wrap-lg">
@@ -698,16 +698,16 @@ async function loadAnalytics() {
 async function loadCoverage() {
   try {
     const r = await fetch(`${SB}/observations?select=count`, { headers: { ...H, Prefer: 'count=exact' } });
-    const total = r.headers.get('content-range')?.split('/')?.[1] || '11,022';
+    const total = r.headers.get('content-range')?.split('/')?.[1] || '13,535';
     document.getElementById('coverage-total').textContent = Number(total).toLocaleString();
-    document.getElementById('coverage-indicators').textContent = '115';
+    document.getElementById('coverage-indicators').textContent = '122';
     document.getElementById('coverage-sources').textContent = 'CBN, NBS, WB';
-    document.getElementById('coverage-window').textContent = 'Jan 2002 – Apr 2026';
+    document.getElementById('coverage-window').textContent = '1960 – Apr 2026';
   } catch (err) {
-    document.getElementById('coverage-total').textContent = '11,022';
-    document.getElementById('coverage-indicators').textContent = '115';
+    document.getElementById('coverage-total').textContent = '13,535';
+    document.getElementById('coverage-indicators').textContent = '122';
     document.getElementById('coverage-sources').textContent = 'CBN, NBS, WB';
-    document.getElementById('coverage-window').textContent = 'Jan 2002 – Apr 2026';
+    document.getElementById('coverage-window').textContent = '1960 – Apr 2026';
   }
 }
 
