@@ -34,13 +34,13 @@
 <div class="page-content"><div class="container">
   <div class="insight-card reveal" style="border-left-color:var(--green);background:rgba(0,135,81,0.06);">
     <div class="insight-label">Mission</div>
-    <p>"This platform aggregates 13,535 records across 122 indicators from the CBN, NBS and World Bank into a single interactive dashboard, with a separate free Open API for programmatic access — making Nigeria's public economic data accessible to researchers, developers, students and the general public."</p>
+    <p>"This platform aggregates 13,006 records across 122 indicators from the CBN, NBS and World Bank into a single interactive dashboard, with a separate free Open API for programmatic access — making Nigeria's public economic data accessible to researchers, developers, students and the general public."</p>
   </div>
 
   <div class="chart-card reveal">
     <div class="chart-card-title">System Overview</div>
     <p style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.75;margin-bottom:16px;">This platform aggregates 122 indicators across eight data groups from three official public sources — the Central Bank of Nigeria (CBN), the National Bureau of Statistics (NBS), and the World Bank. The primary case study period is 2020 to 2026; select groups (the CBN Five-Year Financial Statement, Currency in Circulation, and Real GDP by Sector) extend further back, to 1960. The dashboard presents the data through interactive Chart.js charts, sortable data tables, and a live analytics page, running directly against a public Supabase PostgreSQL database — no custom backend mediates the dashboard's own data access. A separate, independently-deployed Python FastAPI Open API at <a href="https://npedata-api.onrender.com/api/v1/" style="color:var(--green);">npedata-api.onrender.com/api/v1</a> provides free, documented, third-party programmatic access to the same dataset.</p>
-    <p style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.75;">This project was developed as a Final Year Project at Caleb University, Imota, Lagos, in the Department of Computer Science. Its contribution is a free, open-source, and academically documented implementation built on a teachable technology stack. The database contains 13,535 records across 122 indicators, covering GDP sectoral breakdown (57 sectors, 1981–2024), multi-currency CBN rates (11 currencies), FX reserves, the CBN balance sheet, NFEM daily rates, and the core macroeconomic indicators.</p>
+    <p style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.75;">This project was developed as a Final Year Project at Caleb University, Imota, Lagos, in the Department of Computer Science. Its contribution is a free, open-source, and academically documented implementation built on a teachable technology stack. The database contains 13,006 records across 122 indicators, covering GDP sectoral breakdown (57 sectors, 1981–2024), multi-currency CBN rates (11 currencies), FX reserves, the CBN balance sheet, NFEM daily rates, and the core macroeconomic indicators.</p>
   </div>
 
   <div class="chart-card reveal">
@@ -52,7 +52,7 @@
           <tr><td>Central Bank of Nigeria (CBN)</td><td>Exchange Rate (NGN/USD)</td><td>Daily → monthly avg</td><td>2020–2026</td></tr>
           <tr><td>Central Bank of Nigeria (CBN)</td><td>Monetary Policy Rate (MPR)</td><td>Per MPC meeting</td><td>2020–2026</td></tr>
           <tr><td>Central Bank of Nigeria (CBN)</td><td>FX Reserves (gross, liquid, blocked)</td><td>Monthly</td><td>2020–2026</td></tr>
-          <tr><td>Central Bank of Nigeria (CBN)</td><td>11-currency buying/central/selling rates</td><td>Monthly</td><td>2020–2026</td></tr>
+          <tr><td>Central Bank of Nigeria (CBN)</td><td>11-currency buying/central/selling rates</td><td>Monthly</td><td>2020–2026 (AED: Jan–Apr 2026 only)</td></tr>
           <tr><td>Central Bank of Nigeria (CBN)</td><td>NFEM daily rates</td><td>Daily</td><td>Dec 2024–Apr 2026</td></tr>
           <tr><td>Central Bank of Nigeria (CBN)</td><td>CBN Balance Sheet (6 items)</td><td>Monthly</td><td>2005–2023</td></tr>
           <tr><td>Central Bank of Nigeria (CBN)</td><td>Annual Financial Statement</td><td>Annual</td><td>1960–2012</td></tr>
@@ -89,7 +89,7 @@
 
   <div class="chart-card reveal" style="border-left:4px solid var(--red-accent);">
     <div class="chart-card-title" style="color:var(--red-accent);">Disclaimer</div>
-    <p style="font-family:var(--font-body);font-size:0.84rem;color:var(--slate);line-height:1.75;">This system is for <strong style="color:var(--white);">informational and educational purposes only</strong>. Data is sourced from official institutions but cannot guarantee freedom from errors or omissions. <strong style="color:var(--white);">This system does not constitute financial advice.</strong> For official economic data, refer directly to the CBN, NBS, and World Bank websites.</p>
+    <p style="font-family:var(--font-body);font-size:0.84rem;color:var(--slate);line-height:1.75;">This system is for <strong style="color:var(--white);">informational and educational purposes only</strong>. Data is sourced from official institutions but cannot guarantee freedom from errors or omissions. <strong style="color:var(--white);">This system does not constitute financial advice.</strong> For official economic data, refer directly to the CBN, NBS, and World Bank websites. A June 2026 data audit removed 529 duplicate records introduced by repeated ETL runs; 762 indicator/date pairs with conflicting values from those re-runs are still pending reconciliation against original source files and may not yet reflect the most accurate figure for that period.</p>
   </div>
 
   <div class="chart-card reveal">

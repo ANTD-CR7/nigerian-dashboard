@@ -698,13 +698,13 @@ async function loadAnalytics() {
 async function loadCoverage() {
   try {
     const r = await fetch(`${SB}/observations?select=count`, { headers: { ...H, Prefer: 'count=exact' } });
-    const total = r.headers.get('content-range')?.split('/')?.[1] || '13,535';
+    const total = r.headers.get('content-range')?.split('/')?.[1] || '13,006';
     document.getElementById('coverage-total').textContent = Number(total).toLocaleString();
     document.getElementById('coverage-indicators').textContent = '122';
     document.getElementById('coverage-sources').textContent = 'CBN, NBS, WB';
     document.getElementById('coverage-window').textContent = '1960 – Apr 2026';
   } catch (err) {
-    document.getElementById('coverage-total').textContent = '13,535';
+    document.getElementById('coverage-total').textContent = '13,006';
     document.getElementById('coverage-indicators').textContent = '122';
     document.getElementById('coverage-sources').textContent = 'CBN, NBS, WB';
     document.getElementById('coverage-window').textContent = '1960 – Apr 2026';
