@@ -62,7 +62,7 @@ def get_nfem(start:Optional[str]=Query(default="2024-12-01"),end:Optional[str]=Q
 
 @app.get("/api/v1/multicurrency")
 def get_multicurrency(currency:Optional[str]=Query(default=None),start:Optional[str]=Query(default="2020-01-01"),end:Optional[str]=Query(default="2026-12-31")):
-    currencies=["usd","gbp","eur","cny","jpy","chf","zar","aed","sar","sdr","cfa","waua"]
+    currencies=["usd","gbp","eur","cny","chf","zar","aed","sar","sdr","cfa","waua"]
     if currency and currency.lower() in currencies:
         currencies=[currency.lower()]
     return {"data":{c:{"buying":fetch(f"{c}_buying",start,end),"central":fetch(f"{c}_central",start,end),"selling":fetch(f"{c}_selling",start,end)} for c in currencies},"unit":"Naira per foreign currency unit","source":"CBN"}
