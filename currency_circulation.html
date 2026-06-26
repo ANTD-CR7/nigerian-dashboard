@@ -39,7 +39,7 @@
 <div class="last-updated" id="last-updated">Loading…</div>
 <div class="page-content"><div class="container">
   <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>Currency in circulation dropped sharply in early 2023 following the CBN Naira redesign policy requiring old notes to be returned to banks. It recovered as courts challenged the policy. Long-term trend shows consistent growth from ₦1.4T in 2002 to over ₦4T by 2024.</p></div>
-  <div class="chart-card reveal"><div class="chart-card-title">Currency in Circulation 2002–2024 (NGN Millions)</div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-chart">Loading…</div><canvas id="chart-cin" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-cin">↺ Reset Zoom</button><div class="source-note">Source: CBN Annual Report · Currency in Circulation (NGN Millions)</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Currency in Circulation 2002–2024 (NGN Millions)</div><p class="chart-context">Currency in circulation dropped sharply after the January 2023 Naira redesign policy, then recovered as courts intervened — but has grown steadily overall since 2002.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-chart">Loading…</div><canvas id="chart-cin" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-cin">↺ Reset Zoom</button><div class="source-note">Source: CBN Annual Report · Currency in Circulation (NGN Millions)</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">Monthly Data Table</div><div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="cin-table" style="display:none"><thead><tr><th>Date</th><th class="num">Amount (NGN Millions)</th><th>Change</th></tr></thead><tbody id="cin-tbody"></tbody></table></div></div>
 </div></div>
 <div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
@@ -62,7 +62,7 @@ async function load(){
   const data=await sb('currency_circulation_full');
   const redesignIdx=data.findIndex(d=>d.obs_date.startsWith('2023-01'));
   const annots={};
-  if(redesignIdx>=0)annots.redesign={type:'line',xMin:redesignIdx,xMax:redesignIdx,borderColor:'rgba(224,82,82,0.6)',borderWidth:1.5,borderDash:[6,4],label:{display:true,content:'Naira Redesign (Jan 2023)',position:'start',backgroundColor:'#e05252',color:'#fff',font:{size:11,weight:'600'},padding:{x:6,y:3},borderRadius:2}};
+  if(redesignIdx>=0)annots.redesign={type:'line',xMin:redesignIdx,xMax:redesignIdx,borderColor:'rgba(224,82,82,0.6)',borderWidth:1.5,borderDash:[6,4],label:{display:true,content:'Naira Redesign (Jan 2023)',position:'end',backgroundColor:'#e05252',color:'#fff',font:{size:11,weight:'600'},padding:{x:6,y:3},borderRadius:2}};
   document.getElementById('loading-chart').style.display='none';
   const canvas=document.getElementById('chart-cin');
   canvas.style.display='block';

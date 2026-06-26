@@ -311,6 +311,7 @@
     <p class="pearson-subtitle reveal">Pearson correlation r = 0.9581 during the 2023–2024 FX reform window — the strongest statistical relationship in Nigeria's 2020–2026 economic data</p>
     <div class="chart-card reveal">
       <div class="chart-card-title">Inflation (left) vs NGN/USD Exchange Rate (right) — 2020–2026</div>
+      <p class="chart-context">Plotting these together shows why they're correlated — both accelerated sharply after the June 2023 FX reform, with a Pearson r of 0.9581 during that specific window (the full-period correlation is a weaker 0.6965).</p>
       <div class="chart-wrap-lg">
         <div class="chart-loading" id="loading-dual">Loading…</div>
         <canvas id="chart-dual" style="display:none"></canvas>
@@ -325,6 +326,7 @@
     <div class="mini-grid reveal">
       <div class="chart-card">
         <div class="chart-card-title">GDP Growth Rate (%)</div>
+        <p class="chart-context" style="font-size:0.75rem;margin-bottom:12px;">COVID-19 contraction (-6.10%, Q2 2020) to recovery (3.97%, Q4 2024).</p>
         <div class="chart-wrap-sm">
           <div class="chart-loading" id="loading-gdp">Loading…</div>
           <canvas id="chart-gdp" style="display:none"></canvas>
@@ -332,6 +334,7 @@
       </div>
       <div class="chart-card">
         <div class="chart-card-title">Headline Inflation (%)</div>
+        <p class="chart-context" style="font-size:0.75rem;margin-bottom:12px;">Peaked at 34.80% in December 2024 — the highest since the 1990s.</p>
         <div class="chart-wrap-sm">
           <div class="chart-loading" id="loading-inf">Loading…</div>
           <canvas id="chart-inf" style="display:none"></canvas>
@@ -340,6 +343,7 @@
       </div>
       <div class="chart-card">
         <div class="chart-card-title">Exchange Rate (NGN/USD)</div>
+        <p class="chart-context" style="font-size:0.75rem;margin-bottom:12px;">Lost over 70% of its value between May 2023 and January 2024.</p>
         <div class="chart-wrap-sm">
           <div class="chart-loading" id="loading-fx">Loading…</div>
           <canvas id="chart-fx" style="display:none"></canvas>
@@ -348,6 +352,7 @@
       </div>
       <div class="chart-card">
         <div class="chart-card-title">Monetary Policy Rate (%)</div>
+        <p class="chart-context" style="font-size:0.75rem;margin-bottom:12px;">Raised from 11.5% to 27.5% between 2022 and 2024 to fight inflation.</p>
         <div class="chart-wrap-sm">
           <div class="chart-loading" id="loading-mpr">Loading…</div>
           <canvas id="chart-mpr" style="display:none"></canvas>
@@ -544,7 +549,7 @@ function annotation(label, color, idx) {
   return {
     type: 'line', xMin: idx, xMax: idx,
     borderColor: color + '66', borderWidth: 1.5, borderDash: [6, 4],
-    label: { display: true, content: label, position: 'start',
+    label: { display: true, content: label, position: 'end',
       backgroundColor: color, color: '#fff',
       font: { size: 11, weight: '600' }, padding: { x: 6, y: 3 }, borderRadius: 2 }
   };
