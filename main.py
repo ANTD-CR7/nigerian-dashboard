@@ -40,7 +40,8 @@ Computer Science, Caleb University, Imota, Lagos, Nigeria (2026). Author: Taohee
 Scope is strictly Nigeria — no other countries' data is included.
 
 ## Links
-- Live dashboard: https://antd-cr7.github.io/nigerian-dashboard
+- Live dashboard (primary): https://antd-cr7.github.io/nigerian-dashboard
+- Live dashboard (mirror, Cloudflare Pages): https://npedata.pages.dev
 - Open API base URL: https://npedata-api.onrender.com
 - Source code: https://github.com/ANTD-CR7/nigerian-dashboard
 - API status / data freshness: https://antd-cr7.github.io/nigerian-dashboard/status.html

@@ -43,6 +43,14 @@
   </div>
 
   <div class="chart-card reveal">
+    <div class="chart-card-title">Site Mirrors</div>
+    <p class="chart-context">The dashboard is deployed to two independent static hosts so a single provider's outage (like the GitHub Pages connectivity issue on 26 June 2026) doesn't take the whole site down.</p>
+    <div class="status-row" id="row-ghpages"><span class="status-dot status-pending" id="dot-ghpages"></span><div><div class="status-name">GitHub Pages (primary)</div><div class="status-detail" id="detail-ghpages">Checking… · <a href="https://antd-cr7.github.io/nigerian-dashboard/" style="color:var(--green);">antd-cr7.github.io/nigerian-dashboard</a></div></div></div>
+    <div class="status-row" id="row-cfpages"><span class="status-dot status-pending" id="dot-cfpages"></span><div><div class="status-name">Cloudflare Pages (mirror)</div><div class="status-detail" id="detail-cfpages">Checking… · <a href="https://npedata.pages.dev/" style="color:var(--green);">npedata.pages.dev</a></div></div></div>
+    <div class="source-note">Both hosts deploy the same static files from the GitHub repository.</div>
+  </div>
+
+  <div class="chart-card reveal">
     <div class="chart-card-title">Data Freshness</div>
     <div id="loading-fresh" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Checking…</div>
     <div class="data-table-wrap"><table class="data-table" id="fresh-table" style="display:none"><thead><tr><th>Category</th><th>Indicator</th><th>Current To</th><th>Source</th></tr></thead><tbody id="fresh-tbody"></tbody></table></div>
@@ -82,6 +90,18 @@ async function checkApi(){
     document.getElementById('detail-api').textContent='Unreachable — '+err.message+' (Render free tier may be cold-starting; try reloading in ~30s)';
   }
 }
+async function checkMirror(url,dotId,detailId,linkLabel){
+  const t0=performance.now();
+  try{
+    await fetch(url,{mode:'no-cors',cache:'no-store'});
+    const ms=Math.round(performance.now()-t0);
+    setDot(dotId,'status-up');
+    document.getElementById(detailId).innerHTML=`Online · responded in ${ms}ms · <a href="${url}" style="color:var(--green);">${linkLabel}</a>`;
+  }catch(err){
+    setDot(dotId,'status-down');
+    document.getElementById(detailId).innerHTML=`Unreachable — ${err.message} · <a href="${url}" style="color:var(--green);">${linkLabel}</a>`;
+  }
+}
 async function freshness(){
   const cats=[['Economy — GDP','gdp_growth','NBS'],['Economy — Inflation','inflation','NBS'],['Currency — Exchange Rate','exchange_rate','CBN'],['Economy — Interest Rate','mpr','CBN'],['CBN Data — FX Reserves','fx_reserves','CBN']];
   try{
@@ -99,6 +119,8 @@ async function freshness(){
 }
 checkSupabase();
 checkApi();
+checkMirror('https://antd-cr7.github.io/nigerian-dashboard/','dot-ghpages','detail-ghpages','antd-cr7.github.io/nigerian-dashboard');
+checkMirror('https://npedata.pages.dev/','dot-cfpages','detail-cfpages','npedata.pages.dev');
 freshness();
 </script>
 <script src="shared.js"></script>
