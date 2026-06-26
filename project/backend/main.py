@@ -27,10 +27,15 @@ ENDPOINTS:
     GET /docs               - Auto-generated Swagger API documentation
 """
 
-from fastapi import FastAPI, Query
+import os
+
+from dotenv import load_dotenv
+from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from supabase import create_client, Client
 from typing import Optional
+
+load_dotenv()
 
 # ============================================================
 # STEP 1: Create the FastAPI app
@@ -57,12 +62,47 @@ app.add_middleware(
 
 # ============================================================
 # STEP 3: Connect to Supabase
-# Replace these with your actual credentials
+# Credentials are loaded from the environment (.env locally, real
+# environment variables in production) -- never hardcoded here.
 # ============================================================
-SUPABASE_URL = "https://fjsytcmcxapfbrwvawmu.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw"
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise RuntimeError(
+        "Missing required environment variables: SUPABASE_URL and/or SUPABASE_KEY. "
+        "Copy project/backend/.env.example to project/backend/.env and fill in real values."
+    )
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+
+# ============================================================
+# SHARED HELPER: HATEOAS-style "_links" block
+# Every endpoint response includes a _links field pointing to
+# itself and to every other related endpoint, so a client can
+# discover the rest of the API without hardcoding URLs.
+# ============================================================
+ENDPOINT_PATHS = {
+    "root":           "/",
+    "gdp":            "/api/gdp",
+    "inflation":      "/api/inflation",
+    "exchange_rate":  "/api/exchange-rate",
+    "interest_rate":  "/api/interest-rate",
+    "summary":        "/api/summary",
+}
+
+
+def build_links(request: Request, current: str) -> dict:
+    """
+    Returns a dict of hrefs: "self" -> the current endpoint, plus one
+    entry per other endpoint name -> its full URL, built from the
+    incoming request's base URL.
+    """
+    base = str(request.base_url).rstrip("/")
+    links = {name: base + path for name, path in ENDPOINT_PATHS.items() if name != current}
+    links["self"] = base + ENDPOINT_PATHS[current]
+    return links
 
 
 # ============================================================
@@ -96,6 +136,7 @@ def fetch_data(indicator_id: str, start_date: str, end_date: str):
 # ============================================================
 @app.get("/api/gdp")
 def get_gdp(
+    request: Request,
     start: Optional[str] = Query(default="2020-01-01", description="Start date YYYY-MM-DD"),
     end:   Optional[str] = Query(default="2024-12-31", description="End date YYYY-MM-DD")
 ):
@@ -112,7 +153,8 @@ def get_gdp(
         "gdp_usd":      usd,      # annual, USD billions
         "unit_growth":  "Percent (%)",
         "unit_usd":     "USD Billions",
-        "source":       "NBS (growth rate), World Bank (USD value)"
+        "source":       "NBS (growth rate), World Bank (USD value)",
+        "_links":       build_links(request, "gdp")
     }
 
 
@@ -123,6 +165,7 @@ def get_gdp(
 # ============================================================
 @app.get("/api/inflation")
 def get_inflation(
+    request: Request,
     start: Optional[str] = Query(default="2020-01-01", description="Start date YYYY-MM-DD"),
     end:   Optional[str] = Query(default="2024-12-31", description="End date YYYY-MM-DD")
 ):
@@ -136,7 +179,8 @@ def get_inflation(
         "indicator": "Headline Inflation Rate",
         "data":      data,
         "unit":      "Percent (%)",
-        "source":    "NBS CPI Report"
+        "source":    "NBS CPI Report",
+        "_links":    build_links(request, "inflation")
     }
 
 
@@ -147,6 +191,7 @@ def get_inflation(
 # ============================================================
 @app.get("/api/exchange-rate")
 def get_exchange_rate(
+    request: Request,
     start: Optional[str] = Query(default="2020-01-01", description="Start date YYYY-MM-DD"),
     end:   Optional[str] = Query(default="2024-12-31", description="End date YYYY-MM-DD")
 ):
@@ -160,7 +205,8 @@ def get_exchange_rate(
         "indicator": "Exchange Rate (NGN/USD)",
         "data":      data,
         "unit":      "Naira per US Dollar",
-        "source":    "CBN Official Rate"
+        "source":    "CBN Official Rate",
+        "_links":    build_links(request, "exchange_rate")
     }
 
 
@@ -171,6 +217,7 @@ def get_exchange_rate(
 # ============================================================
 @app.get("/api/interest-rate")
 def get_interest_rate(
+    request: Request,
     start: Optional[str] = Query(default="2020-01-01", description="Start date YYYY-MM-DD"),
     end:   Optional[str] = Query(default="2024-12-31", description="End date YYYY-MM-DD")
 ):
@@ -184,7 +231,8 @@ def get_interest_rate(
         "indicator": "Monetary Policy Rate (MPR)",
         "data":      data,
         "unit":      "Percent (%)",
-        "source":    "CBN Monetary Policy Committee"
+        "source":    "CBN Monetary Policy Committee",
+        "_links":    build_links(request, "interest_rate")
     }
 
 
@@ -195,7 +243,7 @@ def get_interest_rate(
 # This is used by the home dashboard page
 # ============================================================
 @app.get("/api/summary")
-def get_summary():
+def get_summary(request: Request):
     """
     Returns the latest available value for all four indicators.
     Used by the dashboard home page to populate the summary cards.
@@ -216,6 +264,7 @@ def get_summary():
         "inflation":     latest("inflation"),
         "exchange_rate": latest("exchange_rate"),
         "mpr":           latest("mpr"),
+        "_links":        build_links(request, "summary")
     }
 
 
@@ -225,9 +274,10 @@ def get_summary():
 # Returns: simple message to confirm the API is running
 # ============================================================
 @app.get("/")
-def root():
+def root(request: Request):
     return {
         "message": "Nigerian Financial Data Aggregation System API",
         "status":  "running",
-        "docs":    "/docs"
+        "docs":    "/docs",
+        "_links":  build_links(request, "root")
     }
