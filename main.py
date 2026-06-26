@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 from supabase import create_client, Client
 from typing import Optional
 import statistics
@@ -27,6 +28,43 @@ def latest(indicator_id):
 @app.head("/")
 def root():
     return {"name":"Nigerian Public Economic Data API","version":"1.0.0","docs":"/docs","dashboard":"https://antd-cr7.github.io/nigerian-dashboard","endpoints":["/api/v1/summary","/api/v1/gdp","/api/v1/inflation","/api/v1/exchange-rate","/api/v1/interest-rate","/api/v1/fx-reserves","/api/v1/currency-circulation","/api/v1/nfem","/api/v1/multicurrency","/api/v1/gdp-sectors","/api/v1/cbn-balance-sheet","/api/v1/analytics"]}
+
+LLMS_TXT = """# NPEDATA — Nigerian Public Economic Data Aggregation and Analytics Platform with Open API
+
+## Summary
+NPEDATA aggregates Nigerian public economic data from the Central Bank of Nigeria (CBN), the National
+Bureau of Statistics (NBS), and the World Bank into one interactive dashboard, with a free, open,
+no-authentication REST API for programmatic and AI-agent access. Final Year Project, Department of
+Computer Science, Caleb University, Imota, Lagos, Nigeria (2026). Author: Taoheed Abdulmanan Olaosebikan.
+
+Scope is strictly Nigeria — no other countries' data is included.
+
+## Links
+- Live dashboard: https://antd-cr7.github.io/nigerian-dashboard
+- Open API base URL: https://npedata-api.onrender.com
+- Source code: https://github.com/ANTD-CR7/nigerian-dashboard
+- API status / data freshness: https://antd-cr7.github.io/nigerian-dashboard/status.html
+
+## Open API
+Base URL: https://npedata-api.onrender.com
+Auth: none. Method: GET only. CORS: open. Format: JSON.
+
+Endpoints (all under /api/v1/): /summary, /gdp, /inflation, /exchange-rate, /interest-rate,
+/fx-reserves, /currency-circulation, /nfem, /multicurrency, /gdp-sectors, /cbn-balance-sheet, /analytics.
+Most accept optional start/end date query params (ISO 8601). Interactive docs at /docs.
+
+## AI Agent Access
+A Model Context Protocol (MCP) server is available at /mcp-server in the source repository, exposing
+every endpoint above as a read-only tool for Claude Desktop, Cursor, and other MCP-compatible clients.
+
+## License / Usage
+Free for research, academic, and development use. Informational and educational purposes only —
+not financial advice. For official figures, refer directly to the CBN, NBS, and World Bank.
+"""
+
+@app.get("/llms.txt", response_class=PlainTextResponse)
+def llms_txt():
+    return LLMS_TXT
 
 @app.get("/api/v1/summary")
 def get_summary():

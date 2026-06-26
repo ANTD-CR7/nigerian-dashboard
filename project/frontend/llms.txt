@@ -1,0 +1,53 @@
+# NPEDATA — Nigerian Public Economic Data Aggregation and Analytics Platform with Open API
+
+## Summary
+NPEDATA aggregates Nigerian public economic data from the Central Bank of Nigeria (CBN), the National
+Bureau of Statistics (NBS), and the World Bank into one interactive dashboard, with a free, open,
+no-authentication REST API for programmatic and AI-agent access. Final Year Project, Department of
+Computer Science, Caleb University, Imota, Lagos, Nigeria (2026). Author: Taoheed Abdulmanan Olaosebikan.
+
+Scope is strictly Nigeria — no other countries' data is included.
+
+## Links
+- Live dashboard: https://antd-cr7.github.io/nigerian-dashboard
+- Open API base URL: https://npedata-api.onrender.com
+- Source code: https://github.com/ANTD-CR7/nigerian-dashboard
+- API status / data freshness: https://antd-cr7.github.io/nigerian-dashboard/status.html
+
+## Data
+- 12,100 records across 122 indicators, sourced from CBN, NBS and World Bank publications.
+- Primary case-study period: 2020–2026. Select series (CBN Five-Year Financial Statement, Currency in
+  Circulation, GDP by sector) extend back to 1960/1981/2002.
+- Deduplicated, date-normalised to ISO 8601, reconciled against original source files (see /about.html
+  on the dashboard for the data-audit disclosure).
+
+## Open API
+Base URL: https://npedata-api.onrender.com
+Auth: none. Method: GET only. CORS: open. Format: JSON.
+
+Endpoints (all under /api/v1/):
+- GET /summary                  — latest value for GDP, inflation, exchange rate, MPR, FX reserves.
+- GET /gdp                      — quarterly real GDP growth (%) and annual nominal GDP (USD billions).
+- GET /inflation                — monthly headline, food and core inflation (% YoY).
+- GET /exchange-rate            — monthly average NGN/USD official rate.
+- GET /interest-rate            — CBN Monetary Policy Rate (MPR) per MPC decision.
+- GET /fx-reserves               — monthly gross, liquid and blocked FX reserves + block percentage.
+- GET /currency-circulation      — currency in circulation (NGN billions), 2002–2024.
+- GET /nfem                     — NFEM daily closing, highest, lowest, weighted-average rates.
+- GET /multicurrency             — buying/central/selling rates for 11 currencies vs the Naira.
+- GET /gdp-sectors               — real GDP by sector (agriculture, industry, services, etc).
+- GET /cbn-balance-sheet          — CBN total assets, liabilities, gold, currency issued.
+- GET /analytics                 — Pearson correlation between inflation and exchange rate.
+
+Most endpoints accept optional `start`/`end` date query params (ISO 8601, e.g. 2020-01-01).
+Interactive Swagger docs: https://npedata-api.onrender.com/docs
+
+## AI Agent Access
+A Model Context Protocol (MCP) server is available in the repository at /mcp-server, exposing every
+endpoint above as a read-only tool for Claude Desktop, Cursor, and other MCP-compatible clients. See
+mcp-server/README.md in the source repository for setup.
+
+## License / Usage
+Free for research, academic, and development use. Data is for informational and educational purposes
+only and does not constitute financial advice. For official figures, refer directly to the CBN, NBS,
+and World Bank.

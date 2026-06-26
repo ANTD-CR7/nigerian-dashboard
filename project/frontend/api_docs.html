@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/png" href="favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Free, open, no-authentication REST API for Nigerian public economic data — 12 endpoints covering GDP, inflation, exchange rates, FX reserves and more. The Open API for the Nigerian Public Economic Data Aggregation and Analytics Platform.">
 <title>API Documentation — NPEDATA</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -14,7 +15,7 @@
   <ul class="nav-links">
     <li><a href="index.html">Dashboard</a></li>
     <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
-    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
     <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
     <li><a href="analytics.html">Analytics</a></li><li><a href="api_docs.html" class="active">API</a></li><li><a href="about.html">About</a></li>
   </ul>
@@ -23,7 +24,7 @@
 <div class="mobile-menu" id="mobile-menu">
   <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="analytics.html">Analytics</a><a href="api_docs.html" class="active">API Docs</a><a href="about.html">About</a>
   <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
-  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
   <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
 </div>
 
@@ -44,7 +45,7 @@
 
   <div class="insight-card reveal" style="margin-bottom:32px;">
     <div class="insight-label">How It Works</div>
-    <p>A FastAPI backend hosted on Render aggregates and serves the underlying Supabase data through 12 purpose-built REST endpoints. No authentication, no API key, GET requests only, CORS fully open. Interactive Swagger documentation with live request testing is available at <strong style="color:var(--gold);">/docs</strong> on the base URL above.</p>
+    <p>A FastAPI backend hosted on Render aggregates and serves the underlying Supabase data through 12 purpose-built REST endpoints. No authentication, no API key, GET requests only, CORS fully open. Interactive Swagger documentation with live request testing is available at <strong style="color:var(--gold);">/docs</strong> on the base URL above. Machine-readable docs for AI agents/LLMs: <strong style="color:var(--gold);">/llms.txt</strong>. Live API and database health: <a href="status.html" style="color:var(--green);">status page</a>.</p>
   </div>
 
   <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin-bottom:24px;" class="reveal">Endpoints</h2>
@@ -70,8 +71,14 @@
     <div class="use-case-card reveal" style="border-top-color:var(--red-accent);"><h3>For Students</h3><p>Use the data for dissertations, final year projects and academic analysis in economics, data science, finance or computer science. Free and openly accessible.</p></div>
   </div>
 
+  <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin:48px 0 24px;" class="reveal">AI Agent Access</h2>
+  <div class="insight-card reveal">
+    <div class="insight-label">Model Context Protocol (MCP) Server</div>
+    <p>A standalone Node.js MCP server in the repository at <strong style="color:var(--gold);">/mcp-server</strong> exposes all 12 endpoints above as read-only tools for Claude Desktop, Cursor, and other MCP-compatible clients — so an AI agent can query Nigeria's GDP, inflation, exchange rate, FX reserves and CBN balance-sheet data directly in conversation, with no API key required. Setup instructions and the client config snippet are in <a href="https://github.com/ANTD-CR7/nigerian-dashboard/tree/main/mcp-server" style="color:var(--green);">mcp-server/README.md</a> in the source repository.</p>
+  </div>
+
 </div></div>
 <div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
-<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h4>Data</h4><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h4>Sources</h4><p>Central Bank of Nigeria (CBN)</p><p>National Bureau of Statistics (NBS)</p><p>World Bank Open Data</p></div><div><h4>Project</h4><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h4>Data</h4><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h4>Sources</h4><p>Central Bank of Nigeria (CBN)</p><p>National Bureau of Statistics (NBS)</p><p>World Bank Open Data</p></div><div><h4>Project</h4><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
 <script src="shared.js"></script>
 </body></html>
