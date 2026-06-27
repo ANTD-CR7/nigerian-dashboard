@@ -9,7 +9,7 @@ import threading
 
 app = FastAPI(
     title="Nigerian Public Economic Data API",
-    description="Nigeria's first free open economic data API. 13,535+ records. 122 indicators. CBN, NBS, World Bank. No authentication required.",
+    description="Nigeria's first free open economic data API. 12,100 records. 122 indicators. CBN, NBS, World Bank. No authentication required.",
     version="1.0.0",
 )
 
