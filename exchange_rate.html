@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -21,16 +21,17 @@
     <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
     <li><a href="#" class="active">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html" class="active">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
     <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
-    <li><a href="analytics.html">Analytics</a></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
+    <li><a href="#">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a></div></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
   </ul>
   <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
   <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
 <div class="mobile-menu" id="mobile-menu">
-  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="analytics.html">Analytics</a><a href="api_docs.html">API Docs</a><a href="about.html">About</a>
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="about.html">About</a>
   <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
   <div class="mob-group">Currency</div><a href="exchange_rate.html" class="active">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
   <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a>
 </div>
 <section class="page-hero"><div class="container">
   <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / Currency / Exchange Rate</div>
@@ -38,13 +39,22 @@
   <p>Monthly average official Naira to US Dollar rate — CBN · 2020–2026</p>
 </div></section>
 <div class="last-updated" id="last-updated">Loading…</div>
-<div class="page-content"><div class="container">
+<main class="page-content"><div class="container">
   <div class="insight-card reveal"><div class="insight-label">Latest Reading</div><p>Current NGN/USD central rate: <strong id="stat-fx">—</strong>. The Naira depreciated from ₦306 in Jan 2020 to over ₦1,500 following the June 2023 FX unification reform.</p></div>
+  <div class="ops-card reveal">
+    <h2>Date Range Filter</h2>
+    <div class="ops-grid">
+      <section class="ops-panel"><label for="flt-start">From</label><input id="flt-start" type="date" value="2020-01-01"></section>
+      <section class="ops-panel"><label for="flt-end">To</label><input id="flt-end" type="date" value="2026-12-31"></section>
+      <section class="ops-panel ops-action"><label>&nbsp;</label><button id="apply-filter" type="button">Apply</button></section>
+      <section class="ops-panel"><label>Status</label><strong class="inline-status" id="filter-status">Full range loaded</strong></section>
+    </div>
+  </div>
   <div class="chart-card reveal"><div class="chart-card-title">NGN/USD Exchange Rate — Monthly Average</div><p class="chart-context">The Naira lost over 70% of its value between May 2023 and January 2024 following the CBN foreign exchange unification reform.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-fx">Loading…</div><canvas id="chart-fx" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-fx">↺ Reset Zoom</button><div class="source-note">Source: CBN Official Rate · Higher = Naira depreciation</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">Exchange Rate Data Table</div><div id="loading" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="fx-table" style="display:none"><thead><tr><th>Month</th><th class="num">NGN per USD</th><th>Monthly Change</th><th>Source</th></tr></thead><tbody id="fx-tbody"></tbody></table></div></div>
-</div></div>
+</div></main>
 <div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
-<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h4>Data</h4><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h4>Sources</h4><p>Central Bank of Nigeria (CBN)</p><p>National Bureau of Statistics (NBS)</p><p>World Bank Open Data</p></div><div><h4>Project</h4><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><p>Central Bank of Nigeria (CBN)</p><p>National Bureau of Statistics (NBS)</p><p>World Bank Open Data</p></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
 <script>
 const SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
@@ -57,22 +67,30 @@ const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'r
 const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
 Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
 function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
-async function load(){
+async function load(start,end){
  try{
-  const data=await sb('exchange_rate');
+  const extra=(start&&end)?`&obs_date=gte.${start}&obs_date=lte.${end}`:'';
+  const data=await sb('exchange_rate',extra);
+  if(!data.length){document.getElementById('filter-status').textContent='No data in range';return;}
   const latest=data[data.length-1];
   document.getElementById('stat-fx').textContent=`NGN ${Number(latest.value).toFixed(0)}`;
   document.getElementById('loading-fx').style.display='none';
   document.getElementById('chart-fx').style.display='block';
+  const existingFx=Chart.getChart(document.getElementById('chart-fx'));if(existingFx)existingFx.destroy();
   window.chartFx=new Chart(document.getElementById('chart-fx'),{type:'line',data:{labels:data.map(d=>fmt(d.obs_date)),datasets:[{label:'NGN/USD',data:data.map(d=>d.value),borderColor:'#4a9eff',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.2)','rgba(74,158,255,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#4a9eff',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`Rate: NGN ${ctx.parsed.y.toFixed(2)} per USD`}},zoom:ZOOM},scales:{y:{...SY,title:{display:true,text:'Naira per USD',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}}}}});
-  document.getElementById('reset-fx').addEventListener('click',()=>window.chartFx.resetZoom());
+  if(!window.chartFx.__wired){document.getElementById('reset-fx').addEventListener('click',()=>window.chartFx.resetZoom());window.chartFx.__wired=true;}
   const tbody=document.getElementById('fx-tbody');
+  tbody.innerHTML='';
   data.forEach((d,i)=>{const prev=i>0?data[i-1].value:null;const diff=prev?d.value-prev:0;const change=i===0?' - ':diff>0?`<span style="color:#e05252">up NGN ${diff.toFixed(2)}</span>`:`<span style="color:#008751">down NGN ${Math.abs(diff).toFixed(2)}</span>`;tbody.innerHTML+=`<tr><td>${fmt(d.obs_date)}</td><td class="num">NGN ${Number(d.value).toFixed(2)}</td><td>${change}</td><td class="src">CBN</td></tr>`;});
   document.getElementById('loading').style.display='none';
   document.getElementById('fx-table').style.display='table';
   attachSortableTable(document.getElementById('fx-table'));
+  if(start&&end)document.getElementById('filter-status').textContent=`${fmt(start)} – ${fmt(end)} loaded`;
  }catch(err){showLoadError(err);}
 }
+document.getElementById('apply-filter').addEventListener('click', () => {
+  load(document.getElementById('flt-start').value, document.getElementById('flt-end').value);
+});
 document.addEventListener('DOMContentLoaded', function(){ attachLastUpdated('last-updated', 'exchange_rate', 'CBN'); });
 load();
 </script>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -51,7 +51,12 @@
         <a href="financial_statement.html">Financial Statement</a>
       </div>
     </li>
-    <li><a href="analytics.html">Analytics</a></li>
+    <li><a href="#">Analytics <span class="nav-chevron">▾</span></a>
+      <div class="nav-dropdown">
+        <a href="analytics.html">Overview</a>
+        <a href="compare.html">Compare Indicators</a>
+      </div>
+    </li>
     <li><a href="api_docs.html">API</a></li>
     <li><a href="about.html">About</a></li>
   </ul>
@@ -67,7 +72,6 @@
 <div class="mobile-menu" id="mobile-menu">
   <div class="mob-group">Main</div>
   <a href="index.html" class="active">Dashboard</a>
-  <a href="analytics.html">Analytics</a>
   <a href="api_docs.html">API Docs</a>
   <a href="about.html">About</a>
   <div class="mob-group">Economy</div>
@@ -83,11 +87,13 @@
   <a href="currency_circulation.html">Currency Circulation</a>
   <a href="assets_liabilities.html">Assets &amp; Liabilities</a>
   <a href="financial_statement.html">Financial Statement</a>
+  <div class="mob-group">Analytics</div>
+  <a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a>
 </div>
 
+<main>
 <!-- ─── HERO ─── -->
 <section class="hero" id="hero">
-  <canvas id="particle-canvas"></canvas>
   <div class="hero-glow"></div>
   <div class="hero-glow-2"></div>
   <div class="hero-content">
@@ -227,36 +233,6 @@
     </div>
   </div>
 </div>
-
-<!-- ─── TIMELINE ─── -->
-<section class="section" style="background:var(--black);">
-  <div style="max-width:1280px;margin:0 auto;padding:0 clamp(20px,5vw,64px);">
-    <div class="section-label reveal">The Story</div>
-    <h2 class="section-title reveal">Nigeria's Economic Arc</h2>
-    <div class="timeline">
-      <div class="tl-item reveal">
-        <div class="tl-date">Q2 2020</div>
-        <div class="tl-event">COVID-19 Contraction</div>
-        <div class="tl-stat">GDP Growth: −6.10%</div>
-      </div>
-      <div class="tl-item reveal">
-        <div class="tl-date">Jun 2023</div>
-        <div class="tl-event">CBN FX Unification Reform</div>
-        <div class="tl-stat">NGN/USD: ₦461 → ₦1,600+</div>
-      </div>
-      <div class="tl-item reveal">
-        <div class="tl-date">Dec 2024</div>
-        <div class="tl-event">Inflation Peak — 28-year High</div>
-        <div class="tl-stat">Headline Inflation: 34.80%</div>
-      </div>
-      <div class="tl-item reveal">
-        <div class="tl-date">2025–2026</div>
-        <div class="tl-event">Disinflation &amp; Reserve Recovery</div>
-        <div class="tl-stat">Inflation: 15.38% · Reserves: $48.7B</div>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- ─── EXPLORE GRID ─── -->
 <section class="section" style="background:var(--black-2);">
@@ -435,6 +411,7 @@
 
   </div>
 </section>
+</main>
 
 <!-- ─── FOOTER ─── -->
 <div class="footer-wave-wrap">
@@ -449,7 +426,7 @@
       <p>Nigeria's premier open economic data platform. Built for researchers, developers, and the public.</p>
     </div>
     <div>
-      <h4>Data</h4>
+      <h2>Data</h2>
       <a href="gdp.html">GDP Growth</a>
       <a href="inflation.html">Inflation</a>
       <a href="exchange_rate.html">Exchange Rate</a>
@@ -458,13 +435,13 @@
       <a href="analytics.html">Analytics</a>
     </div>
     <div>
-      <h4>Sources</h4>
+      <h2>Sources</h2>
       <p>Central Bank of Nigeria (CBN)</p>
       <p>National Bureau of Statistics (NBS)</p>
       <p>World Bank Open Data</p>
     </div>
     <div>
-      <h4>Project</h4>
+      <h2>Project</h2>
       <p>Caleb University FYP 2026</p>
       <p>Computer Science · COSIS</p>
       <a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a>
@@ -741,40 +718,6 @@ loadAnalytics();
 loadCoverage();
 </script>
 
-<!-- ─── PARTICLE NETWORK ─── -->
-<script>
-(function(){
-  var canvas = document.getElementById('particle-canvas');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W, H, nodes = [], mouse = {x:-9999, y:-9999};
-  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-  resize();
-  window.addEventListener('resize', resize);
-  document.addEventListener('mousemove', function(e){ mouse.x=e.clientX; mouse.y=e.clientY; });
-  for (var i=0;i<65;i++) nodes.push({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.5+1});
-  function draw(){
-    canvas.width=window.innerWidth; canvas.height=window.innerHeight;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    nodes.forEach(function(n){
-      n.x+=n.vx; n.y+=n.vy;
-      if(n.x<0||n.x>canvas.width) n.vx*=-1;
-      if(n.y<0||n.y>canvas.height) n.vy*=-1;
-      var dx=mouse.x-n.x, dy=mouse.y-n.y, d=Math.sqrt(dx*dx+dy*dy);
-      if(d<140){n.x+=dx*.0018;n.y+=dy*.0018;}
-      ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
-      ctx.fillStyle='rgba(0,135,81,0.45)';ctx.fill();
-    });
-    for(var a=0;a<nodes.length;a++) for(var b=a+1;b<nodes.length;b++){
-      var dx=nodes[a].x-nodes[b].x,dy=nodes[a].y-nodes[b].y,d=Math.sqrt(dx*dx+dy*dy);
-      if(d<115){ctx.beginPath();ctx.moveTo(nodes[a].x,nodes[a].y);ctx.lineTo(nodes[b].x,nodes[b].y);
-        ctx.strokeStyle='rgba(0,135,81,'+(0.14*(1-d/115))+')';ctx.lineWidth=0.6;ctx.stroke();}
-    }
-    requestAnimationFrame(draw);
-  }
-  draw();
-})();
-</script>
 
 <!-- ─── TYPEWRITER ─── -->
 <script>

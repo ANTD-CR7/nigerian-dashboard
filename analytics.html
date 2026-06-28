@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -21,23 +21,24 @@
     <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
     <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
     <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
-    <li><a href="analytics.html" class="active">Analytics</a></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
+    <li><a href="#" class="active">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html" class="active">Overview</a><a href="compare.html">Compare Indicators</a></div></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
   </ul>
   <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
   <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
 <div class="mobile-menu" id="mobile-menu">
-  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="analytics.html" class="active">Analytics</a><a href="api_docs.html">API Docs</a><a href="about.html">About</a>
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="about.html">About</a>
   <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
   <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
   <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html" class="active">Overview</a><a href="compare.html">Compare Indicators</a>
 </div>
 <section class="page-hero"><div class="container">
   <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / Analytics</div>
   <h1>Analytics and Insights</h1><div class="page-hero-rule"></div>
   <p>Cross-indicator analysis, correlation and trend — computed in pure JavaScript · 2020–2026</p>
 </div></section>
-<div class="page-content"><div class="container">
+<main class="page-content"><div class="container">
   <div class="chart-card reveal"><div class="chart-card-title">Inflation Trend with Linear Regression</div><p class="chart-context">The dashed line is an ordinary least squares regression — beneath the month-to-month noise, inflation has been on a steady long-run upward trajectory since 2020.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-inf">Loading…</div><canvas id="chart-inf" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#e05252"></span>Inflation</span><span><span class="dot" style="background:#F4A017;height:1px;border-radius:0;"></span>OLS Trend</span></div><button class="btn-chart-reset" id="reset-inf">↺ Reset Zoom</button><div class="source-note">Source: NBS · Trend line = Ordinary Least Squares linear regression</div></div>
   <div class="ops-card reveal">
     <h2>Pearson Correlation: Inflation vs Exchange Rate</h2>
@@ -60,9 +61,9 @@
   </div>
   <div class="chart-card reveal"><div class="chart-card-title">FX Reserves vs Exchange Rate — Inverse Relationship</div><p class="chart-context">Reserves and the exchange rate often move in opposite directions — as the Naira depreciated after June 2023, reserves initially fell before recovering as oil revenues and CBN policy improved.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-dual">Loading…</div><canvas id="chart-dual" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4FC3F7"></span>Exchange Rate NGN/USD — Left</span><span><span class="dot" style="background:#008751"></span>FX Reserves USD Bn — Right</span></div><button class="btn-chart-reset" id="reset-dual">↺ Reset Zoom</button></div>
   <div class="chart-card reveal"><div class="chart-card-title">GDP Sectoral Comparison (Latest Values)</div><p class="chart-context">Comparing sectors side by side shows which parts of Nigeria's economy are actually driving growth — services and trade have outpaced oil-dependent sectors in recent years.</p><input type="text" id="sector-filter" class="sector-filter-input" placeholder="Filter sectors (e.g. agri, trade)…"><div class="chart-wrap-lg"><div class="chart-loading" id="loading-sectors">Loading…</div><canvas id="chart-sectors" style="display:none"></canvas></div><div class="source-note">Source: NBS Real GDP by Sector · Latest available annual value · NGN Billions at constant 2010 prices</div></div>
-</div></div>
+</div></main>
 <div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
-<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h4>Data</h4><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h4>Sources</h4><p>Central Bank of Nigeria (CBN)</p><p>National Bureau of Statistics (NBS)</p><p>World Bank Open Data</p></div><div><h4>Project</h4><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><p>Central Bank of Nigeria (CBN)</p><p>National Bureau of Statistics (NBS)</p><p>World Bank Open Data</p></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
 <script>
 const SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
