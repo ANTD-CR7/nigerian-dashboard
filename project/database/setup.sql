@@ -54,20 +54,13 @@ WHERE old_row.indicator_id = new_row.indicator_id
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_observation_indicator_date
 ON observations(indicator_id, obs_date);
 
--- Step 5: Insert the data sources
-INSERT INTO data_sources (code, full_name, website) VALUES
-('CBN',  'Central Bank of Nigeria',          'https://www.cbn.gov.ng'),
-('NBS',  'National Bureau of Statistics',    'https://nigerianstat.gov.ng'),
-('WB',   'World Bank Open Data',             'https://data.worldbank.org'),
-('UPLOAD', 'Uploaded CSV / manual entry',    NULL),
-('MANUAL', 'Manual dashboard entry',         NULL)
-ON CONFLICT (code) DO NOTHING;
-
--- Step 6: Insert the indicators
-INSERT INTO indicators (id, name, unit, description, source) VALUES
-('gdp_growth',    'GDP Growth Rate',         'Percent (%)',         'Real GDP growth rate at 2010 constant basic prices, published quarterly by the NBS',  'NBS'),
-('gdp_usd',       'Nominal GDP (USD Bn)',    'USD Billions',        'Nominal GDP in current US Dollars, published annually by the World Bank',             'WB'),
-('inflation',     'Headline Inflation Rate', 'Percent (%)',         'Year-on-year consumer price index change, published monthly by the NBS',              'NBS'),
-('exchange_rate', 'Exchange Rate (NGN/USD)', 'Naira per USD',       'Official NGN/USD exchange rate, published daily by the CBN and averaged monthly',    'CBN'),
-('mpr',           'Monetary Policy Rate',   'Percent (%)',         'CBN benchmark interest rate, set at bimonthly MPC meetings',                         'CBN')
-ON CONFLICT (id) DO NOTHING;
+-- Step 5 & 6: Seed data_sources, indicators (122 rows) and observations
+-- (12,100 rows) by running the loader script after this file:
+--
+--     python project/database/seed/load_seed.py
+--
+-- That script reads project/database/seed/*.csv -- a reproducible snapshot
+-- of the live dataset -- and upserts everything, so it's always safe to
+-- re-run. It replaces the old hand-written INSERT list that used to live
+-- here, which only ever covered the original 5 indicators and had drifted
+-- far out of sync with the live 122-indicator dataset.

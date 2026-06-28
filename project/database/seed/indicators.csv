@@ -1,0 +1,123 @@
+id,name,unit,description,source
+aed_buying,UAE DIRHAM Buying Rate,NGN,CBN AED buying rate monthly average,CBN
+aed_central,UAE DIRHAM Central Rate,NGN,CBN AED central rate monthly average,CBN
+aed_selling,UAE DIRHAM Selling Rate,NGN,CBN AED selling rate monthly average,CBN
+cbn_annual_cin_c,CBN Currency in Circulation (Annual),NGN Thousands,Annual currency in circulation - 5-year statement,CBN
+cbn_annual_ext_reserve,CBN External Reserves (Annual),NGN Thousands,Annual external reserves from CBN 5-year financial statement,CBN
+cbn_annual_surplus,CBN Annual Surplus,NGN Thousands,Annual surplus from CBN 5-year financial statement,CBN
+cbn_annual_total_assets,CBN Total Assets (Annual),NGN Thousands,Annual total assets from CBN 5-year financial statement,CBN
+cbn_annual_total_income,CBN Annual Total Income,NGN Thousands,Annual total income from CBN 5-year financial statement,CBN
+cbn_bankers_deposits,Banks Deposits at CBN,NGN,Commercial banks deposits at CBN,CBN
+cbn_currency_issued,CBN Currency in Circulation (Balance Sheet),NGN,Currency in circulation from CBN balance sheet,CBN
+cbn_gold,CBN Gold Holdings,NGN,CBN gold holdings from balance sheet,CBN
+cbn_govt_deposits,Government Deposits at CBN,NGN,Federal government deposits at CBN,CBN
+cbn_total_assets,CBN Total Assets,NGN,Central Bank of Nigeria total assets (monthly),CBN
+cbn_total_liabilities,CBN Total Liabilities,NGN,Central Bank of Nigeria total liabilities (monthly),CBN
+cfa_buying,CFA Buying Rate,NGN,CBN CFA buying rate monthly average,CBN
+cfa_central,CFA Central Rate,NGN,CBN CFA central rate monthly average,CBN
+cfa_selling,CFA Selling Rate,NGN,CBN CFA selling rate monthly average,CBN
+chf_buying,SWISS FRANC Buying Rate,NGN,CBN CHF buying rate monthly average,CBN
+chf_central,SWISS FRANC Central Rate,NGN,CBN CHF central rate monthly average,CBN
+chf_selling,SWISS FRANC Selling Rate,NGN,CBN CHF selling rate monthly average,CBN
+cny_buying,YUAN/RENMINBI Buying Rate,NGN,CBN CNY buying rate monthly average,CBN
+cny_central,YUAN/RENMINBI Central Rate,NGN,CBN CNY central rate monthly average,CBN
+cny_selling,YUAN/RENMINBI Selling Rate,NGN,CBN CNY selling rate monthly average,CBN
+currency_circulation,Currency in Circulation,NGN Millions,Total value of currency in circulation in Nigeria,CBN
+currency_circulation_full,Currency in Circulation (Full History),NGN Millions,Full history of currency in circulation from CBN,CBN
+eur_buying,EURO Buying Rate,NGN,CBN EUR buying rate monthly average,CBN
+eur_central,EURO Central Rate,NGN,CBN EUR central rate monthly average,CBN
+eur_rate,EUR/NGN Exchange Rate,NGN per EUR,Official Euro to Naira central rate,CBN
+eur_selling,EURO Selling Rate,NGN,CBN EUR selling rate monthly average,CBN
+exchange_rate,Exchange Rate NGN/USD,Naira per USD,"Official NGN/USD rate published daily by the CBN, averaged monthly",CBN
+fx_reserves,Foreign Exchange Reserves,USD Billions,Gross foreign exchange reserves held by the CBN,CBN
+fx_reserves_gross,FX Reserves - Gross Daily,USD,CBN gross foreign exchange reserves daily,CBN
+gbp_buying,POUNDS STERLING Buying Rate,NGN,CBN GBP buying rate monthly average,CBN
+gbp_central,POUNDS STERLING Central Rate,NGN,CBN GBP central rate monthly average,CBN
+gbp_rate,GBP/NGN Exchange Rate,NGN per GBP,Official Pounds Sterling to Naira central rate,CBN
+gbp_selling,POUNDS STERLING Selling Rate,NGN,CBN GBP selling rate monthly average,CBN
+gdp_accommodationAndFoodServices,Real GDP - accommodation And Food Services,NGN Billions,Nigeria Real GDP - accommodation And Food Services at current basic prices,NBS
+gdp_agriculture,Real GDP - agriculture,NGN Billions,Nigeria Real GDP - agriculture at current basic prices,NBS
+gdp_airTransport,Real GDP - air Transport,NGN Billions,Nigeria Real GDP - air Transport at current basic prices,NBS
+gdp_artsEntertainmentAndRecreation,Real GDP - arts Entertainment And Recreation,NGN Billions,Nigeria Real GDP - arts Entertainment And Recreation at current basic prices,NBS
+gdp_basicMetalIronAndSteel,Real GDP - basic Metal Iron And Steel,NGN Billions,Nigeria Real GDP - basic Metal Iron And Steel at current basic prices,NBS
+gdp_broadcasting,Real GDP - broadcasting,NGN Billions,Nigeria Real GDP - broadcasting at current basic prices,NBS
+gdp_cement,Real GDP - cement,NGN Billions,Nigeria Real GDP - cement at current basic prices,NBS
+gdp_chemicalAndPharmaceuticalProducts,Real GDP - chemical And Pharmaceutical Products,NGN Billions,Nigeria Real GDP - chemical And Pharmaceutical Products at current basic prices,NBS
+gdp_coalMining,Real GDP - coal Mining,NGN Billions,Nigeria Real GDP - coal Mining at current basic prices,NBS
+gdp_construction,Real GDP - construction,NGN Billions,Nigeria Real GDP - construction at current basic prices,NBS
+gdp_cropProduction,Real GDP - crop Production,NGN Billions,Nigeria Real GDP - crop Production at current basic prices,NBS
+gdp_crudePetroleumAndNaturalGas,Real GDP - crude Petroleum And Natural Gas,NGN Billions,Nigeria Real GDP - crude Petroleum And Natural Gas at current basic prices,NBS
+gdp_electricalAndElectronics,Real GDP - electrical And Electronics,NGN Billions,Nigeria Real GDP - electrical And Electronics at current basic prices,NBS
+gdp_electricityGasSteamAndAirCon,Real GDP - electricity Gas Steam And Air Con,NGN Billions,Nigeria Real GDP - electricity Gas Steam And Air Con at current basic prices,NBS
+gdp_financeAndInsurance,Real GDP - finance And Insurance,NGN Billions,Nigeria Real GDP - finance And Insurance at current basic prices,NBS
+gdp_fishing,Real GDP - fishing,NGN Billions,Nigeria Real GDP - fishing at current basic prices,NBS
+gdp_foodBeverageAndTobacco,Real GDP - food Beverage And Tobacco,NGN Billions,Nigeria Real GDP - food Beverage And Tobacco at current basic prices,NBS
+gdp_forestry,Real GDP - forestry,NGN Billions,Nigeria Real GDP - forestry at current basic prices,NBS
+gdp_gdPatCurrentMarketPrices,Real GDP - gd Pat Current Market Prices,NGN Billions,Nigeria Real GDP - gd Pat Current Market Prices at current basic prices,NBS
+gdp_growth,GDP Growth Rate,Percent (%),"Real GDP growth rate at 2010 constant basic prices, published quarterly by the NBS",NBS
+gdp_industry,Real GDP - industry,NGN Billions,Nigeria Real GDP - industry at current basic prices,NBS
+gdp_informationAndCommunication,Real GDP - information And Communication,NGN Billions,Nigeria Real GDP - information And Communication at current basic prices,NBS
+gdp_livestock,Real GDP - livestock,NGN Billions,Nigeria Real GDP - livestock at current basic prices,NBS
+gdp_manufacturing,Real GDP - manufacturing,NGN Billions,Nigeria Real GDP - manufacturing at current basic prices,NBS
+gdp_metalOres,Real GDP - metal Ores,NGN Billions,Nigeria Real GDP - metal Ores at current basic prices,NBS
+gdp_miningAndQuarrying,Real GDP - mining And Quarrying,NGN Billions,Nigeria Real GDP - mining And Quarrying at current basic prices,NBS
+gdp_motionPicturesSoundRecordingAndMusicProduction,Real GDP - motion Pictures Sound Recording And Music Production,NGN Billions,Nigeria Real GDP - motion Pictures Sound Recording And Music Production at current basic prices,NBS
+gdp_motorVehiclesAndAssembly,Real GDP - motor Vehicles And Assembly,NGN Billions,Nigeria Real GDP - motor Vehicles And Assembly at current basic prices,NBS
+gdp_netTaxesOnProducts,Real GDP - net Taxes On Products,NGN Billions,Nigeria Real GDP - net Taxes On Products at current basic prices,NBS
+gdp_nonMetallicProducts,Real GDP - non Metallic Products,NGN Billions,Nigeria Real GDP - non Metallic Products at current basic prices,NBS
+gdp_oilRefining,Real GDP - oil Refining,NGN Billions,Nigeria Real GDP - oil Refining at current basic prices,NBS
+gdp_otherManufacturing,Real GDP - other Manufacturing,NGN Billions,Nigeria Real GDP - other Manufacturing at current basic prices,NBS
+gdp_plasticAndRubberProducts,Real GDP - plastic And Rubber Products,NGN Billions,Nigeria Real GDP - plastic And Rubber Products at current basic prices,NBS
+gdp_postAndCourierServices,Real GDP - post And Courier Services,NGN Billions,Nigeria Real GDP - post And Courier Services at current basic prices,NBS
+gdp_publishing,Real GDP - publishing,NGN Billions,Nigeria Real GDP - publishing at current basic prices,NBS
+gdp_pulpPaperAndPaperProducts,Real GDP - pulp Paper And Paper Products,NGN Billions,Nigeria Real GDP - pulp Paper And Paper Products at current basic prices,NBS
+gdp_quarryingAndOtherMinerals,Real GDP - quarrying And Other Minerals,NGN Billions,Nigeria Real GDP - quarrying And Other Minerals at current basic prices,NBS
+gdp_railTransportAndPipelines,Real GDP - rail Transport And Pipelines,NGN Billions,Nigeria Real GDP - rail Transport And Pipelines at current basic prices,NBS
+gdp_roadTransport,Real GDP - road Transport,NGN Billions,Nigeria Real GDP - road Transport at current basic prices,NBS
+gdp_services,Real GDP - services,NGN Billions,Nigeria Real GDP - services at current basic prices,NBS
+gdp_telecommunicationsAndInformationServices,Real GDP - telecommunications And Information Services,NGN Billions,Nigeria Real GDP - telecommunications And Information Services at current basic prices,NBS
+gdp_textileApparelAndFootwear,Real GDP - textile Apparel And Footwear,NGN Billions,Nigeria Real GDP - textile Apparel And Footwear at current basic prices,NBS
+gdp_trade,Real GDP - trade,NGN Billions,Nigeria Real GDP - trade at current basic prices,NBS
+gdp_transportationAndStorage,Real GDP - transportation And Storage,NGN Billions,Nigeria Real GDP - transportation And Storage at current basic prices,NBS
+gdp_transportServices,Real GDP - transport Services,NGN Billions,Nigeria Real GDP - transport Services at current basic prices,NBS
+gdp_usd,Nominal GDP (USD Bn),USD Billions,"Nominal GDP in current US Dollars, published annually by the World Bank",WB
+gdp_waterSupplySewageWaste,Real GDP - water Supply Sewage Waste,NGN Billions,Nigeria Real GDP - water Supply Sewage Waste at current basic prices,NBS
+gdp_waterTransport,Real GDP - water Transport,NGN Billions,Nigeria Real GDP - water Transport at current basic prices,NBS
+gdp_woodAndWoodProducts,Real GDP - wood And Wood Products,NGN Billions,Nigeria Real GDP - wood And Wood Products at current basic prices,NBS
+inflation,Headline Inflation Rate,Percent (%),"Year-on-year CPI change, published monthly by the NBS",NBS
+inflation_avg,Headline Inflation 12-Month Average,%,NBS headline CPI 12-month moving average,NBS
+inflation_core,Core Inflation Year-on-Year,%,NBS core inflation YoY (excludes farm produce),NBS
+inflation_core_avg,Core Inflation 12-Month Average,%,NBS core inflation 12-month moving average,NBS
+inflation_core_energy,Core Inflation Excl Energy Year-on-Year,%,NBS core inflation excluding farm produce and energy YoY,NBS
+inflation_core_energy_avg,Core Inflation Excl Energy 12-Month Average,%,NBS core inflation excluding farm produce and energy 12-month average,NBS
+inflation_food,Food Inflation Year-on-Year,%,NBS food inflation year-on-year rate,NBS
+inflation_food_avg,Food Inflation 12-Month Average,%,NBS food inflation 12-month moving average,NBS
+mpr,Monetary Policy Rate,Percent (%),CBN benchmark interest rate set at bimonthly MPC meetings,CBN
+nfem_closing,NFEM Closing Rate Daily,NGN per USD,NFEM closing rate per day,CBN
+nfem_highest,NFEM Highest Rate,NGN per USD,NFEM highest rate daily,CBN
+nfem_interbank_deals,NFEM Interbank Deals,Count,Number of NFEM interbank deals daily,CBN
+nfem_interbank_turnover,NFEM Interbank Turnover,USD,NFEM interbank total turnover daily,CBN
+nfem_lowest,NFEM Lowest Rate,NGN per USD,NFEM lowest rate daily,CBN
+nfem_no_deals,NFEM Number of Deals,Count,Number of NFEM deals daily,CBN
+nfem_rate,NFEM Exchange Rate,NGN per USD,Nigerian Foreign Exchange Market closing rate,CBN
+nfem_simple_avg,NFEM Simple Average Rate,NGN per USD,NFEM simple average rate daily,CBN
+nfem_turnover,NFEM Total Turnover,USD,NFEM total turnover daily,CBN
+nfem_weighted_avg,NFEM Weighted Average Rate,NGN per USD,NFEM weighted average rate daily,CBN
+reserves_block_pct,FX Reserves - Block Percent,%,Percentage of FX reserves that are blocked,CBN
+reserves_blocked,FX Reserves - Blocked,USD,CBN blocked foreign exchange reserves (monthly average),CBN
+reserves_liquid,FX Reserves - Liquid,USD,CBN liquid foreign exchange reserves (monthly average),CBN
+sar_buying,RIYAL Buying Rate,NGN,CBN SAR buying rate monthly average,CBN
+sar_central,RIYAL Central Rate,NGN,CBN SAR central rate monthly average,CBN
+sar_selling,RIYAL Selling Rate,NGN,CBN SAR selling rate monthly average,CBN
+sdr_buying,SDR Buying Rate,NGN,CBN SDR buying rate monthly average,CBN
+sdr_central,SDR Central Rate,NGN,CBN SDR central rate monthly average,CBN
+sdr_selling,SDR Selling Rate,NGN,CBN SDR selling rate monthly average,CBN
+usd_buying,US DOLLAR Buying Rate,NGN,CBN US DOLLAR buying rate monthly average,CBN
+usd_central,US DOLLAR Central Rate,NGN,CBN US DOLLAR central rate monthly average,CBN
+usd_selling,US DOLLAR Selling Rate,NGN,CBN US DOLLAR selling rate monthly average,CBN
+waua_buying,WAUA Buying Rate,NGN,CBN WAUA buying rate monthly average,CBN
+waua_central,WAUA Central Rate,NGN,CBN WAUA central rate monthly average,CBN
+waua_selling,WAUA Selling Rate,NGN,CBN WAUA selling rate monthly average,CBN
+zar_buying,SOUTH AFRICAN RAND Buying Rate,NGN,CBN ZAR buying rate monthly average,CBN
+zar_central,SOUTH AFRICAN RAND Central Rate,NGN,CBN ZAR central rate monthly average,CBN
+zar_selling,SOUTH AFRICAN RAND Selling Rate,NGN,CBN ZAR selling rate monthly average,CBN
