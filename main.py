@@ -46,6 +46,11 @@ INDICATORS = {
     "exchange_rate": {"name": "Exchange Rate", "unit": "Naira per USD", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "mpr": {"name": "Monetary Policy Rate", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
     "fx_reserves": {"name": "FX Reserves (Gross)", "unit": "USD Billions", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "nfem_closing": {"name": "NFEM Closing Rate", "unit": "Naira per USD", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "currency_circulation_full": {"name": "Currency in Circulation", "unit": "Naira Billions", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_total_assets": {"name": "CBN Total Assets", "unit": "Naira Billions", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_total_liabilities": {"name": "CBN Total Liabilities", "unit": "Naira Billions", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_annual_total_assets": {"name": "CBN Total Assets (Annual)", "unit": "Naira Billions", "source": "CBN", "frequency": "annual", "period_months": 12},
 }
 
 

@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Nigeria's currency in circulation, 2002–2026, including the 2023 Naira redesign policy impact. From the Nigerian Public Economic Data Aggregation and Analytics Platform.">
 <title>Currency Circulation — NPEDATA</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
@@ -27,7 +27,7 @@
   <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
 <div class="mobile-menu" id="mobile-menu">
-  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="about.html">About</a>
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
   <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
   <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
   <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html" class="active">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
@@ -50,11 +50,10 @@
       <section class="ops-panel"><label>Status</label><strong class="inline-status" id="filter-status">Full range loaded</strong></section>
     </div>
   </div>
-  <div class="chart-card reveal"><div class="chart-card-title">Currency in Circulation 2002–2024 (NGN Millions)</div><p class="chart-context">Currency in circulation dropped sharply after the January 2023 Naira redesign policy, then recovered as courts intervened — but has grown steadily overall since 2002.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-chart">Loading…</div><canvas id="chart-cin" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-cin">↺ Reset Zoom</button><div class="source-note">Source: CBN Annual Report · Currency in Circulation (NGN Millions)</div></div>
-  <div class="chart-card reveal"><div class="chart-card-title">Monthly Data Table</div><div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="cin-table" style="display:none"><thead><tr><th>Date</th><th class="num">Amount (NGN Millions)</th><th>Change</th></tr></thead><tbody id="cin-tbody"></tbody></table></div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Currency in Circulation 2002–2024 (NGN Millions)</div><p class="chart-context">Currency in circulation dropped sharply after the January 2023 Naira redesign policy, then recovered as courts intervened — but has grown steadily overall since 2002.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-chart">Loading…</div><canvas id="chart-cin" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-cin">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/currency_circulation_full" download>⬇ Download CSV</a><div class="source-note">Source: CBN Annual Report · Currency in Circulation (NGN Millions)</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Monthly Data Table</div><div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="cin-table" style="display:none"><thead><tr><th>Date</th><th class="num">Amount (NGN Millions)</th><th>Change</th></tr></thead><tbody id="cin-tbody"></tbody></table></div></div>
 </div></main>
-<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
-<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><p>Central Bank of Nigeria (CBN)</p><p>National Bureau of Statistics (NBS)</p><p>World Bank Open Data</p></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--primary)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
 <script>
 const SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
@@ -62,11 +61,11 @@ const H={apikey:KEY,Authorization:'Bearer '+KEY};
 async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
 function fmt(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
 function fmtM(v){return Number(v).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});}
-const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true,usePointStyle:true,boxWidth:8,boxHeight:8};
+const TIP={backgroundColor:'rgba(17,24,39,0.92)',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,titleColor:'#FDBA74',bodyColor:'rgba(255,255,255,0.82)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true,usePointStyle:true,boxWidth:8,boxHeight:8};
 const ZOOM={zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'},pan:{enabled:true,mode:'x'},limits:{x:{min:'original',max:'original'}}};
-const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
-const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
-Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+const SX={grid:{color:'rgba(17,24,39,0.06)',drawBorder:false},ticks:{color:'rgba(17,24,39,0.45)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
+const SY={grid:{color:'rgba(17,24,39,0.06)',drawBorder:false},ticks:{color:'rgba(17,24,39,0.45)'},border:{display:false}};
+Chart.defaults.color='rgba(17,24,39,0.5)';Chart.defaults.borderColor='rgba(17,24,39,0.06)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
 function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 async function load(start,end){
  try{
@@ -80,11 +79,11 @@ async function load(start,end){
   const canvas=document.getElementById('chart-cin');
   canvas.style.display='block';
   const existingCin=Chart.getChart(canvas);if(existingCin)existingCin.destroy();
-  window.chartCin=new Chart(canvas,{type:'line',data:{labels:data.map(d=>fmt(d.obs_date)),datasets:[{label:'Currency in Circulation',data:data.map(d=>d.value),borderColor:'#00C896',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(0,200,150,0.22)','rgba(0,200,150,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#00C896',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`₦${fmtM(ctx.parsed.y)}M`}},annotation:{annotations:annots},zoom:ZOOM},scales:{y:{...SY,title:{display:true,text:'NGN Millions',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  window.chartCin=new Chart(canvas,{type:'line',data:{labels:data.map(d=>fmt(d.obs_date)),datasets:[{label:'Currency in Circulation',data:data.map(d=>d.value),borderColor:'#00C896',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(0,200,150,0.22)','rgba(0,200,150,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#00C896',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`₦${fmtM(ctx.parsed.y)}M`}},annotation:{annotations:annots},zoom:ZOOM},scales:{y:{...SY,title:{display:true,text:'NGN Millions',color:'rgba(17,24,39,0.45)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
   if(!window.chartCin.__wired){document.getElementById('reset-cin').addEventListener('click',()=>window.chartCin.resetZoom());window.chartCin.__wired=true;}
   const tbody=document.getElementById('cin-tbody');
   tbody.innerHTML='';
-  data.forEach((d,i)=>{const prev=i>0?data[i-1].value:null;const diff=prev!=null?d.value-prev:null;const changeHtml=diff===null?'-':diff>=0?`<span style="color:#008751">+${fmtM(diff)}M</span>`:`<span style="color:#e05252">${fmtM(diff)}M</span>`;tbody.innerHTML+=`<tr><td>${fmt(d.obs_date)}</td><td class="num">₦${fmtM(d.value)}M</td><td>${changeHtml}</td></tr>`;});
+  data.forEach((d,i)=>{const prev=i>0?data[i-1].value:null;const diff=prev!=null?d.value-prev:null;const changeHtml=diff===null?'-':diff>=0?`<span style="color:#047857">+${fmtM(diff)}M</span>`:`<span style="color:#e05252">${fmtM(diff)}M</span>`;tbody.innerHTML+=`<tr><td>${fmt(d.obs_date)}</td><td class="num">₦${fmtM(d.value)}M</td><td>${changeHtml}</td></tr>`;});
   document.getElementById('loading-table').style.display='none';
   document.getElementById('cin-table').style.display='table';
   attachSortableTable(document.getElementById('cin-table'));
