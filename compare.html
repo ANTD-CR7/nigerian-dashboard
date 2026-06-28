@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Compare any two Nigerian economic indicators side by side with a live, computed Pearson correlation. From the Nigerian Public Economic Data Aggregation and Analytics Platform.">
 <title>Compare Indicators — NPEDATA</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
@@ -27,7 +27,7 @@
   <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
 <div class="mobile-menu" id="mobile-menu">
-  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="about.html">About</a>
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
   <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
   <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
   <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
@@ -64,7 +64,7 @@
 
   <div class="chart-card reveal">
     <div class="chart-card-title">Pearson Correlation</div>
-    <div id="cmp-pearson" style="padding:8px 0;"><p style="font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Run a comparison to compute correlation.</p></div>
+    <div id="cmp-pearson" style="padding:8px 0;"><p style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Run a comparison to compute correlation.</p></div>
     <div class="source-note">r is calculated client-side in pure JavaScript on paired monthly observations — the same method used on the Analytics page.</div>
   </div>
 
@@ -87,19 +87,18 @@
   </div>
 
 </div></main>
-<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
-<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><p>Central Bank of Nigeria (CBN)</p><p>National Bureau of Statistics (NBS)</p><p>World Bank Open Data</p></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--primary)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
 <script>
 const SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
 const H={apikey:KEY,Authorization:'Bearer '+KEY};
 async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
 function fmt(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
-const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true,usePointStyle:true,boxWidth:8,boxHeight:8};
+const TIP={backgroundColor:'rgba(17,24,39,0.92)',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,titleColor:'#FDBA74',bodyColor:'rgba(255,255,255,0.82)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true,usePointStyle:true,boxWidth:8,boxHeight:8};
 const ZOOM={zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'},pan:{enabled:true,mode:'x'},limits:{x:{min:'original',max:'original'}}};
-const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
-const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
-Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+const SX={grid:{color:'rgba(17,24,39,0.06)',drawBorder:false},ticks:{color:'rgba(17,24,39,0.45)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
+const SY={grid:{color:'rgba(17,24,39,0.06)',drawBorder:false},ticks:{color:'rgba(17,24,39,0.45)'},border:{display:false}};
+Chart.defaults.color='rgba(17,24,39,0.5)';Chart.defaults.borderColor='rgba(17,24,39,0.06)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
 
 const INDICATORS=[
   {id:'gdp_growth',label:'GDP Growth Rate (%)',unit:'%',color:'#00C896'},
@@ -107,13 +106,13 @@ const INDICATORS=[
   {id:'inflation_food',label:'Food Inflation (%)',unit:'%',color:'#E8820C'},
   {id:'inflation_core',label:'Core Inflation (%)',unit:'%',color:'#4a9eff'},
   {id:'exchange_rate',label:'Exchange Rate NGN/USD',unit:'NGN',color:'#4a9eff'},
-  {id:'mpr',label:'Monetary Policy Rate (%)',unit:'%',color:'#F4A017'},
+  {id:'mpr',label:'Monetary Policy Rate (%)',unit:'%',color:'#FDBA74'},
   {id:'fx_reserves',label:'FX Reserves — Gross (USD Bn)',unit:'$B',color:'#00C896'},
-  {id:'reserves_liquid',label:'FX Reserves — Liquid (USD Bn)',unit:'$B',color:'#F4A017'},
+  {id:'reserves_liquid',label:'FX Reserves — Liquid (USD Bn)',unit:'$B',color:'#FDBA74'},
   {id:'currency_circulation_full',label:'Currency in Circulation (NGN M)',unit:'₦M',color:'#00C896'},
   {id:'cbn_total_assets',label:'CBN Total Assets (NGN Bn)',unit:'₦B',color:'#4a9eff'},
   {id:'cbn_total_liabilities',label:'CBN Total Liabilities (NGN Bn)',unit:'₦B',color:'#FF6B6B'},
-  {id:'nfem_closing',label:'NFEM Closing Rate (NGN/USD)',unit:'NGN',color:'#F4A017'},
+  {id:'nfem_closing',label:'NFEM Closing Rate (NGN/USD)',unit:'NGN',color:'#FDBA74'},
 ];
 
 function populateSelects(){
@@ -151,12 +150,12 @@ async function runCompare(){
     const rStr=r.toFixed(4), rAbs=Math.abs(r);
     const strength=rAbs>0.8?'Strong':rAbs>0.5?'Moderate':'Weak';
     const direction=r>0?'Positive':'Negative';
-    const color=rAbs>0.8?'#FF6B6B':rAbs>0.5?'#F4A017':'#00C896';
+    const color=rAbs>0.8?'#FF6B6B':rAbs>0.5?'#FDBA74':'#00C896';
     document.getElementById('cmp-pearson').innerHTML=`<div style="display:flex;align-items:flex-start;gap:2rem;flex-wrap:wrap;">
       <div style="min-width:120px;"><div style="font-family:var(--font-mono);font-size:3rem;font-weight:500;color:${color};letter-spacing:-2px;line-height:1;">${rStr}</div>
-      <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate);text-transform:uppercase;letter-spacing:.1em;margin-top:.3rem;">Pearson r</div></div>
-      <div style="flex:1;min-width:220px;"><div style="font-family:var(--font-display);font-size:1.1rem;color:var(--white);margin-bottom:.5rem;">${strength} ${direction} Correlation</div>
-      <p style="font-family:var(--font-body);font-size:0.82rem;color:var(--slate);line-height:1.7;">Based on <strong style="color:var(--white)">${common.length}</strong> paired observations between <strong style="color:var(--white)">${indA.label}</strong> and <strong style="color:var(--white)">${indB.label}</strong> from ${fmt(common[0])} to ${fmt(common[common.length-1])}.</p></div></div>`;
+      <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.3rem;">Pearson r</div></div>
+      <div style="flex:1;min-width:220px;"><div style="font-family:var(--font-display);font-size:1.1rem;color:var(--text);margin-bottom:.5rem;">${strength} ${direction} Correlation</div>
+      <p style="font-family:var(--font-body);font-size:0.82rem;color:var(--text-muted);line-height:1.7;">Based on <strong style="color:var(--text)">${common.length}</strong> paired observations between <strong style="color:var(--text)">${indA.label}</strong> and <strong style="color:var(--text)">${indB.label}</strong> from ${fmt(common[0])} to ${fmt(common[common.length-1])}.</p></div></div>`;
     document.getElementById('cmp-chart-title').textContent=`${indA.label} vs ${indB.label}`;
     document.getElementById('cmp-legend').innerHTML=`<span><span class="dot" style="background:${indA.color}"></span>${indA.label} — Left axis</span><span><span class="dot" style="background:${indB.color}"></span>${indB.label} — Right axis</span>`;
     document.getElementById('cmp-th-a').textContent=indA.label;
@@ -169,8 +168,8 @@ async function runCompare(){
       {type:'line',label:indA.label,data:valsA,borderColor:indA.color,backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:indA.color,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3,yAxisID:'y'},
       {type:'line',label:indB.label,data:valsB,borderColor:indB.color,backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:indB.color,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3,yAxisID:'y1'},
     ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,displayColors:true,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(2)} ${ctx.datasetIndex===0?indA.unit:indB.unit}`}},zoom:ZOOM},scales:{
-      y:{...SY,title:{display:true,text:indA.unit,color:'rgba(245,240,232,0.4)',font:{size:11}}},
-      y1:{...SY,grid:{display:false},title:{display:true,text:indB.unit,color:'rgba(245,240,232,0.4)',font:{size:11}},position:'right'},
+      y:{...SY,title:{display:true,text:indA.unit,color:'rgba(17,24,39,0.45)',font:{size:11}}},
+      y1:{...SY,grid:{display:false},title:{display:true,text:indB.unit,color:'rgba(17,24,39,0.45)',font:{size:11}},position:'right'},
       x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}
     }}});
     const tbody=document.getElementById('cmp-tbody');

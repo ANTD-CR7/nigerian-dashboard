@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Convert Naira to and from 11 foreign currencies using live CBN official rates. From the Nigerian Public Economic Data Aggregation and Analytics Platform.">
 <title>Currency Converter — NPEDATA</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -23,7 +23,7 @@
   <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
 <div class="mobile-menu" id="mobile-menu">
-  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="about.html">About</a>
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
   <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
   <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html" class="active">Currency Converter</a>
   <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
@@ -40,26 +40,26 @@
   <div class="chart-card reveal">
     <div class="chart-card-title">Convert</div>
     <p class="chart-context">Uses each currency's latest CBN central rate. The buying/selling spread shown below the result is the CBN's margin on that currency — your actual bank or BDC rate will differ from this indicative figure.</p>
-    <div id="loading-conv" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading CBN rates…</div>
+    <div id="loading-conv" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Loading CBN rates…</div>
     <div id="conv-tool" style="display:none;">
       <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px;">
         <div style="flex:1;min-width:160px;">
-          <label style="display:block;font-family:var(--font-mono);font-size:0.7rem;color:var(--slate);margin-bottom:6px;">Amount</label>
-          <input id="conv-amount" type="number" value="1000" min="0" step="any" style="width:100%;background:var(--black-2);color:var(--white);border:1px solid rgba(245,240,232,0.15);border-radius:6px;padding:10px 14px;font-family:var(--font-mono);font-size:1rem;">
+          <label style="display:block;font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);margin-bottom:6px;">Amount</label>
+          <input id="conv-amount" type="number" value="1000" min="0" step="any" style="width:100%;background:var(--bg-alt);color:var(--text);border:1px solid var(--border-strong);border-radius:6px;padding:10px 14px;font-family:var(--font-mono);font-size:1rem;">
         </div>
         <div style="flex:1;min-width:160px;">
-          <label style="display:block;font-family:var(--font-mono);font-size:0.7rem;color:var(--slate);margin-bottom:6px;">From</label>
-          <select id="conv-from" style="width:100%;background:var(--black-2);color:var(--white);border:1px solid rgba(245,240,232,0.15);border-radius:6px;padding:10px 14px;font-family:var(--font-mono);font-size:0.9rem;cursor:pointer;"></select>
+          <label style="display:block;font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);margin-bottom:6px;">From</label>
+          <select id="conv-from" style="width:100%;background:var(--bg-alt);color:var(--text);border:1px solid var(--border-strong);border-radius:6px;padding:10px 14px;font-family:var(--font-mono);font-size:0.9rem;cursor:pointer;"></select>
         </div>
         <button id="conv-swap" class="btn-chart-reset" type="button" style="margin-bottom:1px;">⇄ Swap</button>
         <div style="flex:1;min-width:160px;">
-          <label style="display:block;font-family:var(--font-mono);font-size:0.7rem;color:var(--slate);margin-bottom:6px;">To</label>
-          <select id="conv-to" style="width:100%;background:var(--black-2);color:var(--white);border:1px solid rgba(245,240,232,0.15);border-radius:6px;padding:10px 14px;font-family:var(--font-mono);font-size:0.9rem;cursor:pointer;"></select>
+          <label style="display:block;font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);margin-bottom:6px;">To</label>
+          <select id="conv-to" style="width:100%;background:var(--bg-alt);color:var(--text);border:1px solid var(--border-strong);border-radius:6px;padding:10px 14px;font-family:var(--font-mono);font-size:0.9rem;cursor:pointer;"></select>
         </div>
       </div>
-      <div style="margin-top:20px;padding:20px;background:rgba(0,135,81,0.06);border-left:3px solid var(--green);border-radius:6px;">
-        <div id="conv-result" style="font-family:var(--font-mono);font-size:1.4rem;color:var(--white);font-weight:500;">—</div>
-        <div id="conv-detail" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--slate);margin-top:8px;">—</div>
+      <div style="margin-top:20px;padding:20px;background:rgba(4,120,87,0.06);border-left:3px solid var(--primary);border-radius:6px;">
+        <div id="conv-result" style="font-family:var(--font-mono);font-size:1.4rem;color:var(--text);font-weight:500;">—</div>
+        <div id="conv-detail" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);margin-top:8px;">—</div>
       </div>
     </div>
     <div class="source-note">Rates: CBN Official Exchange Rates · Indicative only, not a transactable quote</div>
@@ -67,19 +67,18 @@
 
   <div class="chart-card reveal">
     <div class="chart-card-title">All Rates — Latest Available (NGN per unit)</div>
-    <div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div>
+    <div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Loading…</div>
     <div class="data-table-wrap"><table class="data-table" id="rates-table" style="display:none"><thead><tr><th>Currency</th><th class="num">Buying Rate</th><th class="num">Central Rate</th><th class="num">Selling Rate</th><th>As Of</th></tr></thead><tbody id="rates-tbody"></tbody></table></div>
     <div class="source-note">Source: CBN Official Exchange Rates</div>
   </div>
 
   <div class="chart-card reveal" style="border-left:4px solid var(--red-accent);">
     <div class="chart-card-title" style="color:var(--red-accent);">Disclaimer</div>
-    <p style="font-family:var(--font-body);font-size:0.84rem;color:var(--slate);line-height:1.75;">This converter is for <strong style="color:var(--white);">informational and educational purposes only</strong>, using the latest available CBN central rate for each currency. It is <strong style="color:var(--white);">not a real-time, transactable FX quote</strong> — actual bank, BDC and parallel-market rates will differ. For official rates, refer directly to the CBN.</p>
+    <p style="font-family:var(--font-body);font-size:0.84rem;color:var(--text-muted);line-height:1.75;">This converter is for <strong style="color:var(--text);">informational and educational purposes only</strong>, using the latest available CBN central rate for each currency. It is <strong style="color:var(--text);">not a real-time, transactable FX quote</strong> — actual bank, BDC and parallel-market rates will differ. For official rates, refer directly to the CBN.</p>
   </div>
 
 </div></main>
-<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
-<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><p>Central Bank of Nigeria (CBN)</p><p>National Bureau of Statistics (NBS)</p><p>World Bank Open Data</p></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--primary)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
 <script>
 const SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
@@ -132,7 +131,7 @@ async function load(){
     const tmp=f.value;f.value=t.value;t.value=tmp;convert();
   });
   const tbody=document.getElementById('rates-tbody');
-  for(const c of CUR){const r=RATES[c];if(!r||!r.central)continue;tbody.innerHTML+=`<tr><td><strong>${c.toUpperCase()}</strong>&nbsp;<span style="color:var(--slate);font-size:11px">${CURRENCY_NAMES[c]||''}</span></td><td class="num">${fv(r.buying?.value)}</td><td class="num"><strong>${fv(r.central?.value)}</strong></td><td class="num">${fv(r.selling?.value)}</td><td>${r.central?fmt(r.central.obs_date):'-'}</td></tr>`;}
+  for(const c of CUR){const r=RATES[c];if(!r||!r.central)continue;tbody.innerHTML+=`<tr><td><strong>${c.toUpperCase()}</strong>&nbsp;<span style="color:var(--text-muted);font-size:11px">${CURRENCY_NAMES[c]||''}</span></td><td class="num">${fv(r.buying?.value)}</td><td class="num"><strong>${fv(r.central?.value)}</strong></td><td class="num">${fv(r.selling?.value)}</td><td>${r.central?fmt(r.central.obs_date):'-'}</td></tr>`;}
   document.getElementById('loading-table').style.display='none';document.getElementById('rates-table').style.display='table';
   attachSortableTable(document.getElementById('rates-table'));
  }catch(err){showLoadError(err);}
