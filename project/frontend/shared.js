@@ -1,27 +1,6 @@
 /* NPEDATA — Shared page utilities */
 (function () {
 
-  /* ─── Custom Cursor ─── */
-  if (window.innerWidth > 768) {
-    var dot  = document.createElement('div'); dot.className  = 'cursor-dot';  document.body.appendChild(dot);
-    var ring = document.createElement('div'); ring.className = 'cursor-ring'; document.body.appendChild(ring);
-    var mx=0, my=0, rx=0, ry=0;
-    document.addEventListener('mousemove', function(e) {
-      mx = e.clientX; my = e.clientY;
-      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
-    });
-    function animRing() {
-      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
-      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-      requestAnimationFrame(animRing);
-    }
-    animRing();
-    document.querySelectorAll('a, button').forEach(function(el) {
-      el.addEventListener('mouseenter', function() { ring.style.transform = 'translate(-50%,-50%) scale(1.8)'; });
-      el.addEventListener('mouseleave', function() { ring.style.transform = 'translate(-50%,-50%) scale(1)'; });
-    });
-  }
-
   /* ─── Navbar Scroll ─── */
   var nav = document.querySelector('.navbar');
   if (nav) {
