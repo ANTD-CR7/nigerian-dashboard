@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Live status of the NPEDATA database and Open API, plus data-freshness per indicator category. From the Nigerian Public Economic Data Aggregation and Analytics Platform.">
 <title>System Status — NPEDATA</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -46,19 +46,20 @@
   <div class="chart-card reveal">
     <div class="chart-card-title">Site Mirrors</div>
     <p class="chart-context">The dashboard is deployed to two independent static hosts so a single provider's outage (like the GitHub Pages connectivity issue on 26 June 2026) doesn't take the whole site down.</p>
-    <div class="status-row" id="row-ghpages"><span class="status-dot status-pending" id="dot-ghpages"></span><div><div class="status-name">GitHub Pages (primary)</div><div class="status-detail" id="detail-ghpages">Checking… · <a href="https://antd-cr7.github.io/nigerian-dashboard/" style="color:var(--primary);">antd-cr7.github.io/nigerian-dashboard</a></div></div></div>
-    <div class="status-row" id="row-cfpages"><span class="status-dot status-pending" id="dot-cfpages"></span><div><div class="status-name">Cloudflare Pages (mirror)</div><div class="status-detail" id="detail-cfpages">Checking… · <a href="https://npedata.pages.dev/" style="color:var(--primary);">npedata.pages.dev</a></div></div></div>
+    <div class="status-row" id="row-ghpages"><span class="status-dot status-pending" id="dot-ghpages"></span><div><div class="status-name">GitHub Pages (primary)</div><div class="status-detail" id="detail-ghpages">Checking… · <a href="https://antd-cr7.github.io/nigerian-dashboard/" style="color:var(--green-text);">antd-cr7.github.io/nigerian-dashboard</a></div></div></div>
+    <div class="status-row" id="row-cfpages"><span class="status-dot status-pending" id="dot-cfpages"></span><div><div class="status-name">Cloudflare Pages (mirror)</div><div class="status-detail" id="detail-cfpages">Checking… · <a href="https://npedata.pages.dev/" style="color:var(--green-text);">npedata.pages.dev</a></div></div></div>
     <div class="source-note">Both hosts deploy the same static files from the GitHub repository.</div>
   </div>
 
   <div class="chart-card reveal">
     <div class="chart-card-title">Data Freshness</div>
-    <div id="loading-fresh" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Checking…</div>
+    <div id="loading-fresh" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Checking…</div>
     <div class="data-table-wrap"><table class="data-table" id="fresh-table" style="display:none"><thead><tr><th>Category</th><th>Indicator</th><th>Current To</th><th>Source</th></tr></thead><tbody id="fresh-tbody"></tbody></table></div>
   </div>
 
 </div></main>
-<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--primary)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html" class="active">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>Nigeria's premier open economic data platform.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html" class="active">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
 <script>
 const SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
@@ -96,10 +97,10 @@ async function checkMirror(url,dotId,detailId,linkLabel){
     await fetch(url,{mode:'no-cors',cache:'no-store'});
     const ms=Math.round(performance.now()-t0);
     setDot(dotId,'status-up');
-    document.getElementById(detailId).innerHTML=`Online · responded in ${ms}ms · <a href="${url}" style="color:var(--primary);">${linkLabel}</a>`;
+    document.getElementById(detailId).innerHTML=`Online · responded in ${ms}ms · <a href="${url}" style="color:var(--green-text);">${linkLabel}</a>`;
   }catch(err){
     setDot(dotId,'status-down');
-    document.getElementById(detailId).innerHTML=`Unreachable — ${err.message} · <a href="${url}" style="color:var(--primary);">${linkLabel}</a>`;
+    document.getElementById(detailId).innerHTML=`Unreachable — ${err.message} · <a href="${url}" style="color:var(--green-text);">${linkLabel}</a>`;
   }
 }
 async function freshness(){
