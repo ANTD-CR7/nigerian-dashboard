@@ -184,6 +184,60 @@
   </div>
 </section>
 
+<!-- ─── HOW IT WORKS / PIPELINE ─── -->
+<section class="pipeline-section">
+  <div class="pipeline-inner">
+    <div class="section-label reveal">How It Works</div>
+    <h2 class="section-title reveal" style="margin-bottom:14px;">From scattered government reports to one open dataset</h2>
+    <p class="pipeline-intro reveal">NPEDATA is a data pipeline, not a re-display of existing sites. The CBN and NBS publish figures in PDF and Excel reports with <strong>no public API</strong>. Every number here passes through the same seven stages — collected from primary sources, validated, standardized into one schema, stored, analysed, and exposed through both a free API and the dashboard.</p>
+    <div class="pipeline-flow">
+      <div class="pipe-step reveal">
+        <div class="pipe-num">01 · COLLECT</div>
+        <div class="pipe-title">Collect</div>
+        <div class="pipe-desc">Primary data gathered from official CBN, NBS and World Bank reports.</div>
+        <div class="pipe-stat">3 sources</div>
+      </div>
+      <div class="pipe-step reveal">
+        <div class="pipe-num">02 · VALIDATE</div>
+        <div class="pipe-title">Validate</div>
+        <div class="pipe-desc">Duplicates removed, dates and formats checked, integrity verified before storage.</div>
+        <div class="pipe-stat">13,535 → 12,100</div>
+      </div>
+      <div class="pipe-step reveal">
+        <div class="pipe-num">03 · STANDARDIZE</div>
+        <div class="pipe-title">Standardize</div>
+        <div class="pipe-desc">Different report formats mapped to one schema — ISO dates, consistent units, source kept.</div>
+        <div class="pipe-stat">1 unified schema</div>
+      </div>
+      <div class="pipe-step reveal">
+        <div class="pipe-num">04 · STORE</div>
+        <div class="pipe-title">Store</div>
+        <div class="pipe-desc">Loaded into a relational PostgreSQL database with a no-duplicate constraint.</div>
+        <div class="pipe-stat">12,100 records</div>
+      </div>
+      <div class="pipe-step reveal">
+        <div class="pipe-num">05 · ANALYSE</div>
+        <div class="pipe-title">Analyse</div>
+        <div class="pipe-desc">Trends, year-on-year change, correlation and regression computed on the series.</div>
+        <div class="pipe-stat">Pearson r · OLS</div>
+      </div>
+      <div class="pipe-step is-output reveal">
+        <div class="pipe-num">06 · OPEN API</div>
+        <div class="pipe-title">Open API</div>
+        <div class="pipe-desc">Exposed as a free REST API — HATEOAS Level 3, no auth — where the sources have none.</div>
+        <div class="pipe-stat">15 endpoints</div>
+      </div>
+      <div class="pipe-step is-output reveal">
+        <div class="pipe-num">07 · PRESENT</div>
+        <div class="pipe-title">Present</div>
+        <div class="pipe-desc">Interactive charts, sortable tables, comparison tool and CSV downloads.</div>
+        <div class="pipe-stat">122 indicators</div>
+      </div>
+    </div>
+    <p class="pipeline-footnote reveal">Collection is currently manual — most Nigerian agencies publish no API — and the architecture is built to support automated ETL as that changes.</p>
+  </div>
+</section>
+
 <!-- ─── INSIGHT ─── -->
 <section class="section" style="background:var(--black);padding-top:64px;padding-bottom:48px;">
   <div style="max-width:1280px;margin:0 auto;padding:0 clamp(20px,5vw,64px);">

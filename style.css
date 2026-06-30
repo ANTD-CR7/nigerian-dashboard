@@ -603,6 +603,52 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   .story-section { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* ─── Pipeline / "How it works" (makes the data-engineering visible) ─── */
+.pipeline-section { background: var(--black-3); padding: 80px clamp(20px,5vw,64px); }
+.pipeline-inner { max-width: 1280px; margin: 0 auto; }
+.pipeline-intro {
+  font-family: var(--font-body); font-size: 0.95rem;
+  color: var(--slate); line-height: 1.7; max-width: 70ch; margin-bottom: 40px;
+}
+.pipeline-intro strong { color: var(--white); font-weight: 600; }
+.pipeline-flow {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+}
+.pipe-step {
+  position: relative;
+  background: var(--black-2);
+  border: 1px solid rgba(245,240,232,0.06);
+  border-top: 2px solid var(--green);
+  border-radius: 10px; padding: 18px 18px 20px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.pipe-step.is-output { border-top-color: var(--gold); }
+.pipe-num {
+  font-family: var(--font-mono); font-size: 0.62rem; font-weight: 500;
+  color: var(--green-text); letter-spacing: 0.12em;
+}
+.pipe-step.is-output .pipe-num { color: var(--gold); }
+.pipe-title {
+  font-family: var(--font-body); font-size: 0.96rem; font-weight: 600;
+  color: var(--white); letter-spacing: -0.01em;
+}
+.pipe-desc {
+  font-family: var(--font-body); font-size: 0.8rem;
+  color: rgba(245,240,232,0.62); line-height: 1.55; flex: 1;
+}
+.pipe-stat {
+  font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500;
+  color: var(--gold); letter-spacing: 0.02em; margin-top: 4px;
+}
+.pipe-step.is-output .pipe-stat { color: var(--green-text); }
+.pipeline-footnote {
+  font-family: var(--font-mono); font-size: 0.68rem; color: var(--slate);
+  margin-top: 24px; line-height: 1.6;
+}
+@media (min-width: 700px)  { .pipeline-flow { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1040px) { .pipeline-flow { grid-template-columns: repeat(7, 1fr); } }
+
 /* ─── Data Tables ─── */
 .data-table-wrap {
   overflow-x: auto; border-radius: var(--radius);
