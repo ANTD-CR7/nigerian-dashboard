@@ -190,45 +190,50 @@
     <div class="section-label reveal">How It Works</div>
     <h2 class="section-title reveal" style="margin-bottom:14px;">From scattered government reports to one open dataset</h2>
     <p class="pipeline-intro reveal">NPEDATA is a data pipeline, not a re-display of existing sites. The CBN and NBS publish figures in PDF and Excel reports with <strong>no public API</strong>. Every number here passes through the same seven stages — collected from primary sources, validated, standardized into one schema, stored, analysed, and exposed through both a free API and the dashboard.</p>
+    <div class="pipeline-legend reveal">
+      <span><span class="lg-dot lg-in"></span>Aggregation &amp; processing</span>
+      <span class="lg-arrow">→</span>
+      <span><span class="lg-dot lg-out"></span>What the platform adds</span>
+    </div>
     <div class="pipeline-flow">
       <div class="pipe-step reveal">
-        <div class="pipe-num">01 · COLLECT</div>
+        <div class="pipe-head"><span class="pipe-node">1</span><span class="pipe-icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/><path d="M12 4v9"/><path d="M8 9l4 4 4-4"/></svg></span></div>
         <div class="pipe-title">Collect</div>
         <div class="pipe-desc">Primary data gathered from official CBN, NBS and World Bank reports.</div>
         <div class="pipe-stat">3 sources</div>
       </div>
       <div class="pipe-step reveal">
-        <div class="pipe-num">02 · VALIDATE</div>
+        <div class="pipe-head"><span class="pipe-node">2</span><span class="pipe-icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></span></div>
         <div class="pipe-title">Validate</div>
         <div class="pipe-desc">Duplicates removed, dates and formats checked, integrity verified before storage.</div>
         <div class="pipe-stat">13,535 → 12,100</div>
       </div>
       <div class="pipe-step reveal">
-        <div class="pipe-num">03 · STANDARDIZE</div>
+        <div class="pipe-head"><span class="pipe-node">3</span><span class="pipe-icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg></span></div>
         <div class="pipe-title">Standardize</div>
         <div class="pipe-desc">Different report formats mapped to one schema — ISO dates, consistent units, source kept.</div>
         <div class="pipe-stat">1 unified schema</div>
       </div>
       <div class="pipe-step reveal">
-        <div class="pipe-num">04 · STORE</div>
+        <div class="pipe-head"><span class="pipe-node">4</span><span class="pipe-icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg></span></div>
         <div class="pipe-title">Store</div>
         <div class="pipe-desc">Loaded into a relational PostgreSQL database with a no-duplicate constraint.</div>
         <div class="pipe-stat">12,100 records</div>
       </div>
       <div class="pipe-step reveal">
-        <div class="pipe-num">05 · ANALYSE</div>
+        <div class="pipe-head"><span class="pipe-node">5</span><span class="pipe-icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14h16"/><path d="M7 14l3-4 3 2 4-6"/></svg></span></div>
         <div class="pipe-title">Analyse</div>
         <div class="pipe-desc">Trends, year-on-year change, correlation and regression computed on the series.</div>
         <div class="pipe-stat">Pearson r · OLS</div>
       </div>
       <div class="pipe-step is-output reveal">
-        <div class="pipe-num">06 · OPEN API</div>
+        <div class="pipe-head"><span class="pipe-node">6</span><span class="pipe-icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8l-4 4 4 4"/><path d="M15 8l4 4-4 4"/></svg></span></div>
         <div class="pipe-title">Open API</div>
         <div class="pipe-desc">Exposed as a free REST API — HATEOAS Level 3, no auth — where the sources have none.</div>
         <div class="pipe-stat">15 endpoints</div>
       </div>
       <div class="pipe-step is-output reveal">
-        <div class="pipe-num">07 · PRESENT</div>
+        <div class="pipe-head"><span class="pipe-node">7</span><span class="pipe-icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 16v-3"/><path d="M12 16v-5"/><path d="M16 16v-2"/></svg></span></div>
         <div class="pipe-title">Present</div>
         <div class="pipe-desc">Interactive charts, sortable tables, comparison tool and CSV downloads.</div>
         <div class="pipe-stat">122 indicators</div>
