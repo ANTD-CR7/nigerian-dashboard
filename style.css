@@ -229,13 +229,14 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   margin-bottom: 22px;
 }
 .hero-h1 em { font-style: italic; color: var(--gold); font-weight: 700; }
-.hero-typewriter {
-  font-family: var(--font-mono); font-size: 1.05rem;
-  color: var(--slate); margin-bottom: 36px; min-height: 1.6em;
+.hero-lede {
+  font-family: var(--font-body); font-size: 1.04rem;
+  color: rgba(245,240,232,0.82); line-height: 1.7;
+  max-width: 660px; margin: 0 auto 22px;
 }
-.tw-cursor { color: var(--green-text); animation: blink 0.75s step-end infinite; }
-@keyframes blink { 50% { opacity: 0; } }
+.hero-lede strong { color: var(--white); font-weight: 600; }
 .hero-ctas {
+  margin-top: 34px;
   display: flex; gap: 14px; justify-content: center;
   flex-wrap: wrap; margin-bottom: 56px;
 }
@@ -545,6 +546,61 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .insight-card p {
   font-family: var(--font-body); font-size: 0.86rem;
   color: rgba(245,240,232,0.72); line-height: 1.75;
+}
+
+/* ─── Chart Takeaway (lead with the number + plain-language meaning) ─── */
+.chart-takeaway { margin-bottom: 4px; }
+.takeaway-stat {
+  display: flex; align-items: baseline; flex-wrap: wrap;
+  gap: 8px 14px; margin-bottom: 12px;
+}
+.takeaway-value {
+  font-family: var(--font-mono); font-size: 2.3rem; font-weight: 500;
+  color: var(--white); line-height: 1; letter-spacing: -0.03em;
+}
+.takeaway-change {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--font-mono); font-size: 0.78rem; font-weight: 500;
+  padding: 4px 10px; border-radius: 5px;
+}
+.takeaway-change.good { background: rgba(0,135,81,0.16); color: var(--green-text); }
+.takeaway-change.bad  { background: rgba(224,82,82,0.16); color: var(--red-accent); }
+.takeaway-change.flat { background: rgba(245,240,232,0.07); color: var(--slate); }
+.takeaway-meta {
+  font-family: var(--font-mono); font-size: 0.72rem;
+  color: var(--slate); letter-spacing: 0.02em;
+}
+.takeaway-story {
+  font-family: var(--font-body); font-size: 0.95rem;
+  color: rgba(245,240,232,0.8); line-height: 1.7; max-width: 72ch;
+}
+.takeaway-story strong { color: var(--white); font-weight: 600; }
+.takeaway-divider {
+  height: 1px; background: rgba(245,240,232,0.07);
+  margin: 20px 0 6px;
+}
+
+/* ─── Story Section (detailed narrative: what happened / why / how to read) ─── */
+.story-section {
+  background: var(--black-3);
+  border: 1px solid rgba(245,240,232,0.06);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 26px 28px; margin-bottom: 22px;
+  display: grid; gap: 24px;
+}
+.story-block-label {
+  font-family: var(--font-mono); font-size: 0.6rem; font-weight: 500;
+  color: var(--gold); letter-spacing: 0.14em; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.story-block p {
+  font-family: var(--font-body); font-size: 0.88rem;
+  color: rgba(245,240,232,0.76); line-height: 1.72;
+}
+.story-block p strong { color: var(--white); font-weight: 600; }
+@media (min-width: 760px) {
+  .story-section { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ─── Data Tables ─── */

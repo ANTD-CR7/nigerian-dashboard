@@ -40,7 +40,11 @@
 </div></section>
 <div class="last-updated" id="last-updated">Loading…</div>
 <main class="page-content"><div class="container">
-  <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>Latest gross reserves: <strong id="stat-gross">—</strong> (<span id="stat-date">—</span>). Nigeria's gross foreign reserves fell from $38B in January 2020 to a low of $32.8B in December 2023, then recovered strongly to $48.7B by April 2026 driven by improved oil revenues and CBN FX policy reforms. Blocked reserves represent assets under lien or encumbrance.</p></div>
+  <div class="story-section reveal">
+    <div class="story-block"><div class="story-block-label">What happened</div><p>Gross external reserves slipped from about <strong>$38B</strong> in early 2020 to a low of <strong>$32.8B</strong> in December 2023, then recovered strongly to <strong>$48.7B</strong> by April 2026 as oil receipts and FX reforms improved inflows.</p></div>
+    <div class="story-block"><div class="story-block-label">Why it matters</div><p>Reserves are the foreign currency the CBN holds to defend the Naira, pay for imports and service external debt. A larger buffer gives the central bank more room to stabilise the currency.</p></div>
+    <div class="story-block"><div class="story-block-label">How to read it</div><p>The blue line is <strong>gross</strong> reserves; the green line is <strong>liquid</strong> (readily usable) reserves. The second chart shows blocked reserves — funds under lien that count toward the gross figure but aren't freely available.</p></div>
+  </div>
   <div class="ops-card reveal">
     <h2>Date Range Filter</h2>
     <div class="ops-grid">
@@ -50,7 +54,7 @@
       <section class="ops-panel"><label>Status</label><strong class="inline-status" id="filter-status">Full range loaded</strong></section>
     </div>
   </div>
-  <div class="chart-card reveal"><div class="chart-card-title">Gross and Liquid Reserves — 2020–2026 (USD Billions)</div><p class="chart-context">Nigeria's gross foreign exchange reserves fell to a low of $32.8B in December 2023 before recovering to $48.7B by April 2026.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-main">Loading…</div><canvas id="chart-main" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4FC3F7"></span>Gross Reserves</span><span><span class="dot" style="background:#008751"></span>Liquid Reserves</span></div><button class="btn-chart-reset" id="reset-main">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/fx_reserves" download>⬇ Download CSV</a><div class="source-note">Source: CBN Foreign Exchange Reserves Data</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Gross and Liquid Reserves — 2020–2026 (USD Billions)</div><div class="chart-takeaway"><div class="takeaway-stat"><span class="takeaway-value" id="tk-res-value">—</span><span class="takeaway-change" id="tk-res-change"></span><span class="takeaway-meta" id="tk-res-meta">Loading…</span></div><p class="takeaway-story"><strong>What this shows:</strong> Nigeria's gross foreign-exchange reserves. They fell to a <strong>$32.8B</strong> low in December 2023, then recovered to <strong>$48.7B</strong> by April 2026 — a bigger buffer to defend the Naira.</p><div class="takeaway-divider"></div></div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-main">Loading…</div><canvas id="chart-main" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4FC3F7"></span>Gross Reserves</span><span><span class="dot" style="background:#008751"></span>Liquid Reserves</span></div><button class="btn-chart-reset" id="reset-main">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/fx_reserves" download>⬇ Download CSV</a><div class="source-note">Source: CBN Foreign Exchange Reserves Data</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">Blocked Reserves and Block Percentage</div><p class="chart-context">Blocked reserves are foreign exchange under lien or encumbrance — unavailable for the CBN to deploy even though they count toward gross reserves.</p><div class="chart-wrap"><div class="chart-loading" id="loading-blocked">Loading…</div><canvas id="chart-blocked" style="display:none"></canvas></div><div class="source-note">Blocked = assets under lien/encumbrance · Source: CBN</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">Monthly Reserves Data</div><div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="res-table" style="display:none"><thead><tr><th>Month</th><th class="num">Gross (USD Bn)</th><th class="num">Liquid (USD Bn)</th><th class="num">Blocked (USD Bn)</th><th class="num">Block %</th><th>MoM Change</th></tr></thead><tbody id="res-tbody"></tbody></table></div></div>
 </div></main>
@@ -75,7 +79,7 @@ async function load(start,end){
   const[gross,liquid,blocked,blockPct]=await Promise.all([sb('fx_reserves',extra),sb('reserves_liquid',extra),sb('reserves_blocked',extra),sb('reserves_block_pct',extra)]);
   if(!gross.length){document.getElementById('filter-status').textContent='No data in range';return;}
   const latestGross=latestOf(gross);
-  if(latestGross){document.getElementById('stat-gross').textContent=`$${Number(latestGross.value).toFixed(2)}B`;document.getElementById('stat-date').textContent=fmt(latestGross.obs_date)+' · CBN';}
+  if(latestGross){renderTakeaway('tk-res',{value:latestGross.value,prev:gross.length>1?gross[gross.length-2].value:null,prevLabel:'vs prev month',dateLabel:fmt(latestGross.obs_date),source:'CBN',format:v=>'$'+Number(v).toFixed(2)+'B',betterWhenUp:true});}
   document.getElementById('loading-main').style.display='none';
   const c1=document.getElementById('chart-main');c1.style.display='block';
   const existingMain=Chart.getChart(c1);if(existingMain)existingMain.destroy();
