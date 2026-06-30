@@ -95,3 +95,45 @@ def test_analytics_for_year_over_year_change(monkeypatch):
     result = main.analytics_for("inflation", "2023-01-01", "2024-12-31", periods=1)
     assert result["year_over_year_change"]["absolute"] == pytest.approx(5.0)
     assert result["year_over_year_change"]["percent"] == pytest.approx(25.0)
+
+
+# --- HATEOAS / Richardson Maturity Model Level 3 ---
+
+class _FakeRequest:
+    """Minimal stand-in for fastapi.Request exposing only base_url, which is
+    all hypermedia() reads. Avoids spinning up a real server for unit tests."""
+    def __init__(self, base="https://api.example.com/"):
+        self.base_url = base
+
+
+def test_hypermedia_always_includes_self_and_docs():
+    links = main.hypermedia(_FakeRequest(), "/api/v1/summary")
+    assert links["self"]["href"] == "https://api.example.com/api/v1/summary"
+    assert links["index"]["href"] == "https://api.example.com/"
+    assert links["docs"]["href"] == "https://api.example.com/docs"
+
+
+def test_hypermedia_root_omits_redundant_index():
+    links = main.hypermedia(_FakeRequest(), "/")
+    assert links["self"]["href"] == "https://api.example.com/"
+    assert "index" not in links  # self already points at the root
+
+
+def test_hypermedia_indicator_adds_analytics_and_export():
+    links = main.hypermedia(_FakeRequest(), "/api/v1/gdp", indicator="gdp_growth")
+    assert links["analytics"]["href"].endswith("/api/v1/analytics/gdp_growth")
+    assert links["export_csv"]["href"].endswith("/api/v1/export/gdp_growth")
+
+
+def test_hypermedia_related_and_extra_links_resolve():
+    links = main.hypermedia(
+        _FakeRequest(), "/api/v1/analytics/inflation",
+        related=["coverage"], extra={"export_csv": "/api/v1/export/inflation"},
+    )
+    assert links["coverage"]["href"].endswith(main.API_LINKS["coverage"])
+    assert links["export_csv"]["href"].endswith("/api/v1/export/inflation")
+
+
+def test_api_links_catalog_paths_are_absolute_v1_routes():
+    for name, path in main.API_LINKS.items():
+        assert path.startswith("/api/v1/"), f"{name} -> {path}"

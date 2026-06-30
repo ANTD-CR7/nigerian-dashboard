@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from datetime import date, datetime
 
-from fastapi import FastAPI, File, Form, HTTPException, Query, Response, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
@@ -231,9 +231,53 @@ def fetch_parallel(indicator_ids, start, end):
         return dict(executor.map(_one, indicator_ids))
 
 
+# ============================================================
+# HATEOAS hypermedia controls (Richardson Maturity Model Level 3)
+# Every JSON response carries a `_links` block describing the
+# available next actions, so a client can navigate the whole API
+# from the root without hardcoding any URL but the base.
+# ============================================================
+API_LINKS = {
+    "summary": "/api/v1/summary",
+    "gdp": "/api/v1/gdp",
+    "inflation": "/api/v1/inflation",
+    "exchange_rate": "/api/v1/exchange-rate",
+    "interest_rate": "/api/v1/interest-rate",
+    "fx_reserves": "/api/v1/fx-reserves",
+    "currency_circulation": "/api/v1/currency-circulation",
+    "nfem": "/api/v1/nfem",
+    "multicurrency": "/api/v1/multicurrency",
+    "gdp_sectors": "/api/v1/gdp-sectors",
+    "cbn_balance_sheet": "/api/v1/cbn-balance-sheet",
+    "analytics": "/api/v1/analytics",
+    "coverage": "/api/v1/coverage",
+}
+
+
+def _link(request: Request, path: str) -> dict:
+    return {"href": str(request.base_url).rstrip("/") + path}
+
+
+def hypermedia(request: Request, self_path: str, related=None, indicator: str = None, extra: dict = None) -> dict:
+    """Build a `_links` block: self + index + docs, plus any related
+    collection endpoints, plus per-indicator next actions (analytics/export)."""
+    out = {"self": _link(request, self_path)}
+    if self_path != "/":
+        out["index"] = _link(request, "/")
+    out["docs"] = _link(request, "/docs")
+    if indicator:
+        out["analytics"] = _link(request, f"/api/v1/analytics/{indicator}")
+        out["export_csv"] = _link(request, f"/api/v1/export/{indicator}")
+    for name in (related or []):
+        out[name] = _link(request, API_LINKS[name])
+    for rel, path in (extra or {}).items():
+        out[rel] = _link(request, path)
+    return out
+
+
 @app.get("/")
 @app.head("/")
-def root():
+def root(request: Request):
     return {
         "name": "Nigerian Public Economic Data API",
         "version": "1.0.0",
@@ -247,6 +291,7 @@ def root():
             "/api/v1/coverage", "/api/v1/export/{indicator_id}",
         ],
         "data_writes_enabled": ALLOW_DATA_WRITES,
+        "_links": hypermedia(request, "/", related=list(API_LINKS)),
     }
 
 
@@ -269,7 +314,8 @@ Scope is strictly Nigeria — no other countries' data is included.
 
 ## Open API
 Base URL: https://npedata-api.onrender.com
-Auth: none. CORS: open. Format: JSON.
+Auth: none. CORS: open. Format: JSON. Every JSON response includes a HATEOAS `_links` block
+(Richardson Maturity Model Level 3) so the whole API is navigable from the root.
 
 Read endpoints (GET, all under /api/v1/): /summary, /gdp, /inflation, /exchange-rate, /interest-rate,
 /fx-reserves, /currency-circulation, /nfem, /multicurrency, /gdp-sectors, /cbn-balance-sheet, /analytics,
@@ -296,68 +342,79 @@ def llms_txt():
 
 
 @app.get("/api/v1/summary")
-def get_summary():
-    return {"gdp_growth": latest("gdp_growth"), "inflation": latest("inflation"), "exchange_rate": latest("exchange_rate"), "mpr": latest("mpr"), "fx_reserves": latest("fx_reserves"), "source": "CBN, NBS, World Bank"}
+def get_summary(request: Request):
+    return {"gdp_growth": latest("gdp_growth"), "inflation": latest("inflation"), "exchange_rate": latest("exchange_rate"), "mpr": latest("mpr"), "fx_reserves": latest("fx_reserves"), "source": "CBN, NBS, World Bank",
+            "_links": hypermedia(request, "/api/v1/summary", related=["gdp", "inflation", "exchange_rate", "interest_rate", "fx_reserves", "coverage"])}
 
 
 @app.get("/api/v1/gdp")
-def get_gdp(start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
-    return {"gdp_growth": fetch("gdp_growth", start, end), "gdp_usd": fetch("gdp_usd", start, end), "unit": "Percent and USD Billions", "source": "NBS and World Bank"}
+def get_gdp(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+    return {"gdp_growth": fetch("gdp_growth", start, end), "gdp_usd": fetch("gdp_usd", start, end), "unit": "Percent and USD Billions", "source": "NBS and World Bank",
+            "_links": hypermedia(request, "/api/v1/gdp", indicator="gdp_growth", related=["summary", "gdp_sectors", "coverage"])}
 
 
 @app.get("/api/v1/inflation")
-def get_inflation(start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
-    return {"headline": fetch("inflation", start, end), "food": fetch("inflation_food", start, end), "core": fetch("inflation_core", start, end), "unit": "Percent year-on-year", "source": "NBS CPI Report"}
+def get_inflation(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+    return {"headline": fetch("inflation", start, end), "food": fetch("inflation_food", start, end), "core": fetch("inflation_core", start, end), "unit": "Percent year-on-year", "source": "NBS CPI Report",
+            "_links": hypermedia(request, "/api/v1/inflation", indicator="inflation", related=["summary", "coverage"])}
 
 
 @app.get("/api/v1/exchange-rate")
-def get_exchange_rate(start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
-    return {"data": fetch("exchange_rate", start, end), "unit": "Naira per USD", "source": "CBN Official Rate"}
+def get_exchange_rate(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+    return {"data": fetch("exchange_rate", start, end), "unit": "Naira per USD", "source": "CBN Official Rate",
+            "_links": hypermedia(request, "/api/v1/exchange-rate", indicator="exchange_rate", related=["summary", "nfem", "multicurrency", "coverage"])}
 
 
 @app.get("/api/v1/interest-rate")
-def get_interest_rate(start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
-    return {"data": fetch("mpr", start, end), "unit": "Percent", "source": "CBN Monetary Policy Committee"}
+def get_interest_rate(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+    return {"data": fetch("mpr", start, end), "unit": "Percent", "source": "CBN Monetary Policy Committee",
+            "_links": hypermedia(request, "/api/v1/interest-rate", indicator="mpr", related=["summary", "coverage"])}
 
 
 @app.get("/api/v1/fx-reserves")
-def get_fx_reserves(start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
-    return {"gross": fetch("fx_reserves", start, end), "liquid": fetch("reserves_liquid", start, end), "blocked": fetch("reserves_blocked", start, end), "block_pct": fetch("reserves_block_pct", start, end), "unit": "USD Billions", "source": "CBN"}
+def get_fx_reserves(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+    return {"gross": fetch("fx_reserves", start, end), "liquid": fetch("reserves_liquid", start, end), "blocked": fetch("reserves_blocked", start, end), "block_pct": fetch("reserves_block_pct", start, end), "unit": "USD Billions", "source": "CBN",
+            "_links": hypermedia(request, "/api/v1/fx-reserves", indicator="fx_reserves", related=["summary", "cbn_balance_sheet", "coverage"])}
 
 
 @app.get("/api/v1/currency-circulation")
-def get_currency_circulation(start: Optional[str] = Query(default="2002-01-01"), end: Optional[str] = Query(default="2026-12-31")):
-    return {"data": fetch("currency_circulation_full", start, end), "unit": "Naira Billions", "source": "CBN Statistical Bulletin"}
+def get_currency_circulation(request: Request, start: Optional[str] = Query(default="2002-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+    return {"data": fetch("currency_circulation_full", start, end), "unit": "Naira Billions", "source": "CBN Statistical Bulletin",
+            "_links": hypermedia(request, "/api/v1/currency-circulation", indicator="currency_circulation_full", related=["summary", "cbn_balance_sheet", "coverage"])}
 
 
 @app.get("/api/v1/nfem")
-def get_nfem(start: Optional[str] = Query(default="2024-12-01"), end: Optional[str] = Query(default="2026-12-31")):
-    return {"closing": fetch("nfem_closing", start, end), "highest": fetch("nfem_highest", start, end), "lowest": fetch("nfem_lowest", start, end), "weighted_avg": fetch("nfem_weighted_avg", start, end), "unit": "NGN per USD", "source": "CBN NFEM", "coverage": "December 2024 to April 2026"}
+def get_nfem(request: Request, start: Optional[str] = Query(default="2024-12-01"), end: Optional[str] = Query(default="2026-12-31")):
+    return {"closing": fetch("nfem_closing", start, end), "highest": fetch("nfem_highest", start, end), "lowest": fetch("nfem_lowest", start, end), "weighted_avg": fetch("nfem_weighted_avg", start, end), "unit": "NGN per USD", "source": "CBN NFEM", "coverage": "December 2024 to April 2026",
+            "_links": hypermedia(request, "/api/v1/nfem", indicator="nfem_closing", related=["exchange_rate", "multicurrency", "coverage"])}
 
 
 @app.get("/api/v1/multicurrency")
-def get_multicurrency(currency: Optional[str] = Query(default=None), start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_multicurrency(request: Request, currency: Optional[str] = Query(default=None), start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
     currencies = ["usd", "gbp", "eur", "cny", "chf", "zar", "aed", "sar", "sdr", "cfa", "waua"]
     if currency and currency.lower() in currencies:
         currencies = [currency.lower()]
     rates = ["buying", "central", "selling"]
     fetched = fetch_parallel([f"{c}_{r}" for c in currencies for r in rates], start, end)
-    return {"data": {c: {r: fetched[f"{c}_{r}"] for r in rates} for c in currencies}, "unit": "Naira per foreign currency unit", "source": "CBN"}
+    return {"data": {c: {r: fetched[f"{c}_{r}"] for r in rates} for c in currencies}, "unit": "Naira per foreign currency unit", "source": "CBN",
+            "_links": hypermedia(request, "/api/v1/multicurrency", related=["exchange_rate", "nfem", "coverage"])}
 
 
 @app.get("/api/v1/gdp-sectors")
-def get_gdp_sectors(start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_gdp_sectors(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
     sectors = ["gdp_agriculture", "gdp_industry", "gdp_services", "gdp_manufacturing", "gdp_telecommunicationsAndInformationServices", "gdp_construction", "gdp_trade"]
-    return {"data": {s: fetch(s, start, end) for s in sectors}, "unit": "Naira Billions constant prices", "source": "NBS GDP Report"}
+    return {"data": {s: fetch(s, start, end) for s in sectors}, "unit": "Naira Billions constant prices", "source": "NBS GDP Report",
+            "_links": hypermedia(request, "/api/v1/gdp-sectors", related=["gdp", "coverage"])}
 
 
 @app.get("/api/v1/cbn-balance-sheet")
-def get_cbn_balance_sheet(start: Optional[str] = Query(default="2005-01-01"), end: Optional[str] = Query(default="2026-12-31")):
-    return {"total_assets": fetch("cbn_total_assets", start, end), "total_liabilities": fetch("cbn_total_liabilities", start, end), "gold": fetch("cbn_gold", start, end), "currency_issued": fetch("cbn_currency_issued", start, end), "unit": "Naira Billions", "source": "CBN Balance Sheet"}
+def get_cbn_balance_sheet(request: Request, start: Optional[str] = Query(default="2005-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+    return {"total_assets": fetch("cbn_total_assets", start, end), "total_liabilities": fetch("cbn_total_liabilities", start, end), "gold": fetch("cbn_gold", start, end), "currency_issued": fetch("cbn_currency_issued", start, end), "unit": "Naira Billions", "source": "CBN Balance Sheet",
+            "_links": hypermedia(request, "/api/v1/cbn-balance-sheet", indicator="cbn_total_assets", related=["fx_reserves", "currency_circulation", "coverage"])}
 
 
 @app.get("/api/v1/analytics")
-def get_analytics():
+def get_analytics(request: Request):
     inf_data = fetch("inflation", "2020-01-01", "2026-12-31")
     fx_data = fetch("exchange_rate", "2020-01-01", "2026-12-31")
     inf_map = {d["obs_date"]: d["value"] for d in inf_data}
@@ -383,21 +440,28 @@ def get_analytics():
         "inflation_peak": {"value": max(inf_vals), "date": common[inf_vals.index(max(inf_vals))]},
         "exchange_rate_peak": {"value": max(fx_vals), "date": common[fx_vals.index(max(fx_vals))]},
         "source": "CBN, NBS",
+        "_links": hypermedia(request, "/api/v1/analytics", related=["inflation", "exchange_rate", "coverage"]),
     }
 
 
 @app.get("/api/v1/analytics/{indicator_id}")
 def get_indicator_analytics(
+    request: Request,
     indicator_id: str,
     start: Optional[str] = Query(default="2020-01-01"),
     end: Optional[str] = Query(default="2026-12-31"),
     forecast_periods: int = Query(default=3, ge=1, le=12),
 ):
-    return analytics_for(indicator_id, start, end, forecast_periods)
+    result = analytics_for(indicator_id, start, end, forecast_periods)
+    result["_links"] = hypermedia(
+        request, f"/api/v1/analytics/{indicator_id}", related=["coverage"],
+        extra={"export_csv": f"/api/v1/export/{indicator_id}", "analytics_correlation": "/api/v1/analytics"},
+    )
+    return result
 
 
 @app.get("/api/v1/coverage")
-def get_coverage(start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_coverage(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
     indicators = []
     total_observations = 0
     sources = set()
@@ -431,11 +495,12 @@ def get_coverage(start: Optional[str] = Query(default="2020-01-01"), end: Option
         "source_count": len(sources),
         "sources": sorted(sources),
         "indicators": indicators,
+        "_links": hypermedia(request, "/api/v1/coverage", related=list(API_LINKS)),
     }
 
 
 @app.get("/api/v1/export/{indicator_id}")
-def export_indicator_csv(indicator_id: str, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def export_indicator_csv(request: Request, indicator_id: str, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
     require_indicator(indicator_id)
     rows = fetch(indicator_id, start, end)
     output = io.StringIO()
@@ -444,21 +509,34 @@ def export_indicator_csv(indicator_id: str, start: Optional[str] = Query(default
     for row in rows:
         writer.writerow({"indicator_id": indicator_id, "obs_date": row["obs_date"], "value": row["value"], "source": row.get("source", "")})
 
+    # A CSV body carries no JSON `_links`; hypermedia for non-JSON representations
+    # goes in the RFC 8288 Link header instead, keeping the API Level 3 end to end.
+    base = str(request.base_url).rstrip("/")
+    link_header = (
+        f'<{base}/api/v1/export/{indicator_id}>; rel="self", '
+        f'<{base}/api/v1/analytics/{indicator_id}>; rel="analytics", '
+        f'<{base}/>; rel="index"'
+    )
     return Response(
         content=output.getvalue(),
         media_type="text/csv",
-        headers={"Content-Disposition": f'attachment; filename="{indicator_id}_{start}_{end}.csv"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="{indicator_id}_{start}_{end}.csv"',
+            "Link": link_header,
+        },
     )
 
 
 @app.post("/api/v1/observations")
-def append_observation(payload: ObservationIn, commit: bool = Query(default=False)):
+def append_observation(request: Request, payload: ObservationIn, commit: bool = Query(default=False)):
     stored = store_observation(payload, commit=commit)
-    return {"message": "Observation normalized successfully.", "write_enabled": ALLOW_DATA_WRITES, "observation": stored}
+    return {"message": "Observation normalized successfully.", "write_enabled": ALLOW_DATA_WRITES, "observation": stored,
+            "_links": hypermedia(request, "/api/v1/observations", indicator=payload.indicator_id, related=["coverage"])}
 
 
 @app.post("/api/v1/ingest/csv")
 async def ingest_csv(
+    request: Request,
     indicator_id: str = Form(...),
     source: str = Form(default="UPLOAD"),
     commit: bool = Form(default=False),
@@ -495,4 +573,5 @@ async def ingest_csv(
         "rows_processed": len(stored),
         "rows_committed": sum(1 for row in stored if row.get("committed")),
         "rows": stored,
+        "_links": hypermedia(request, "/api/v1/ingest/csv", indicator=indicator_id, related=["coverage"]),
     }

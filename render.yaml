@@ -4,7 +4,9 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    # --proxy-headers + --forwarded-allow-ips=* so request.base_url honours
+    # Render's X-Forwarded-Proto and the HATEOAS _links come out as https://
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
