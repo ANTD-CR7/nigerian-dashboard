@@ -39,7 +39,11 @@
 </div></section>
 <div class="last-updated" id="last-updated">Loading…</div>
 <main class="page-content"><div class="container">
-  <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>Latest NFEM closing rate: <strong id="stat-nfem">—</strong> (<span id="stat-nfem-date">—</span>). The Nigerian Foreign Exchange Market (NFEM) is the interbank market where authorised dealers trade foreign currency at market-determined rates — unlike the CBN administrative rate, NFEM rates reflect actual market supply and demand. Data covers December 2024 to April 2026 — 354 daily trading sessions.</p></div>
+  <div class="story-section reveal">
+    <div class="story-block"><div class="story-block-label">What happened</div><p>The NFEM opened in December 2024 as Nigeria's reformed interbank FX market. Across <strong>354 daily sessions</strong> to April 2026 the closing rate has traded broadly in the <strong>₦1,500–1,650/$</strong> range, set by live market supply and demand.</p></div>
+    <div class="story-block"><div class="story-block-label">Why it matters</div><p>Unlike the CBN's administrative rate, NFEM rates come from actual trades between authorised dealers — so they're the closest market read on what the Naira is really worth from one day to the next.</p></div>
+    <div class="story-block"><div class="story-block-label">How to read it</div><p>The blue line is the daily <strong>closing</strong> rate; green and red are the day's <strong>highest and lowest</strong>, and gold is the weighted average. A wider gap between high and low means a more volatile trading day.</p></div>
+  </div>
   <div class="ops-card reveal">
     <h2>Date Range Filter</h2>
     <div class="ops-grid">
@@ -49,7 +53,7 @@
       <section class="ops-panel"><label>Status</label><strong class="inline-status" id="filter-status">Full range loaded</strong></section>
     </div>
   </div>
-  <div class="chart-card reveal"><div class="chart-card-title">NFEM Daily Exchange Rates — Dec 2024 to Apr 2026</div><p class="chart-context">Daily Nigerian Foreign Exchange Market rates showing actual interbank trading prices — distinct from the CBN administrative rate.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-nfem">Loading…</div><canvas id="chart-nfem" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4a9eff"></span>Closing Rate</span><span><span class="dot" style="background:#00C896"></span>Highest</span><span><span class="dot" style="background:#FF6B6B"></span>Lowest</span><span><span class="dot" style="background:#F4A017"></span>Weighted Avg</span></div><button class="btn-chart-reset" id="reset-nfem">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/nfem_closing" download>⬇ Download CSV</a><div class="source-note">Source: CBN NFEM Daily Report · Rates in NGN per USD</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">NFEM Daily Exchange Rates — Dec 2024 to Apr 2026</div><div class="chart-takeaway"><div class="takeaway-stat"><span class="takeaway-value" id="tk-nfem-value">—</span><span class="takeaway-change" id="tk-nfem-change"></span><span class="takeaway-meta" id="tk-nfem-meta">Loading…</span></div><p class="takeaway-story"><strong>What this shows:</strong> The daily closing rate on Nigeria's interbank FX market (NFEM) — market-determined, unlike the CBN administrative rate. 354 sessions from December 2024 to April 2026.</p><div class="takeaway-divider"></div></div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-nfem">Loading…</div><canvas id="chart-nfem" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4a9eff"></span>Closing Rate</span><span><span class="dot" style="background:#00C896"></span>Highest</span><span><span class="dot" style="background:#FF6B6B"></span>Lowest</span><span><span class="dot" style="background:#F4A017"></span>Weighted Avg</span></div><button class="btn-chart-reset" id="reset-nfem">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/nfem_closing" download>⬇ Download CSV</a><div class="source-note">Source: CBN NFEM Daily Report · Rates in NGN per USD</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">NFEM Daily Data Table</div><div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="nfem-table" style="display:none"><thead><tr><th>Date</th><th class="num">Closing (NGN)</th><th class="num">Highest (NGN)</th><th class="num">Lowest (NGN)</th><th class="num">Weighted Avg (NGN)</th></tr></thead><tbody id="nfem-tbody"></tbody></table></div></div>
 </div></main>
 <div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
@@ -72,7 +76,7 @@ async function load(start,end){
   const extra=(start&&end)?`&obs_date=gte.${start}&obs_date=lte.${end}`:'';
   const[closing,highest,lowest,wavg]=await Promise.all([sb('nfem_closing',extra),sb('nfem_highest',extra),sb('nfem_lowest',extra),sb('nfem_weighted_avg',extra)]);
   if(!closing.length){document.getElementById('filter-status').textContent='No data in range';return;}
-  const latest=closing[closing.length-1];document.getElementById('stat-nfem').textContent=fmtNGN(latest.value);document.getElementById('stat-nfem-date').textContent=fmtDay(latest.obs_date);
+  const latest=closing[closing.length-1];renderTakeaway('tk-nfem',{value:latest.value,prev:closing.length>1?closing[closing.length-2].value:null,prevLabel:'vs prev session',dateLabel:fmtDay(latest.obs_date),source:'CBN NFEM',format:fmtNGN,betterWhenUp:false});
   document.getElementById('loading-nfem').style.display='none';
   const canvas=document.getElementById('chart-nfem');
   canvas.style.display='block';

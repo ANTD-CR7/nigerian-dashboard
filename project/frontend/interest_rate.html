@@ -40,7 +40,11 @@
 </div></section>
 <div class="last-updated" id="last-updated">Loading…</div>
 <main class="page-content"><div class="container">
-  <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>Current MPR: <strong id="stat-mpr">—</strong>. The CBN raised the MPR from 11.5% to 27.5% between 2022 and 2024 — a cumulative 1,600 basis point tightening to combat surging inflation following the June 2023 FX reform.</p></div>
+  <div class="story-section reveal">
+    <div class="story-block"><div class="story-block-label">What happened</div><p>The CBN held the MPR at <strong>11.5%</strong> through the COVID period, then raised it aggressively from 2022 — reaching <strong>27.5%</strong> by 2024, a cumulative <strong>1,600 basis-point</strong> tightening — to fight the post-reform inflation surge.</p></div>
+    <div class="story-block"><div class="story-block-label">Why it matters</div><p>The MPR is the CBN's benchmark interest rate. Raising it makes borrowing more expensive across the whole economy, which is the main tool a central bank uses to slow inflation down.</p></div>
+    <div class="story-block"><div class="story-block-label">How to read it</div><p>The line is <strong>stepped</strong> because the rate only changes at MPC meetings and holds flat in between. Each step up is a tightening decision; a plateau signals the CBN holding as it assesses inflation.</p></div>
+  </div>
   <div class="ops-card reveal">
     <h2>Date Range Filter</h2>
     <div class="ops-grid">
@@ -50,7 +54,7 @@
       <section class="ops-panel"><label>Status</label><strong class="inline-status" id="filter-status">Full range loaded</strong></section>
     </div>
   </div>
-  <div class="chart-card reveal"><div class="chart-card-title">CBN Monetary Policy Rate (%) — MPC Decision Dates</div><p class="chart-context">The CBN raised the Monetary Policy Rate aggressively from 11.5% in 2022 to 27.5% in 2024 to combat surging inflation.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-mpr">Loading…</div><canvas id="chart-mpr" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-mpr">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/mpr" download>⬇ Download CSV</a><div class="source-note">Source: CBN MPC communiques · Stepped line = rate held flat between meetings</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">CBN Monetary Policy Rate (%) — MPC Decision Dates</div><div class="chart-takeaway"><div class="takeaway-stat"><span class="takeaway-value" id="tk-mpr-value">—</span><span class="takeaway-change" id="tk-mpr-change"></span><span class="takeaway-meta" id="tk-mpr-meta">Loading…</span></div><p class="takeaway-story"><strong>What this shows:</strong> The CBN's benchmark Monetary Policy Rate at each MPC decision. Held at <strong>11.5%</strong> through COVID, then raised to <strong>27.5%</strong> by 2024 to combat inflation.</p><div class="takeaway-divider"></div></div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-mpr">Loading…</div><canvas id="chart-mpr" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-mpr">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/mpr" download>⬇ Download CSV</a><div class="source-note">Source: CBN MPC communiques · Stepped line = rate held flat between meetings</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">MPR Decision History</div><div id="loading" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="mpr-table" style="display:none"><thead><tr><th>MPC Decision Date</th><th class="num">MPR (%)</th><th>Change</th><th>Source</th></tr></thead><tbody id="mpr-tbody"></tbody></table></div></div>
 </div></main>
 <div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
@@ -73,7 +77,7 @@ async function load(start,end){
   const data=await sb('mpr',extra);
   if(!data.length){document.getElementById('filter-status').textContent='No data in range';return;}
   const latest=data[data.length-1];
-  document.getElementById('stat-mpr').textContent=`${Number(latest.value).toFixed(2)}%`;
+  renderTakeaway('tk-mpr',{value:latest.value,prev:data.length>1?data[data.length-2].value:null,prevLabel:'vs prev decision',dateLabel:fmt(latest.obs_date),source:'CBN',format:v=>Number(v).toFixed(2)+'%'});
   document.getElementById('loading-mpr').style.display='none';
   document.getElementById('chart-mpr').style.display='block';
   const existingMpr=Chart.getChart(document.getElementById('chart-mpr'));if(existingMpr)existingMpr.destroy();

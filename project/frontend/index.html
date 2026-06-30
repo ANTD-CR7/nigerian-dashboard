@@ -100,7 +100,7 @@
   <div class="hero-content">
     <div class="hero-eyebrow">Open Data Platform · CBN · NBS · World Bank</div>
     <h1 class="hero-h1">Nigeria's Economy,<br><em>Told Through Data.</em></h1>
-    <div class="hero-typewriter"><span id="tw-text"></span><span class="tw-cursor">|</span></div>
+    <p class="hero-lede">A free, open platform that gathers Nigeria's official economic data — <strong>GDP, inflation, exchange rates, reserves and more</strong> — into one place: clear charts, full history, and a free public API. Built for students, researchers, developers, analysts and the public.</p>
     <div class="hero-ctas">
       <a href="#kpi-section" class="btn-primary">Explore the Data →</a>
       <a href="api_docs.html" class="btn-ghost">Open API Docs</a>
@@ -719,33 +719,6 @@ loadAnalytics();
 loadCoverage();
 </script>
 
-
-<!-- ─── TYPEWRITER ─── -->
-<script>
-(function(){
-  var el=document.getElementById('tw-text'); if(!el) return;
-  var phrases=['GDP Tracker','Inflation Monitor','FX Reserve Analytics','Multi-Currency Dashboard','NFEM Market Rates'];
-  var pi=0,ci=0,phase='typing';
-  function tick(){
-    var p=phrases[pi];
-    if(phase==='typing'){
-      ci++;
-      el.textContent=p.slice(0,ci);
-      if(ci===p.length){phase='pause';setTimeout(tick,1900);return;}
-      setTimeout(tick,95);
-    }else if(phase==='pause'){
-      phase='deleting';
-      setTimeout(tick,55);
-    }else{
-      ci--;
-      el.textContent=p.slice(0,ci);
-      if(ci===0){phase='typing';pi=(pi+1)%phrases.length;setTimeout(tick,95);return;}
-      setTimeout(tick,55);
-    }
-  }
-  tick();
-})();
-</script>
 
 <script>
 /* ─── IntersectionObserver for kpi-card and explore-card fadeUp ─── */

@@ -40,7 +40,11 @@
 </div></section>
 <div class="last-updated" id="last-updated">Loading…</div>
 <main class="page-content"><div class="container">
-  <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>Latest headline inflation: <strong id="stat-inf">—</strong>. Inflation peaked at 34.80% in December 2024 driven by post-FX reform currency depreciation and rising food prices — the highest since the 1990s.</p></div>
+  <div class="story-section reveal">
+    <div class="story-block"><div class="story-block-label">What happened</div><p>Inflation climbed steadily after the June 2023 FX reform, peaking at <strong>34.80%</strong> in December 2024 — the highest since the 1990s — then began easing through 2025–2026 to <strong>15.38%</strong> by March 2026.</p></div>
+    <div class="story-block"><div class="story-block-label">Why it matters</div><p>Inflation measures how fast everyday prices are rising. The 2023–2024 surge sharply cut household purchasing power; the recent slowdown (<strong>disinflation</strong>) means prices are still rising, but far more slowly than at the peak.</p></div>
+    <div class="story-block"><div class="story-block-label">How to read it</div><p>The main chart is year-on-year headline inflation. Food inflation usually runs hotter and core inflation (excluding food and energy) lower — the final chart overlays all three so you can see how far they diverged after 2023.</p></div>
+  </div>
   <div class="ops-card reveal">
     <h2>Date Range Filter</h2>
     <div class="ops-grid">
@@ -50,7 +54,7 @@
       <section class="ops-panel"><label>Status</label><strong class="inline-status" id="filter-status">Full range loaded</strong></section>
     </div>
   </div>
-  <div class="chart-card reveal"><div class="chart-card-title">Headline Inflation Rate (%) — Monthly</div><p class="chart-context">Nigeria's headline inflation peaked at 34.80% in December 2024 following the June 2023 CBN FX reform — the highest level since the 1990s.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-inf">Loading…</div><canvas id="chart-inf" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-inf">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/inflation" download>⬇ Download CSV</a><div class="source-note">Source: NBS Consumer Price Index Report · Year-on-year headline inflation</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Headline Inflation Rate (%) — Monthly</div><div class="chart-takeaway"><div class="takeaway-stat"><span class="takeaway-value" id="tk-inf-value">—</span><span class="takeaway-change" id="tk-inf-change"></span><span class="takeaway-meta" id="tk-inf-meta">Loading…</span></div><p class="takeaway-story"><strong>What this shows:</strong> Year-on-year headline inflation. Prices rose fastest in December 2024 at <strong>34.80%</strong>, then inflation slowed to <strong>15.38%</strong> by March 2026 — still rising, but at less than half the peak pace.</p><div class="takeaway-divider"></div></div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-inf">Loading…</div><canvas id="chart-inf" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-inf">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/inflation" download>⬇ Download CSV</a><div class="source-note">Source: NBS Consumer Price Index Report · Year-on-year headline inflation</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">Food Inflation (%)</div><p class="chart-context">Food prices have consistently run hotter than headline inflation, reflecting Nigeria's exposure to local supply shocks and currency-driven import costs.</p><div class="chart-wrap"><div class="chart-loading" id="loading-food">Loading…</div><canvas id="chart-food" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-food">↺ Reset Zoom</button><div class="source-note">Source: NBS CPI Report · Year-on-year food inflation</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">Core Inflation (%)</div><p class="chart-context">Core inflation strips out volatile food and energy prices — typically lower than headline, but following the same FX-reform-driven upward trend.</p><div class="chart-wrap"><div class="chart-loading" id="loading-core">Loading…</div><canvas id="chart-core" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-core">↺ Reset Zoom</button><div class="source-note">Source: NBS CPI Report · Core inflation excludes volatile food and energy</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">Headline vs Food vs Core Inflation 2003–2026</div><p class="chart-context">Comparing all three measures together shows food has driven most of the divergence from core inflation since the 2023 FX reform.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-comp">Loading…</div><canvas id="chart-comp" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#FF6B6B"></span>Headline</span><span><span class="dot" style="background:#E8820C"></span>Food</span><span><span class="dot" style="background:#4a9eff"></span>Core</span></div><button class="btn-chart-reset" id="reset-comp">↺ Reset Zoom</button></div>
@@ -79,7 +83,7 @@ async function load(start,end){
   const data=await sb('inflation',extra);
   if(!data.length){document.getElementById('filter-status').textContent='No data in range';return;}
   const latest=data[data.length-1];
-  document.getElementById('stat-inf').textContent=`${Number(latest.value).toFixed(2)}%`;
+  renderTakeaway('tk-inf',{value:latest.value,prev:data.length>1?data[data.length-2].value:null,prevLabel:'vs prev month',dateLabel:fmt(latest.obs_date),source:'NBS',format:v=>Number(v).toFixed(2)+'%',betterWhenUp:false});
   const covidIdx=data.findIndex(d=>d.obs_date.startsWith('2020-01'));
   const fxIdx=data.findIndex(d=>d.obs_date.startsWith('2023-06'));
   const annots={};

@@ -40,7 +40,11 @@
 </div></section>
 <div class="last-updated" id="last-updated">Loading…</div>
 <main class="page-content"><div class="container">
-  <div class="insight-card reveal"><div class="insight-label">Latest Reading</div><p>Current NGN/USD central rate: <strong id="stat-fx">—</strong>. The Naira depreciated from ₦306 in Jan 2020 to over ₦1,500 following the June 2023 FX unification reform.</p></div>
+  <div class="story-section reveal">
+    <div class="story-block"><div class="story-block-label">What happened</div><p>The Naira held near <strong>₦306–460/$</strong> until mid-2023. After the June 2023 FX unification reform removed the official peg, it depreciated sharply — past <strong>₦1,500/$</strong> — and has traded in the ₦1,300–1,600 range since.</p></div>
+    <div class="story-block"><div class="story-block-label">Why it matters</div><p>The exchange rate sets the cost of imports and foreign debt. The 2023 devaluation made imported goods far more expensive and was the main driver of the inflation surge that followed it.</p></div>
+    <div class="story-block"><div class="story-block-label">How to read it</div><p>A <strong>higher line means a weaker Naira</strong> (more Naira to buy one US dollar). The near-vertical rise in 2023 is the unification reform; flatter stretches are periods of relative stability.</p></div>
+  </div>
   <div class="ops-card reveal">
     <h2>Date Range Filter</h2>
     <div class="ops-grid">
@@ -50,7 +54,7 @@
       <section class="ops-panel"><label>Status</label><strong class="inline-status" id="filter-status">Full range loaded</strong></section>
     </div>
   </div>
-  <div class="chart-card reveal"><div class="chart-card-title">NGN/USD Exchange Rate — Monthly Average</div><p class="chart-context">The Naira lost over 70% of its value between May 2023 and January 2024 following the CBN foreign exchange unification reform.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-fx">Loading…</div><canvas id="chart-fx" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-fx">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/exchange_rate" download>⬇ Download CSV</a><div class="source-note">Source: CBN Official Rate · Higher = Naira depreciation</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">NGN/USD Exchange Rate — Monthly Average</div><div class="chart-takeaway"><div class="takeaway-stat"><span class="takeaway-value" id="tk-fx-value">—</span><span class="takeaway-change" id="tk-fx-change"></span><span class="takeaway-meta" id="tk-fx-meta">Loading…</span></div><p class="takeaway-story"><strong>What this shows:</strong> The official NGN/USD rate, monthly average. The Naira was stable near <strong>₦306–460</strong> until the June 2023 reform, then weakened past <strong>₦1,500</strong> — a higher number means a weaker Naira.</p><div class="takeaway-divider"></div></div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-fx">Loading…</div><canvas id="chart-fx" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-fx">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/exchange_rate" download>⬇ Download CSV</a><div class="source-note">Source: CBN Official Rate · Higher = Naira depreciation</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">Exchange Rate Data Table</div><div id="loading" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="fx-table" style="display:none"><thead><tr><th>Month</th><th class="num">NGN per USD</th><th>Monthly Change</th><th>Source</th></tr></thead><tbody id="fx-tbody"></tbody></table></div></div>
 </div></main>
 <div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
@@ -73,7 +77,7 @@ async function load(start,end){
   const data=await sb('exchange_rate',extra);
   if(!data.length){document.getElementById('filter-status').textContent='No data in range';return;}
   const latest=data[data.length-1];
-  document.getElementById('stat-fx').textContent=`NGN ${Number(latest.value).toFixed(0)}`;
+  renderTakeaway('tk-fx',{value:latest.value,prev:data.length>1?data[data.length-2].value:null,prevLabel:'vs prev month',dateLabel:fmt(latest.obs_date),source:'CBN',format:v=>'₦'+Number(v).toLocaleString('en-US',{maximumFractionDigits:0}),betterWhenUp:false});
   document.getElementById('loading-fx').style.display='none';
   document.getElementById('chart-fx').style.display='block';
   const existingFx=Chart.getChart(document.getElementById('chart-fx'));if(existingFx)existingFx.destroy();

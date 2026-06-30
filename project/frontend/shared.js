@@ -93,6 +93,55 @@ function attachLastUpdated(elId, indicatorId, sourceLabel) {
     .catch(function() {});
 }
 
+/* ─── Chart takeaway: fill the headline stat above a chart ───
+   Populates #<prefix>-value, #<prefix>-change and #<prefix>-meta.
+   opts: {
+     value:        Number   – current/latest value (required)
+     prev:         Number    – previous value, for the change badge (optional)
+     prevLabel:    String    – e.g. 'vs prev quarter' (optional)
+     dateLabel:    String    – preformatted latest date, e.g. 'Q4 2024' (optional)
+     source:       String    – e.g. 'NBS' (optional)
+     format:       Function  – value -> string (optional; default thousands+2dp)
+     betterWhenUp: Boolean   – true: up is good/green; false: up is bad/red; omit: neutral
+   } */
+function renderTakeaway(prefix, opts) {
+  opts = opts || {};
+  var fmt = opts.format || function (v) {
+    return Number(v).toLocaleString('en-US', { maximumFractionDigits: 2 });
+  };
+  var valEl = document.getElementById(prefix + '-value');
+  var chgEl = document.getElementById(prefix + '-change');
+  var metaEl = document.getElementById(prefix + '-meta');
+
+  if (valEl && opts.value != null) valEl.textContent = fmt(opts.value);
+
+  if (chgEl) {
+    if (opts.prev != null && opts.value != null) {
+      var delta = opts.value - opts.prev;
+      var flat = Math.abs(delta) < 1e-9;
+      var up = delta > 0;
+      var arrow = flat ? '→' : (up ? '▲' : '▼');
+      var sign = flat ? '' : (up ? '+' : '−');
+      chgEl.textContent = arrow + ' ' + sign + fmt(Math.abs(delta)) +
+        (opts.prevLabel ? ' ' + opts.prevLabel : '');
+      chgEl.className = 'takeaway-change';
+      if (flat || opts.betterWhenUp == null) chgEl.classList.add('flat');
+      else if (opts.betterWhenUp === true) chgEl.classList.add(up ? 'good' : 'bad');
+      else chgEl.classList.add(up ? 'bad' : 'good');
+    } else {
+      chgEl.textContent = '';
+      chgEl.className = 'takeaway-change';
+    }
+  }
+
+  if (metaEl) {
+    var bits = [];
+    if (opts.dateLabel) bits.push('Latest ' + opts.dateLabel);
+    if (opts.source) bits.push(opts.source);
+    metaEl.textContent = bits.join(' · ');
+  }
+}
+
 /* ─── Click-to-sort table columns ─── */
 function attachSortableTable(table) {
   if (!table) return;
