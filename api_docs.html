@@ -46,7 +46,31 @@
 
   <div class="insight-card reveal" style="margin-bottom:32px;">
     <div class="insight-label">How It Works</div>
-    <p>A FastAPI backend hosted on Render aggregates and serves the underlying Supabase data through 12 purpose-built REST endpoints. No authentication, no API key, GET requests only, CORS fully open. Interactive Swagger documentation with live request testing is available at <strong style="color:var(--gold);">/docs</strong> on the base URL above. Machine-readable docs for AI agents/LLMs: <strong style="color:var(--gold);">/llms.txt</strong>. Live API and database health: <a href="status.html" style="color:var(--green-text);">status page</a>.</p>
+    <p>A FastAPI backend hosted on Render aggregates and serves the underlying Supabase data through purpose-built REST endpoints. No authentication, no API key, CORS fully open. Interactive Swagger documentation with live request testing is available at <strong style="color:var(--gold);">/docs</strong> on the base URL above. Machine-readable docs for AI agents/LLMs: <strong style="color:var(--gold);">/llms.txt</strong>. Live API and database health: <a href="status.html" style="color:var(--green-text);">status page</a>.</p>
+  </div>
+
+  <div class="chart-card reveal" style="margin-bottom:32px;">
+    <div class="chart-card-title">REST Maturity — Richardson Maturity Model Level 3</div>
+    <p class="chart-context" style="margin-bottom:18px;">Every JSON response carries a <strong style="color:var(--green-text);">_links</strong> block describing the available next actions, so the entire API is navigable from the root without hardcoding any URL but the base — full HATEOAS, not just CRUD endpoints with status codes.</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;">
+      <div style="font-family:var(--font-mono);font-size:0.78rem;color:var(--slate);"><span style="color:var(--green-text);">&#10003; Level 1</span> &mdash; Resources identified by URI (one endpoint per resource)</div>
+      <div style="font-family:var(--font-mono);font-size:0.78rem;color:var(--slate);"><span style="color:var(--green-text);">&#10003; Level 2</span> &mdash; Proper HTTP verbs &amp; status codes (GET reads, POST ingestion, 404 on unknown indicator)</div>
+      <div style="font-family:var(--font-mono);font-size:0.78rem;color:var(--slate);"><span style="color:var(--green-text);">&#10003; Level 3</span> &mdash; Hypermedia controls: every response includes <code style="color:var(--gold);">_links</code> (CSV downloads carry an RFC&nbsp;8288 <code style="color:var(--gold);">Link</code> header instead)</div>
+    </div>
+    <div class="api-url-box" style="margin:0;display:block;">
+      <pre style="font-family:var(--font-mono);font-size:0.74rem;color:var(--slate);white-space:pre-wrap;margin:0;">GET /api/v1/gdp
+{
+  "gdp_growth": [ ... ],
+  "source": "NBS and World Bank",
+  "_links": {
+    "self":       { "href": ".../api/v1/gdp" },
+    "analytics":  { "href": ".../api/v1/analytics/gdp_growth" },
+    "export_csv": { "href": ".../api/v1/export/gdp_growth" },
+    "summary":    { "href": ".../api/v1/summary" },
+    "coverage":   { "href": ".../api/v1/coverage" }
+  }
+}</pre>
+    </div>
   </div>
 
   <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin-bottom:24px;" class="reveal">Endpoints</h2>
