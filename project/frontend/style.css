@@ -757,6 +757,44 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 }
 .btn-download:hover { border-color: var(--green); background: rgba(0,135,81,0.1); color: var(--white); }
 
+/* ─── Segmented Scale Toggle (Linear / Log) ─── */
+.scale-toggle {
+  display: inline-flex; align-items: stretch;
+  border: 1px solid rgba(245,240,232,0.14); border-radius: 7px;
+  overflow: hidden; margin-bottom: 16px;
+}
+.scale-toggle button {
+  background: transparent; border: none; cursor: pointer;
+  font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em;
+  color: var(--slate); padding: 7px 16px; transition: all 0.18s;
+}
+.scale-toggle button + button { border-left: 1px solid rgba(245,240,232,0.1); }
+.scale-toggle button:hover { color: var(--white); }
+.scale-toggle button.active {
+  background: rgba(0,135,81,0.18); color: var(--green-text);
+}
+
+/* ─── Spread Stat (buy/sell dealing margin) ─── */
+.spread-stat {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 16px;
+  padding: 14px 16px; margin-bottom: 16px;
+  background: var(--black-3); border-radius: var(--radius);
+  border-left: 3px solid var(--gold);
+}
+.spread-stat .ss-value {
+  font-family: var(--font-mono); font-size: 1.5rem; font-weight: 500;
+  color: var(--white); line-height: 1; letter-spacing: -0.02em;
+}
+.spread-stat .ss-pct {
+  font-family: var(--font-mono); font-size: 0.78rem; font-weight: 500;
+  color: var(--gold); background: var(--gold-dim);
+  padding: 3px 9px; border-radius: 5px;
+}
+.spread-stat .ss-label {
+  font-family: var(--font-mono); font-size: 0.7rem;
+  color: var(--slate); letter-spacing: 0.02em;
+}
+
 /* ─── Currency Toggle Legend (multicurrency.html) ─── */
 .dual-legend span.toggle-off { opacity: 0.35; }
 
