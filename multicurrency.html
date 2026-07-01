@@ -53,15 +53,20 @@
   <div class="chart-card reveal"><div class="chart-card-title">Current Rates — Latest Available (NGN per unit)</div><div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading CBN rates…</div><div class="data-table-wrap"><table class="data-table" id="rates-table" style="display:none"><thead><tr><th>Currency</th><th class="num">Buying Rate</th><th class="num">Central Rate</th><th class="num">Selling Rate</th></tr></thead><tbody id="rates-tbody"></tbody></table></div><div class="source-note">Source: CBN Official Exchange Rates · 2020–2026</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">Historical Trend — NGN/USD, NGN/GBP, NGN/EUR (Central Rate)</div><p class="chart-context">CBN official buying, central, and selling rates for 11 currencies — all impacted simultaneously by the June 2023 FX reform.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-trend">Loading…</div><canvas id="chart-trend" style="display:none"></canvas></div><div class="dual-legend" id="trend-legend" style="cursor:pointer;"><span data-idx="0"><span class="dot" style="background:#00C896"></span>NGN/USD</span><span data-idx="1"><span class="dot" style="background:#F4A017"></span>NGN/GBP</span><span data-idx="2"><span class="dot" style="background:#4a9eff"></span>NGN/EUR</span></div><button class="btn-chart-reset" id="reset-trend">↺ Reset Zoom</button><div class="source-note">Click a legend item to toggle that currency on/off the chart.</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">Currency History — Select a Currency</div>
-    <p class="chart-context">Select any currency to see its buying, central, and selling rates — the gap between buying and selling is the CBN's spread on that currency.</p>
+    <p class="chart-context">The buying, central and selling rates sit within about 0.1% of each other, so on the price axis they overlap into what looks like a single line. That's expected — the difference between them is the CBN's tiny dealing margin. The lower panel pulls that hidden margin out on its own scale so you can actually read it.</p>
     <select id="currency-select" style="background:var(--black-2);color:var(--white);border:1px solid rgba(245,240,232,0.15);border-radius:6px;padding:9px 14px;font-family:var(--font-mono);font-size:0.8rem;margin-bottom:16px;cursor:pointer;">
       <option value="usd">USD — US Dollar</option><option value="gbp">GBP — British Pound</option><option value="eur">EUR — Euro</option>
       <option value="cny">CNY — Chinese Yuan</option><option value="chf">CHF — Swiss Franc</option>
       <option value="zar">ZAR — South African Rand</option><option value="aed">AED — UAE Dirham (Jan–Apr 2026 only)</option><option value="sar">SAR — Saudi Riyal</option>
       <option value="sdr">SDR — Special Drawing Rights</option><option value="cfa">CFA — CFA Franc</option><option value="waua">WAUA — West African Unit</option>
     </select>
+    <div class="spread-stat"><span class="ss-value" id="spread-value">—</span><span class="ss-pct" id="spread-pct"></span><span class="ss-label" id="spread-label">Latest buy–sell spread</span></div>
     <div class="chart-wrap-lg"><div class="chart-loading" id="loading-single">Select a currency above</div><canvas id="chart-single" style="display:none"></canvas></div>
     <button class="btn-chart-reset" id="reset-single">↺ Reset Zoom</button>
+    <div class="takeaway-divider"></div>
+    <div class="chart-card-title" style="margin-top:8px;">Dealing Spread — Selling minus Buying (NGN)</div>
+    <p class="chart-context">How many Naira separate the rate you buy at from the rate you sell at, tracked over time. This is the margin the price chart above hides. A wider spread means a bigger CBN margin on that currency.</p>
+    <div class="chart-wrap-sm"><div class="chart-loading" id="loading-spread">Select a currency above</div><canvas id="chart-spread" style="display:none"></canvas></div>
     <div class="source-note" id="single-source">Source: CBN Official Exchange Rates</div>
   </div>
 </div></main>
@@ -80,7 +85,7 @@ const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'r
 const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
 Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
 function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
-let allData={};let singleChart=null;
+let allData={};let singleChart=null;let spreadChart=null;
 function annotation(label,color,idx){return{type:'line',xMin:idx,xMax:idx,borderColor:color+'66',borderWidth:1.5,borderDash:[6,4],label:{display:true,content:label,position:'end',backgroundColor:color,color:'#fff',font:{size:11,weight:'600'},padding:{x:6,y:3},borderRadius:2}};}
 function filterByDate(arr,start,end){if(!start||!end)return arr;return arr.filter(d=>d.obs_date>=start&&d.obs_date<=end);}
 let currentFilter={start:null,end:null};
@@ -93,6 +98,26 @@ function drawSingleChart(currency){
   const labels=rates.central.map(d=>fmt(d.obs_date));
   singleChart=new Chart(canvas,{data:{labels,datasets:[{type:'line',label:'Buying',data:rates.buying.map(d=>d.value),borderColor:'#008751',backgroundColor:'transparent',borderWidth:2,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#008751',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},{type:'line',label:'Central',data:rates.central.map(d=>d.value),borderColor:'#4FC3F7',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#4FC3F7',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},{type:'line',label:'Selling',data:rates.selling.map(d=>d.value),borderColor:'#e05252',backgroundColor:'transparent',borderWidth:2,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#e05252',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top'},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: NGN ${ctx.parsed.y.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2})}`}},zoom:ZOOM},scales:{y:{...SY,title:{display:true,text:`NGN per ${currency.toUpperCase()}`,color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
   document.getElementById('single-source').textContent=`Source: CBN Official Exchange Rates · ${CURRENCY_NAMES[currency]||currency.toUpperCase()} · Buying, Central and Selling rates 2020–2026`;
+  drawSpreadChart(currency,rates,labels);
+}
+function drawSpreadChart(currency,rates,labels){
+  const buyMap={},sellMap={};
+  rates.buying.forEach(d=>buyMap[d.obs_date]=d.value);
+  rates.selling.forEach(d=>sellMap[d.obs_date]=d.value);
+  const spreadVals=rates.central.map(d=>{const b=buyMap[d.obs_date],s=sellMap[d.obs_date];return(b!=null&&s!=null)?s-b:null;});
+  // latest spread callout (last date where both buying & selling exist)
+  let lastB=null,lastS=null,lastCentral=null;
+  for(let i=rates.central.length-1;i>=0;i--){const d=rates.central[i];if(buyMap[d.obs_date]!=null&&sellMap[d.obs_date]!=null){lastB=buyMap[d.obs_date];lastS=sellMap[d.obs_date];lastCentral=d.value;break;}}
+  const svEl=document.getElementById('spread-value'),spEl=document.getElementById('spread-pct'),slEl=document.getElementById('spread-label');
+  if(lastB!=null){const sp=lastS-lastB;const pct=lastCentral?sp/lastCentral*100:null;
+    svEl.textContent='₦'+sp.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
+    spEl.textContent=pct!=null?pct.toFixed(3)+'% of rate':'';
+    slEl.textContent=`Latest buy–sell spread · ${CURRENCY_NAMES[currency]||currency.toUpperCase()}`;
+  }else{svEl.textContent='—';spEl.textContent='';slEl.textContent='No paired buying/selling data in range';}
+  document.getElementById('loading-spread').style.display='none';
+  const scv=document.getElementById('chart-spread');scv.style.display='block';
+  if(spreadChart)spreadChart.destroy();
+  spreadChart=new Chart(scv,{data:{labels,datasets:[{type:'line',label:'Spread',data:spreadVals,borderColor:'#F4A017',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(244,160,23,0.28)','rgba(244,160,23,0)'),borderWidth:2,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#F4A017',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.3,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`Spread: NGN ${ctx.parsed.y.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2})}`}}},scales:{y:{...SY,title:{display:true,text:'NGN (selling − buying)',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}}}}});
 }
 function drawTrendChart(){
   const usd=filterByDate(allData.usd?.central||[],currentFilter.start,currentFilter.end);
