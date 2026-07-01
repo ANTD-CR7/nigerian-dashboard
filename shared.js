@@ -41,10 +41,31 @@
     document.querySelectorAll('.reveal').forEach(function(el) { el.classList.add('visible'); });
   }
 
-  /* ─── Chart.js dark defaults ─── */
+  /* ─── Chart.js dark defaults + terminal crosshair ─── */
   if (typeof Chart !== 'undefined') {
     Chart.defaults.color = 'rgba(245,240,232,0.55)';
     Chart.defaults.borderColor = 'rgba(245,240,232,0.07)';
+
+    /* Vertical crosshair drawn at the hovered point — terminal feel */
+    Chart.register({
+      id: 'npCrosshair',
+      afterDatasetsDraw: function (chart) {
+        var act = chart.getActiveElements && chart.getActiveElements();
+        if (!act || !act.length) return;
+        var el = act[0].element;
+        if (!el) return;
+        var a = chart.chartArea, ctx = chart.ctx;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(el.x, a.top);
+        ctx.lineTo(el.x, a.bottom);
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = 'rgba(244,160,23,0.45)';
+        ctx.stroke();
+        ctx.restore();
+      }
+    });
   }
 
   /* ─── API Docs copy button ─── */
@@ -140,6 +161,69 @@ function renderTakeaway(prefix, opts) {
     if (opts.source) bits.push(opts.source);
     metaEl.textContent = bits.join(' · ');
   }
+}
+
+/* ─── Terminal-style range selector (1Y / 3Y / 5Y / 10Y / All) ───
+   canvasId : id of the chart <canvas>
+   isoDates : array of ISO date strings parallel to the chart's x labels
+   Adds preset chips above the chart that constrain the x-axis window
+   client-side (no refetch). Presets that would show <4 points or exceed
+   the data span are hidden automatically. Safe to call on every load(). */
+function attachRangeSelector(canvasId, isoDates, opts) {
+  opts = opts || {};
+  var canvas = document.getElementById(canvasId);
+  if (!canvas || !isoDates || isoDates.length < 6) return;
+  var chart = (typeof Chart !== 'undefined' && Chart.getChart) ? Chart.getChart(canvas) : null;
+  if (!chart || !chart.options.scales || !chart.options.scales.x) return;
+
+  var n = isoDates.length;
+  var last = new Date(isoDates[n - 1]);
+  var first = new Date(isoDates[0]);
+  var spanYears = (last - first) / (365.25 * 864e5);
+
+  function idxForYears(years) {
+    var cut = new Date(last);
+    cut.setFullYear(cut.getFullYear() - years);
+    for (var i = 0; i < n; i++) { if (new Date(isoDates[i]) >= cut) return i; }
+    return 0;
+  }
+
+  var presets = (opts.presets || [
+    { label: '1Y', years: 1 }, { label: '3Y', years: 3 },
+    { label: '5Y', years: 5 }, { label: '10Y', years: 10 }
+  ]).filter(function (p) {
+    if (p.years >= spanYears) return false;
+    return (n - idxForYears(p.years)) >= 4;
+  });
+  presets.push({ label: 'All', years: null });
+  if (presets.length < 2) return;
+
+  var wrap = canvas.closest('.chart-wrap, .chart-wrap-lg, .chart-wrap-sm') || canvas.parentElement;
+  var host = wrap.parentElement;
+  var existing = host.querySelector('.range-selector[data-for="' + canvasId + '"]');
+  if (existing) existing.remove();
+
+  var bar = document.createElement('div');
+  bar.className = 'range-selector';
+  bar.setAttribute('data-for', canvasId);
+  host.insertBefore(bar, wrap);
+
+  function apply(p, btn) {
+    Array.prototype.forEach.call(bar.children, function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    chart.options.scales.x.min = p.years == null ? undefined : idxForYears(p.years);
+    chart.options.scales.x.max = p.years == null ? undefined : (n - 1);
+    chart.update('none');
+  }
+  presets.forEach(function (p) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'range-chip';
+    btn.textContent = p.label;
+    btn.addEventListener('click', function () { apply(p, btn); });
+    bar.appendChild(btn);
+  });
+  bar.lastChild.classList.add('active'); /* default: All */
 }
 
 /* ─── Click-to-sort table columns ─── */

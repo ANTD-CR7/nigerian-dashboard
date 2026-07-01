@@ -209,6 +209,7 @@ async function load(start, end) {
     options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, hover:{mode:'index',intersect:false}, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP: $${ctx.parsed.y.toFixed(2)}B` }}, zoom:ZOOM}, scales:{ y:{ ...SY, title:{display:true,text:'USD Billions',color:'rgba(245,240,232,0.4)',font:{size:11}} }, x:SX } }
   });
   if (!window.chartUsd.__resetWired) { document.getElementById('reset-usd').addEventListener('click',()=>window.chartUsd.resetZoom()); window.chartUsd.__resetWired = true; }
+  attachRangeSelector('chart-growth', growth.map(d=>d.obs_date));
   const tbody = document.getElementById('gdp-tbody');
   tbody.innerHTML = '';
   growth.forEach(d => { tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">${Number(d.value).toFixed(2)}%</td><td>${badge(d.value)}</td><td class="src">NBS</td></tr>`; });
