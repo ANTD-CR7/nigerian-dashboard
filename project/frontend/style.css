@@ -757,6 +757,23 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 }
 .btn-download:hover { border-color: var(--green); background: rgba(0,135,81,0.1); color: var(--white); }
 
+/* ─── Terminal Range Selector (1Y / 3Y / 5Y / All) ─── */
+.range-selector {
+  display: inline-flex; align-items: stretch;
+  border: 1px solid rgba(245,240,232,0.12); border-radius: 7px;
+  overflow: hidden; margin-bottom: 14px;
+}
+.range-chip {
+  background: transparent; border: none; cursor: pointer;
+  border-left: 1px solid rgba(245,240,232,0.08);
+  font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500;
+  letter-spacing: 0.06em; color: var(--slate);
+  padding: 6px 15px; transition: background 0.16s, color 0.16s;
+}
+.range-chip:first-child { border-left: none; }
+.range-chip:hover { color: var(--white); background: rgba(245,240,232,0.04); }
+.range-chip.active { background: rgba(0,135,81,0.2); color: var(--green-text); }
+
 /* ─── Segmented Scale Toggle (Linear / Log) ─── */
 .scale-toggle {
   display: inline-flex; align-items: stretch;
