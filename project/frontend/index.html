@@ -343,22 +343,21 @@
 <!-- ─── CHARTS SECTION ─── -->
 <section style="background:var(--black);padding:64px clamp(20px,5vw,64px);">
   <div style="max-width:1280px;margin:0 auto;">
-    <div class="section-label reveal">Charts</div>
-    <h2 class="section-title reveal" style="margin-bottom:12px;">Inflation vs Exchange Rate — The 2023 Divergence</h2>
-    <p class="pearson-subtitle reveal">Pearson correlation r = 0.9581 during the 2023–2024 FX reform window — the strongest statistical relationship in Nigeria's 2020–2026 economic data</p>
+    <div class="section-label reveal">The Headline Story</div>
+    <h2 class="section-title reveal" style="margin-bottom:12px;">When the Naira fell, inflation followed</h2>
+    <p class="pearson-subtitle reveal">After the June 2023 FX reform, the Naira and consumer prices climbed almost in lockstep — a Pearson correlation of <strong>r = 0.96</strong> across 2023–2024 (a still-strong 0.70 over the full 2020–2026 period).</p>
     <div class="chart-card reveal">
-      <div class="chart-card-title">Inflation (left) vs NGN/USD Exchange Rate (right) — 2020–2026</div>
-      <p class="chart-context">Plotting these together shows why they're correlated — both accelerated sharply after the June 2023 FX reform, with a Pearson r of 0.9581 during that specific window (the full-period correlation is a weaker 0.6965).</p>
-      <div class="chart-wrap-lg">
-        <div class="chart-loading" id="loading-dual">Loading…</div>
-        <canvas id="chart-dual" style="display:none"></canvas>
+      <div class="chart-card-title">Two stories, one timeline — 2020 to 2026</div>
+      <p class="chart-context">Shown as two aligned panels, each on its own scale — deliberately <em>not</em> forced onto one shared axis, which would distort the comparison. Read them top to bottom: as the Naira weakened (lower panel), inflation rose (upper panel).</p>
+      <div class="sm-panel">
+        <div class="sm-panel-head"><span class="sm-dot" style="background:#F4A017"></span>Headline inflation — % year-on-year</div>
+        <div class="chart-wrap-sm" style="height:190px"><div class="chart-loading" id="loading-infp">Loading…</div><canvas id="chart-infpanel" style="display:none"></canvas></div>
       </div>
-      <div class="dual-legend" style="margin-top:14px;">
-        <span><span class="dot" style="background:#DC2626"></span>Inflation Rate (%) — Left axis</span>
-        <span><span class="dot" style="background:#4FC3F7"></span>NGN/USD Exchange Rate — Right axis</span>
+      <div class="sm-panel">
+        <div class="sm-panel-head"><span class="sm-dot" style="background:#4a9eff"></span>Exchange rate — ₦ per US$ <span class="sm-hint">· higher = weaker Naira</span></div>
+        <div class="chart-wrap-sm" style="height:190px"><div class="chart-loading" id="loading-fxp">Loading…</div><canvas id="chart-fxpanel" style="display:none"></canvas></div>
       </div>
-      <button class="btn-chart-reset" id="reset-dual">↺ Reset Zoom</button>
-      <div class="source-note">Source: NBS (inflation) · CBN (exchange rate) · Monthly averages 2020–2026</div>
+      <div class="source-note">Source: NBS (inflation) · CBN (exchange rate) · Monthly, 2020–2026 · Dashed markers show the COVID-19 shock and the June 2023 FX reform.</div>
     </div>
     <div class="mini-grid reveal">
       <div class="chart-card">
@@ -638,40 +637,46 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
   if (mpr.length)     countUp('sb-mpr', mpr[mpr.length-1].value, 2, '', '%');
   if (resData.length) countUp('sb-res', resData[resData.length-1].value, 1, '$', 'B');
 
-  const covidIdx = inf.findIndex(d => d.obs_date.startsWith('2020-04'));
-  const fxIdx    = inf.findIndex(d => d.obs_date.startsWith('2023-06'));
-  const dualAnnots = {};
-  if (covidIdx >= 0) dualAnnots.covid    = annotation('COVID-19',  '#DC2626', covidIdx);
-  if (fxIdx    >= 0) dualAnnots.fxReform = annotation('FX Reform', '#008751', fxIdx);
-
-  showChart('loading-dual', 'chart-dual');
-  window.chartDual = new Chart(document.getElementById('chart-dual'), {
-    data: {
-      labels: inf.map(d => fmt(d.obs_date)),
-      datasets: [
-        { type:'line', data: inf.map(d => d.value), borderColor:'#FF6B6B', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(255,107,107,0.2)','rgba(255,107,107,0)'), borderWidth:2.5, pointRadius:0, pointHoverRadius:6, pointHoverBackgroundColor:'#FF6B6B', pointHoverBorderColor:'#fff', pointHoverBorderWidth:2, tension:0.3, yAxisID:'y' },
-        { type:'line', data: fx.map(d => d.value),  borderColor:'#4a9eff', backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.2)','rgba(74,158,255,0)'), borderWidth:2.5, pointRadius:0, pointHoverRadius:6, pointHoverBackgroundColor:'#4a9eff', pointHoverBorderColor:'#fff', pointHoverBorderWidth:2, tension:0.3, yAxisID:'y1' },
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      interaction:{mode:'index',intersect:false}, hover:{mode:'index',intersect:false},
-      plugins: {
-        legend:{display:false},
-        tooltip:{ ...TIP, callbacks:{
-          title: i => i[0].label,
-          label: ctx => ctx.datasetIndex === 0 ? `Inflation: ${ctx.parsed.y.toFixed(2)}%` : `Rate: NGN ${ctx.parsed.y.toFixed(0)}`
-        }},
-        annotation:{ annotations: dualAnnots },
-        zoom: ZOOM
-      },
-      scales: {
-        y:  { ...SY, title:{display:true,text:'Inflation (%)',color:'rgba(245,240,232,0.4)',font:{size:11}} },
-        y1: { ...SY, grid:{display:false}, title:{display:true,text:'NGN/USD',color:'rgba(245,240,232,0.4)',font:{size:11}}, position:'right' },
-        x:  { ...SX, ticks:{...SX.ticks,maxTicksLimit:12} }
+  // Two aligned single-axis panels (small multiples) — never a dual axis.
+  function eventAnnots(rows) {
+    var c = rows.findIndex(d => d.obs_date.startsWith('2020-04'));
+    var f = rows.findIndex(d => d.obs_date.startsWith('2023-06'));
+    var a = {};
+    if (c >= 0) a.covid = annotation('COVID-19', '#e05252', c);
+    if (f >= 0) a.fxReform = annotation('FX Reform', '#008751', f);
+    return a;
+  }
+  function panelChart(canvasId, loadingId, rows, color, fillRGBA, fmtFn, unitLabel) {
+    showChart(loadingId, canvasId);
+    var chart = new Chart(document.getElementById(canvasId), {
+      data: { labels: rows.map(d => fmt(d.obs_date)), datasets: [{
+        type: 'line', data: rows.map(d => d.value),
+        borderColor: color,
+        backgroundColor: ctx => mkGrad(ctx.chart, fillRGBA, fillRGBA.replace(/[\d.]+\)$/, '0)')),
+        borderWidth: 2, pointRadius: 0, pointHoverRadius: 5,
+        pointHoverBackgroundColor: color, pointHoverBorderColor: '#fff', pointHoverBorderWidth: 2,
+        tension: 0.35, fill: true
+      }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false }, hover: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: { ...TIP, callbacks: { title: i => i[0].label, label: ctx => fmtFn(ctx.parsed.y) } },
+          annotation: { annotations: eventAnnots(rows) }
+        },
+        scales: {
+          y: { ...SY, ticks: { ...SY.ticks, maxTicksLimit: 5, callback: fmtFn } },
+          x: { ...SX, ticks: { ...SX.ticks, maxTicksLimit: 8 } }
+        }
       }
-    }
-  });
+    });
+    chart.$endLabelFormat = fmtFn;
+    if (typeof attachEndLabels === 'function') attachEndLabels(canvasId, fmtFn);
+    return chart;
+  }
+  window.chartInfPanel = panelChart('chart-infpanel', 'loading-infp', inf, '#F4A017', 'rgba(244,160,23,0.12)', v => v.toFixed(1) + '%', '%');
+  window.chartFxPanel  = panelChart('chart-fxpanel',  'loading-fxp',  fx,  '#4a9eff', 'rgba(74,158,255,0.12)', v => '₦' + Number(v).toLocaleString('en-US', { maximumFractionDigits: 0 }), 'NGN');
 
   showChart('loading-gdp', 'chart-gdp');
   new Chart(document.getElementById('chart-gdp'), {
@@ -779,7 +784,7 @@ document.getElementById('apply-chart-filter').addEventListener('click', async ()
   catch (err) { document.getElementById('chart-filter-status').textContent = 'Filter failed'; }
 });
 
-['dual','inf','fx','mpr'].forEach(id => {
+['inf','fx','mpr'].forEach(id => {
   const btn = document.getElementById('reset-' + id);
   const key = 'chart' + id[0].toUpperCase() + id.slice(1);
   if (btn) btn.addEventListener('click', () => window[key] && window[key].resetZoom());
