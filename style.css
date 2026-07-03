@@ -523,6 +523,17 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   border-left: 2px solid rgba(244,160,23,0.4);
 }
 
+/* ─── Small-multiple panels (aligned single-axis charts, no dual axis) ─── */
+.sm-panel { margin-bottom: 20px; }
+.sm-panel:last-of-type { margin-bottom: 6px; }
+.sm-panel-head {
+  display: flex; align-items: center; gap: 9px;
+  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.03em;
+  color: rgba(245,240,232,0.78); margin-bottom: 10px;
+}
+.sm-dot { width: 14px; height: 3px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
+.sm-hint { color: var(--slate); letter-spacing: 0; }
+
 /* ─── Last Updated ─── */
 .last-updated {
   font-family: var(--font-mono); font-size: 0.68rem;
