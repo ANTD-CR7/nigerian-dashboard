@@ -597,7 +597,7 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
   const df = `&obs_date=gte.${start}&obs_date=lte.${end}`;
   const [gdp, inf, fx, mpr, resData] = await Promise.all([
     sb('gdp_growth', df), sb('inflation', df),
-    sb('exchange_rate', df), sb('mpr', df), sb('fx_reserves'),
+    sb('exchange_rate', df), sb('mpr', df), sb('fx_reserves', df),
   ]);
 
   setKPI('gdp', gdp, v => `${v.toFixed(2)}%`, d => `${d.toFixed(2)}%`, false, 'NBS');
