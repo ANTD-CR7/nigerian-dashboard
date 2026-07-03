@@ -377,3 +377,163 @@ function attachSortableTable(table) {
     });
   });
 }
+
+/* ─── Sparkline: inject a tiny inline-SVG trend line into an element ───
+   drawSparkline(elId, [{value},…], color) — uses the last ~24 points. */
+function drawSparkline(elId, series, color) {
+  var el = document.getElementById(elId);
+  if (!el || !series || series.length < 2) return;
+  var vals = series.slice(-24).map(function (d) { return typeof d === 'object' ? d.value : d; })
+                   .filter(function (v) { return v != null && isFinite(v); });
+  if (vals.length < 2) return;
+  var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals), range = (max - min) || 1;
+  var w = 100, h = 40, pad = 3;
+  var xy = vals.map(function (v, i) {
+    var x = (i / (vals.length - 1)) * w;
+    var y = h - pad - ((v - min) / range) * (h - pad * 2);
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  });
+  var path = 'M' + xy.join(' L');
+  var lastY = h - pad - ((vals[vals.length - 1] - min) / range) * (h - pad * 2);
+  var gid = 'sk-' + elId;
+  el.style.background = 'none';
+  el.innerHTML =
+    '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" width="100%" height="100%" aria-hidden="true">' +
+    '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0" stop-color="' + color + '" stop-opacity="0.28"/>' +
+    '<stop offset="1" stop-color="' + color + '" stop-opacity="0"/></linearGradient></defs>' +
+    '<path d="' + path + ' L' + w + ',' + h + ' L0,' + h + ' Z" fill="url(#' + gid + ')"/>' +
+    '<path d="' + path + '" fill="none" stroke="' + color + '" stroke-width="1.6" ' +
+    'vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>' +
+    '<circle cx="' + w + '" cy="' + lastY.toFixed(1) + '" r="2" fill="' + color + '" vector-effect="non-scaling-stroke"/>' +
+    '</svg>';
+}
+
+/* ─── Command palette (Ctrl/Cmd+K or "/") + scroll UX ─── */
+(function () {
+  if (!document.body) return;
+
+  var DEST = [
+    { label: 'Dashboard', url: 'index.html', cat: 'Main', kw: 'home overview kpis start' },
+    { label: 'GDP Growth', url: 'gdp.html', cat: 'Economy', kw: 'gross domestic product output nominal usd' },
+    { label: 'Inflation', url: 'inflation.html', cat: 'Economy', kw: 'cpi prices headline food core cost of living' },
+    { label: 'Interest Rate', url: 'interest_rate.html', cat: 'Economy', kw: 'mpr monetary policy rate cbn hike' },
+    { label: 'Exchange Rate', url: 'exchange_rate.html', cat: 'Currency', kw: 'ngn usd naira dollar fx official' },
+    { label: 'Multi-Currency', url: 'multicurrency.html', cat: 'Currency', kw: 'gbp eur cny chf buying selling central spread' },
+    { label: 'NFEM Rates', url: 'nfem.html', cat: 'Currency', kw: 'interbank market daily closing weighted' },
+    { label: 'Currency Converter', url: 'currency_converter.html', cat: 'Currency', kw: 'convert calculator naira' },
+    { label: 'FX Reserves', url: 'reserves.html', cat: 'CBN Data', kw: 'foreign exchange gross liquid blocked buffer' },
+    { label: 'Currency in Circulation', url: 'currency_circulation.html', cat: 'CBN Data', kw: 'cash naira redesign money supply' },
+    { label: 'Assets & Liabilities', url: 'assets_liabilities.html', cat: 'CBN Data', kw: 'balance sheet gold deposits' },
+    { label: 'Financial Statement', url: 'financial_statement.html', cat: 'CBN Data', kw: 'surplus deficit annual income' },
+    { label: 'Analytics Overview', url: 'analytics.html', cat: 'Analytics', kw: 'correlation pearson regression' },
+    { label: 'Compare Indicators', url: 'compare.html', cat: 'Analytics', kw: 'two side by side correlation' },
+    { label: 'API Documentation', url: 'api_docs.html', cat: 'Developer', kw: 'rest endpoints swagger hateoas open json' },
+    { label: 'Data Sources', url: 'data_sources.html', cat: 'About', kw: 'cbn nbs world bank provenance' },
+    { label: 'About', url: 'about.html', cat: 'About', kw: 'project fyp caleb university' },
+    { label: 'System Status', url: 'status.html', cat: 'About', kw: 'health freshness uptime coverage' }
+  ];
+
+  var overlay = document.createElement('div');
+  overlay.className = 'cmdk-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', 'Search NPEDATA');
+  overlay.innerHTML =
+    '<div class="cmdk-box">' +
+      '<div class="cmdk-input-row"><span class="cmdk-icon">⌕</span>' +
+      '<input class="cmdk-input" type="text" placeholder="Search indicators, pages, the API…" aria-label="Search" autocomplete="off" spellcheck="false">' +
+      '<kbd class="cmdk-esc">esc</kbd></div>' +
+      '<div class="cmdk-list" role="listbox"></div>' +
+      '<div class="cmdk-foot"><span><kbd>↑</kbd><kbd>↓</kbd> navigate</span><span><kbd>↵</kbd> open</span><span class="cmdk-brand">NPEDATA</span></div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  var input = overlay.querySelector('.cmdk-input');
+  var list = overlay.querySelector('.cmdk-list');
+  var sel = 0, filtered = DEST.slice(), lastFocus = null;
+
+  function render() {
+    list.innerHTML = '';
+    if (!filtered.length) { list.innerHTML = '<div class="cmdk-empty">No matches</div>'; return; }
+    filtered.forEach(function (d, i) {
+      var row = document.createElement('a');
+      row.className = 'cmdk-item' + (i === sel ? ' active' : '');
+      row.href = d.url;
+      row.setAttribute('role', 'option');
+      row.innerHTML = '<span class="cmdk-label">' + d.label + '</span><span class="cmdk-cat">' + d.cat + '</span>';
+      row.addEventListener('mousemove', function () { if (sel !== i) { sel = i; paint(); } });
+      row.addEventListener('click', function (e) { e.preventDefault(); window.location.href = d.url; });
+      list.appendChild(row);
+    });
+  }
+  function paint() {
+    var items = list.querySelectorAll('.cmdk-item');
+    for (var i = 0; i < items.length; i++) items[i].classList.toggle('active', i === sel);
+    if (items[sel]) items[sel].scrollIntoView({ block: 'nearest' });
+  }
+  function filter(q) {
+    q = (q || '').trim().toLowerCase();
+    filtered = !q ? DEST.slice() : DEST.filter(function (d) {
+      return (d.label + ' ' + d.cat + ' ' + d.kw).toLowerCase().indexOf(q) !== -1;
+    });
+    sel = 0; render();
+  }
+  function isOpen() { return overlay.classList.contains('open'); }
+  function open() {
+    lastFocus = document.activeElement;
+    overlay.classList.add('open');
+    input.value = ''; filter('');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function () { input.focus(); }, 10);
+  }
+  function close() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  input.addEventListener('input', function () { filter(input.value); });
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+  overlay.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { e.preventDefault(); close(); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(sel + 1, filtered.length - 1); paint(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(sel - 1, 0); paint(); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (filtered[sel]) window.location.href = filtered[sel].url; }
+  });
+  document.addEventListener('keydown', function (e) {
+    var k = (e.key || '').toLowerCase();
+    if ((e.metaKey || e.ctrlKey) && k === 'k') { e.preventDefault(); isOpen() ? close() : open(); }
+    else if (k === '/' && !isOpen()) {
+      var t = (e.target.tagName || '').toUpperCase();
+      if (t !== 'INPUT' && t !== 'TEXTAREA' && t !== 'SELECT' && !e.target.isContentEditable) { e.preventDefault(); open(); }
+    }
+  });
+
+  var cta = document.querySelector('.nav-cta');
+  if (cta) {
+    var trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'nav-search';
+    trigger.setAttribute('aria-label', 'Search (Ctrl+K)');
+    trigger.innerHTML = '<span class="ns-icon">⌕</span><span class="ns-text">Search</span><kbd class="ns-kbd">⌘K</kbd>';
+    trigger.addEventListener('click', open);
+    cta.insertBefore(trigger, cta.firstChild);
+  }
+
+  /* Scroll progress bar + back-to-top */
+  var bar = document.createElement('div'); bar.className = 'scroll-progress'; document.body.appendChild(bar);
+  var toTop = document.createElement('button');
+  toTop.className = 'back-to-top'; toTop.type = 'button';
+  toTop.setAttribute('aria-label', 'Back to top'); toTop.innerHTML = '↑';
+  toTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  document.body.appendChild(toTop);
+  function onScroll() {
+    var h = document.documentElement, top = h.scrollTop || document.body.scrollTop;
+    var height = h.scrollHeight - h.clientHeight;
+    bar.style.width = (height > 0 ? (top / height) * 100 : 0) + '%';
+    toTop.classList.toggle('show', top > 600);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();

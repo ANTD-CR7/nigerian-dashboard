@@ -16,7 +16,7 @@ from typing import Optional
 
 app = FastAPI(
     title="Nigerian Public Economic Data API",
-    description="Nigeria's first free open economic data API. 12,100 records. 122 indicators. CBN, NBS, World Bank. No authentication required.",
+    description="A free, open economic data API for Nigeria. 12,100 records. 122 indicators. CBN, NBS, World Bank. No authentication required.",
     version="1.0.0",
 )
 
@@ -47,10 +47,10 @@ INDICATORS = {
     "mpr": {"name": "Monetary Policy Rate", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
     "fx_reserves": {"name": "FX Reserves (Gross)", "unit": "USD Billions", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "nfem_closing": {"name": "NFEM Closing Rate", "unit": "Naira per USD", "source": "CBN", "frequency": "daily", "period_months": 1},
-    "currency_circulation_full": {"name": "Currency in Circulation", "unit": "Naira Billions", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_total_assets": {"name": "CBN Total Assets", "unit": "Naira Billions", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_total_liabilities": {"name": "CBN Total Liabilities", "unit": "Naira Billions", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_annual_total_assets": {"name": "CBN Total Assets (Annual)", "unit": "Naira Billions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "currency_circulation_full": {"name": "Currency in Circulation", "unit": "Naira Millions", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_total_assets": {"name": "CBN Total Assets", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_total_liabilities": {"name": "CBN Total Liabilities", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_annual_total_assets": {"name": "CBN Total Assets (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
 }
 
 
@@ -379,7 +379,7 @@ def get_fx_reserves(request: Request, start: Optional[str] = Query(default="2020
 
 @app.get("/api/v1/currency-circulation")
 def get_currency_circulation(request: Request, start: Optional[str] = Query(default="2002-01-01"), end: Optional[str] = Query(default="2026-12-31")):
-    return {"data": fetch("currency_circulation_full", start, end), "unit": "Naira Billions", "source": "CBN Statistical Bulletin",
+    return {"data": fetch("currency_circulation_full", start, end), "unit": "Naira Millions", "source": "CBN Statistical Bulletin",
             "_links": hypermedia(request, "/api/v1/currency-circulation", indicator="currency_circulation_full", related=["summary", "cbn_balance_sheet", "coverage"])}
 
 
@@ -409,7 +409,7 @@ def get_gdp_sectors(request: Request, start: Optional[str] = Query(default="2020
 
 @app.get("/api/v1/cbn-balance-sheet")
 def get_cbn_balance_sheet(request: Request, start: Optional[str] = Query(default="2005-01-01"), end: Optional[str] = Query(default="2026-12-31")):
-    return {"total_assets": fetch("cbn_total_assets", start, end), "total_liabilities": fetch("cbn_total_liabilities", start, end), "gold": fetch("cbn_gold", start, end), "currency_issued": fetch("cbn_currency_issued", start, end), "unit": "Naira Billions", "source": "CBN Balance Sheet",
+    return {"total_assets": fetch("cbn_total_assets", start, end), "total_liabilities": fetch("cbn_total_liabilities", start, end), "gold": fetch("cbn_gold", start, end), "currency_issued": fetch("cbn_currency_issued", start, end), "unit": "Naira Thousands", "source": "CBN Balance Sheet",
             "_links": hypermedia(request, "/api/v1/cbn-balance-sheet", indicator="cbn_total_assets", related=["fx_reserves", "currency_circulation", "coverage"])}
 
 
@@ -435,7 +435,7 @@ def get_analytics(request: Request):
             "variables": ["headline_inflation", "ngn_usd_exchange_rate"],
             "period": f"{common[0]} to {common[-1]}" if common else "N/A",
             "n": len(common),
-            "conclusion": f"r={r} confirms the June 2023 CBN FX reform is the primary driver of Nigeria's 2023-2024 inflation surge.",
+            "interpretation": f"A Pearson r of {r} indicates a strong positive association between headline inflation and the NGN/USD rate over this period, consistent with the June 2023 FX reform coinciding with the 2023-2024 inflation surge. Correlation does not by itself establish causation.",
         },
         "inflation_peak": {"value": max(inf_vals), "date": common[inf_vals.index(max(inf_vals))]},
         "exchange_rate_peak": {"value": max(fx_vals), "date": common[fx_vals.index(max(fx_vals))]},

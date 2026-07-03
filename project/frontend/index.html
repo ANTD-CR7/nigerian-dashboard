@@ -126,35 +126,35 @@
         <div class="k-value" id="kpi-gdp"><span class="skeleton"></span></div>
         <div class="k-meta" id="kpi-gdp-meta">Loading…</div>
         <div id="kpi-gdp-trend"></div>
-        <div class="kpi-sparkline"></div>
+        <div class="kpi-sparkline" id="spark-gdp"></div>
       </div>
       <div class="kpi-card kpi-inf reveal">
         <div class="k-label">Headline Inflation</div>
         <div class="k-value" id="kpi-inf"><span class="skeleton"></span></div>
         <div class="k-meta" id="kpi-inf-meta">Loading…</div>
         <div id="kpi-inf-trend"></div>
-        <div class="kpi-sparkline" style="background:linear-gradient(to right,rgba(224,82,82,0.18),transparent)"></div>
+        <div class="kpi-sparkline" id="spark-inf" style="background:linear-gradient(to right,rgba(224,82,82,0.18),transparent)"></div>
       </div>
       <div class="kpi-card kpi-fx reveal">
         <div class="k-label">Exchange Rate (NGN/USD)</div>
         <div class="k-value" id="kpi-fx"><span class="skeleton"></span></div>
         <div class="k-meta" id="kpi-fx-meta">Loading…</div>
         <div id="kpi-fx-trend"></div>
-        <div class="kpi-sparkline" style="background:linear-gradient(to right,rgba(79,195,247,0.18),transparent)"></div>
+        <div class="kpi-sparkline" id="spark-fx" style="background:linear-gradient(to right,rgba(79,195,247,0.18),transparent)"></div>
       </div>
       <div class="kpi-card kpi-mpr reveal">
         <div class="k-label">Monetary Policy Rate</div>
         <div class="k-value" id="kpi-mpr"><span class="skeleton"></span></div>
         <div class="k-meta" id="kpi-mpr-meta">Loading…</div>
         <div id="kpi-mpr-trend"></div>
-        <div class="kpi-sparkline" style="background:linear-gradient(to right,rgba(244,160,23,0.18),transparent)"></div>
+        <div class="kpi-sparkline" id="spark-mpr" style="background:linear-gradient(to right,rgba(244,160,23,0.18),transparent)"></div>
       </div>
       <div class="kpi-card kpi-res reveal">
         <div class="k-label">FX Reserves</div>
         <div class="k-value" id="kpi-res"><span class="skeleton"></span></div>
         <div class="k-meta" id="kpi-res-meta">Loading…</div>
         <div id="kpi-res-trend"></div>
-        <div class="kpi-sparkline" style="background:linear-gradient(to right,rgba(179,157,219,0.18),transparent)"></div>
+        <div class="kpi-sparkline" id="spark-res" style="background:linear-gradient(to right,rgba(179,157,219,0.18),transparent)"></div>
       </div>
     </div>
   </div>
@@ -321,7 +321,7 @@
       <a href="reserves.html" class="explore-card reveal">
         <div class="explore-icon" style="background:rgba(179,157,219,0.15);">🏦</div>
         <div class="explore-title">FX Reserves</div>
-        <div class="explore-desc">Gross, liquid and blocked foreign exchange reserves — from $32.8B low to $48.7B recovery.</div>
+        <div class="explore-desc">Gross, liquid and blocked foreign exchange reserves — from a $32.5B low in April 2024 to $48.7B by April 2026.</div>
         <div class="explore-link">Explore →</div>
       </a>
       <a href="multicurrency.html" class="explore-card reveal">
@@ -483,7 +483,7 @@
   <div class="footer-inner">
     <div class="footer-brand">
       <span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span>
-      <p>Nigeria's premier open economic data platform. Built for researchers, developers, and the public.</p>
+      <p>An open platform for Nigeria's public economic data. Built for researchers, developers, and the public.</p>
     </div>
     <div>
       <h2>Data</h2>
@@ -622,6 +622,15 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
     }
   }
 
+  // Real trend sparklines in the KPI cards
+  if (typeof drawSparkline === 'function') {
+    drawSparkline('spark-gdp', gdp, '#00C896');
+    drawSparkline('spark-inf', inf, '#FF6B6B');
+    drawSparkline('spark-fx',  fx,  '#4a9eff');
+    drawSparkline('spark-mpr', mpr, '#F4A017');
+    drawSparkline('spark-res', resData, '#B39DDB');
+  }
+
   // Animate hero stat bar to real fetched values
   if (gdp.length)     countUp('sb-gdp', gdp[gdp.length-1].value, 2, '', '%');
   if (inf.length)     countUp('sb-inf', inf[inf.length-1].value, 2, '', '%');
@@ -757,7 +766,10 @@ async function loadCoverage() {
 document.getElementById('refresh-analytics').addEventListener('click', loadAnalytics);
 document.getElementById('analytics-indicator').addEventListener('change', loadAnalytics);
 document.getElementById('export-analytics').addEventListener('click', () => {
-  alert('CSV export requires the backend API which is currently offline. Download data directly from Supabase at https://fjsytcmcxapfbrwvawmu.supabase.co');
+  const ind = document.getElementById('analytics-indicator').value;
+  const start = document.getElementById('analytics-start').value;
+  const end = document.getElementById('analytics-end').value;
+  window.open(`https://npedata-api.onrender.com/api/v1/export/${ind}?start=${start}&end=${end}`, '_blank', 'noopener');
 });
 document.getElementById('apply-chart-filter').addEventListener('click', async () => {
   const start = document.getElementById('chart-start').value;
