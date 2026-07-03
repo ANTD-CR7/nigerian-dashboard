@@ -734,8 +734,9 @@ async function loadAnalytics() {
     const prev = data.length > 1 ? data[data.length - 2] : null;
     document.getElementById('ana-latest').textContent = `${formatAnalyticsValue(indicator, last.value)} (${fmt(last.obs_date)})`;
     document.getElementById('ana-change').textContent = prev ? formatAnalyticsValue(indicator, last.value - prev.value) : 'n/a';
-    const pyRow = data.find(d => d.obs_date.slice(0,4) === String(parseInt(last.obs_date.slice(0,4))-1));
-    document.getElementById('ana-yoy').textContent = pyRow ? formatAnalyticsValue(indicator, last.value - pyRow.value) : 'No prior year';
+    const pyKey = (parseInt(last.obs_date.slice(0,4)) - 1) + last.obs_date.slice(4); // same month/day, one year earlier
+    const pyRow = data.find(d => d.obs_date === pyKey);
+    document.getElementById('ana-yoy').textContent = pyRow ? formatAnalyticsValue(indicator, last.value - pyRow.value) : 'No prior-year match';
     const vals = data.map(d => d.value), n = vals.length;
     const xm = (n-1)/2, ym = vals.reduce((a,b)=>a+b,0)/n;
     let num=0,den=0; vals.forEach((v,i)=>{num+=(i-xm)*(v-ym);den+=(i-xm)**2;});
