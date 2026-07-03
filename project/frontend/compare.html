@@ -70,6 +70,7 @@
 
   <div class="chart-card reveal">
     <div class="chart-card-title" id="cmp-chart-title">Indicator A vs Indicator B</div>
+    <p class="chart-context">Both series are <strong>standardised</strong> — plotted as how many standard deviations each sits from its own average — so two different units share one honest axis instead of a misleading dual axis. Lines that rise and fall together indicate positive correlation; opposite movements indicate negative. Raw values are in the tooltip and the table below.</p>
     <div class="chart-wrap-lg">
       <div class="chart-loading" id="cmp-loading">Choose two indicators and click Compare…</div>
       <canvas id="cmp-chart" style="display:none"></canvas>
@@ -132,6 +133,13 @@ function pearson(x,y){
   return (dx2&&dy2)?num/Math.sqrt(dx2*dy2):0;
 }
 
+function zscores(vals){
+  const n=vals.length; if(!n) return vals;
+  const m=vals.reduce((a,b)=>a+b,0)/n;
+  const sd=Math.sqrt(vals.reduce((a,b)=>a+(b-m)*(b-m),0)/n)||1;
+  return vals.map(v=>(v-m)/sd);
+}
+
 let cmpChart=null;
 
 async function runCompare(){
@@ -158,19 +166,19 @@ async function runCompare(){
       <div style="flex:1;min-width:220px;"><div style="font-family:var(--font-display);font-size:1.1rem;color:var(--white);margin-bottom:.5rem;">${strength} ${direction} Correlation</div>
       <p style="font-family:var(--font-body);font-size:0.82rem;color:var(--slate);line-height:1.7;">Based on <strong style="color:var(--white)">${common.length}</strong> paired observations between <strong style="color:var(--white)">${indA.label}</strong> and <strong style="color:var(--white)">${indB.label}</strong> from ${fmt(common[0])} to ${fmt(common[common.length-1])}.</p></div></div>`;
     document.getElementById('cmp-chart-title').textContent=`${indA.label} vs ${indB.label}`;
-    document.getElementById('cmp-legend').innerHTML=`<span><span class="dot" style="background:${indA.color}"></span>${indA.label} — Left axis</span><span><span class="dot" style="background:${indB.color}"></span>${indB.label} — Right axis</span>`;
+    document.getElementById('cmp-legend').innerHTML=`<span><span class="dot" style="background:${indA.color}"></span>${indA.label}</span><span><span class="dot" style="background:${indB.color}"></span>${indB.label}</span>`;
     document.getElementById('cmp-th-a').textContent=indA.label;
     document.getElementById('cmp-th-b').textContent=indB.label;
     document.getElementById('cmp-loading').style.display='none';
     const canvas=document.getElementById('cmp-chart');
     canvas.style.display='block';
+    const zA=zscores(valsA), zB=zscores(valsB);
     if(cmpChart)cmpChart.destroy();
     cmpChart=new Chart(canvas,{data:{labels:common.map(d=>fmt(d)),datasets:[
-      {type:'line',label:indA.label,data:valsA,borderColor:indA.color,backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:indA.color,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3,yAxisID:'y'},
-      {type:'line',label:indB.label,data:valsB,borderColor:indB.color,backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:indB.color,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3,yAxisID:'y1'},
-    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,displayColors:true,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(2)} ${ctx.datasetIndex===0?indA.unit:indB.unit}`}},zoom:ZOOM},scales:{
-      y:{...SY,title:{display:true,text:indA.unit,color:'rgba(245,240,232,0.4)',font:{size:11}}},
-      y1:{...SY,grid:{display:false},title:{display:true,text:indB.unit,color:'rgba(245,240,232,0.4)',font:{size:11}},position:'right'},
+      {type:'line',label:indA.label,data:zA,borderColor:indA.color,backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:indA.color,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},
+      {type:'line',label:indB.label,data:zB,borderColor:indB.color,backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:indB.color,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},
+    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,displayColors:true,callbacks:{title:i=>i[0].label,label:ctx=>{const raw=ctx.datasetIndex===0?valsA[ctx.dataIndex]:valsB[ctx.dataIndex];const u=ctx.datasetIndex===0?indA.unit:indB.unit;return `${ctx.dataset.label}: ${Number(raw).toFixed(2)} ${u}`;}}},zoom:ZOOM},scales:{
+      y:{...SY,title:{display:true,text:"Standardised (z-score) — σ from each series' mean",color:'rgba(245,240,232,0.4)',font:{size:11}}},
       x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}
     }}});
     const tbody=document.getElementById('cmp-tbody');
