@@ -39,6 +39,15 @@
   <p>Cross-indicator analysis, correlation and trend — computed in pure JavaScript · 2020–2026</p>
 </div></section>
 <main class="page-content"><div class="container">
+  <div class="chart-card reveal" id="profile-card">
+    <div class="chart-card-title">Analyze Any Indicator</div>
+    <p class="chart-context">Pick any of the platform's <strong>122 indicators</strong> — every headline series, all 57 GDP sub-sectors, every currency and CBN balance-sheet item — to see its full analytical profile computed live: latest value, change, year-on-year, range, volatility, trend and a simple linear forecast.</p>
+    <select id="prof-select" class="sector-filter-input" style="max-width:460px;margin-bottom:18px;"><option>Loading catalogue…</option></select>
+    <div class="profile-stats" id="prof-stats"></div>
+    <div class="chart-wrap-lg"><div class="chart-loading" id="loading-prof">Loading…</div><canvas id="chart-prof" style="display:none"></canvas></div>
+    <div class="dual-legend"><span><span class="dot" id="prof-dot" style="background:#4a9eff"></span><span id="prof-series-label">Value</span></span><span><span class="dot" style="background:#F4A017;height:1px;border-radius:0;"></span>OLS trend + forecast</span></div>
+    <div class="source-note" id="prof-source">—</div>
+  </div>
   <div class="chart-card reveal"><div class="chart-card-title">Inflation Trend with Linear Regression</div><p class="chart-context">The dashed line is an ordinary least squares (OLS) regression. It slopes upward across the whole window — but a single straight line can't capture the real shape: inflation climbed to a <strong>34.8% peak in December 2024</strong>, then eased to <strong>15.4%</strong> by early 2026. Read the line as a rough long-run summary, not the month-to-month path.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-inf">Loading…</div><canvas id="chart-inf" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#e05252"></span>Inflation</span><span><span class="dot" style="background:#F4A017;height:1px;border-radius:0;"></span>OLS Trend</span></div><button class="btn-chart-reset" id="reset-inf">↺ Reset Zoom</button><div class="source-note">Source: NBS · Trend line = Ordinary Least Squares linear regression</div></div>
   <div class="ops-card reveal">
     <h2>Pearson Correlation: Inflation vs Exchange Rate</h2>
@@ -168,6 +177,66 @@ async function load(){
  }catch(err){showLoadError(err);}
 }
 load();
+
+/* ─── Analyze Any Indicator — universal per-indicator profile ─── */
+let profChart=null, CAT=[], CATMAP={};
+function addDaysISO(iso,days){var d=new Date(iso+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+Math.round(days));return d.toISOString().slice(0,10);}
+async function initProfile(){
+  try{
+    CAT=await npeCatalogue();
+    CAT.forEach(x=>{CATMAP[x.id]=x;});
+    const sel=document.getElementById('prof-select');
+    npeFillSelect(sel,CAT,'inflation');
+    sel.addEventListener('change',()=>renderProfile(sel.value));
+    renderProfile('inflation');
+  }catch(e){console.error('Catalogue load failed:',e);document.getElementById('loading-prof').textContent='Catalogue unavailable';}
+}
+async function renderProfile(id){
+  const meta=CATMAP[id]||{name:id,unit:'',source:''};
+  const loadEl=document.getElementById('loading-prof');
+  loadEl.style.display='flex';loadEl.textContent='Loading '+meta.name+'…';
+  document.getElementById('chart-prof').style.display='none';
+  document.getElementById('prof-series-label').textContent=meta.name;
+  let series;
+  try{series=await sb(id);}catch(e){loadEl.textContent='Could not load data';return;}
+  const st=npeStats(series);
+  if(!st){document.getElementById('prof-stats').innerHTML='';loadEl.textContent='No data for this indicator';return;}
+  const F=v=>npeFormat(v,id,meta.unit);
+  const gap=npeMedianGapDays(st.pts),freq=npeFreq(gap);
+  function sc(delta){if(delta==null)return{t:'—',c:'flat'};var flat=Math.abs(delta)<1e-9,up=delta>0;return{t:(flat?'→ ':(up?'▲ ':'▼ '))+F(Math.abs(delta)),c:flat?'flat':(up?'up':'down')};}
+  const pc=sc(st.prevChange);
+  const yc=st.yoy?sc(st.yoy.value):{t:'—',c:'flat'};
+  const yoyPct=st.yoy&&st.yoy.pct!=null?' ('+(st.yoy.pct>=0?'+':'')+st.yoy.pct.toFixed(1)+'%)':'';
+  const trendDir=st.slope>1e-9?'Rising':(st.slope<-1e-9?'Falling':'Flat');
+  const tc=Math.abs(st.trendCorr);const tStr=tc>0.9?'very strong':tc>0.7?'strong':tc>0.4?'moderate':'weak';
+  const cv=(st.mean&&st.min.value>=0)?Math.abs(st.std/st.mean)*100:null;
+  const yr=d=>d?d.slice(0,4):'';
+  const tiles=[
+    ['Latest',F(st.latest.value),'flat',fmt(st.latest.obs_date)],
+    ['Change vs prev',pc.t,pc.c,'previous reading'],
+    ['Year-on-year',yc.t+yoyPct,yc.c,st.yoy?'vs '+fmt(st.yoy.date):'no prior-year match'],
+    ['Range',F(st.min.value)+' – '+F(st.max.value),'flat','min '+yr(st.min.date)+' · max '+yr(st.max.date)],
+    ['Average',F(st.mean),'flat','over '+st.n+' obs'],
+    ['Volatility (σ)',F(st.std),'flat',cv!=null?cv.toFixed(0)+'% of mean':'standard deviation'],
+    ['Trend',trendDir,st.slope>1e-9?'up':(st.slope<-1e-9?'down':'flat'),tStr+' (r='+st.trendCorr.toFixed(2)+' vs time)'],
+    ['Coverage',st.n+' · '+freq,'flat',fmt(st.pts[0].obs_date)+' → '+fmt(st.latest.obs_date)]
+  ];
+  document.getElementById('prof-stats').innerHTML=tiles.map(t=>`<div class="prof-tile"><div class="pt-label">${t[0]}</div><div class="pt-value ${t[2]}">${t[1]}</div><div class="pt-sub">${t[3]}</div></div>`).join('');
+  const fcMap={daily:20,monthly:6,quarterly:4,annual:3};const fc=fcMap[freq]||4;
+  const fcDates=[];for(let k=1;k<=fc;k++)fcDates.push(addDaysISO(st.latest.obs_date,gap*k));
+  const labels=st.pts.map(d=>fmt(d.obs_date)).concat(fcDates.map(fmt));
+  const valueData=st.vals.concat(fcDates.map(()=>null));
+  const trendData=st.trendLine.concat(fcDates.map((_,k)=>st.slope*(st.n-1+k+1)+st.intercept));
+  loadEl.style.display='none';
+  const cv2=document.getElementById('chart-prof');cv2.style.display='block';
+  if(profChart)profChart.destroy();
+  profChart=new Chart(cv2,{data:{labels,datasets:[
+    {type:'line',label:meta.name,data:valueData,borderColor:'#4a9eff',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.12)','rgba(74,158,255,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#4a9eff',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.3,spanGaps:false},
+    {type:'line',label:'Trend + forecast',data:trendData,borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2,borderDash:[7,4],pointRadius:0,tension:0}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>ctx.datasetIndex===0?(ctx.parsed.y==null?null:`${meta.name}: ${F(ctx.parsed.y)}`):`Trend: ${F(ctx.parsed.y)}`}},zoom:ZOOM},scales:{y:{...SY,ticks:{...SY.ticks,callback:v=>npeFormat(v,id,meta.unit)}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}}}}});
+  document.getElementById('prof-source').textContent=`Source: ${meta.source||'—'} · ${meta.unit||''} · ${st.n} observations · dashed line = OLS trend extrapolated ${fc} periods (illustrative, not a prediction)`;
+}
+document.addEventListener('DOMContentLoaded', initProfile);
 </script>
 <script src="shared.js"></script>
 </body></html>

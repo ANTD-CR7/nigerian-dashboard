@@ -409,6 +409,139 @@ function drawSparkline(elId, series, color) {
     '</svg>';
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   Universal analytics core — shared by Compare, the per-indicator
+   profile and the homepage panel so every surface can analyse ALL 122
+   indicators with one correct implementation.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Fetch the full indicator catalogue (id, name, unit, source) + category. */
+function npeCatalogue() {
+  return fetch(SHARED_SB + '/indicators?select=id,name,unit,source&limit=300',
+      { headers: { apikey: SHARED_KEY, Authorization: 'Bearer ' + SHARED_KEY } })
+    .then(function (r) { return r.json(); })
+    .then(function (rows) {
+      return rows.map(function (x) { x.category = npeCategory(x.id); return x; })
+        .sort(function (a, b) {
+          return a.category.localeCompare(b.category) || a.name.localeCompare(b.name);
+        });
+    });
+}
+
+function npeCategory(id) {
+  if (id === 'gdp_growth' || id === 'gdp_usd' || id === 'gdp_gdPatCurrentMarketPrices' || id === 'gdp_netTaxesOnProducts') return 'Economy — GDP & Output';
+  if (/^gdp_/.test(id)) return 'GDP by Sector';
+  if (/^inflation/.test(id)) return 'Inflation';
+  if (id === 'mpr') return 'Economy — Rates';
+  if (/^(usd|gbp|eur|cny|chf|zar|aed|sar|sdr|cfa|waua)_(buying|central|selling)$/.test(id)) return 'Currency Rates (CBN)';
+  if (id === 'exchange_rate' || /_rate$/.test(id)) return 'Currency Rates (CBN)';
+  if (/^nfem_/.test(id)) return 'NFEM Market';
+  if (/^(fx_reserves|reserves_)/.test(id)) return 'FX Reserves';
+  if (/^cbn_annual_/.test(id)) return 'CBN Annual Financials';
+  if (/^cbn_/.test(id)) return 'CBN Balance Sheet';
+  if (/^currency_circulation/.test(id)) return 'Money Supply';
+  return 'Other';
+}
+
+/* Some CBN series are stored in scaled Naira but labelled just "NGN": the
+   monthly balance sheet is in NGN thousands, the annual series in NGN millions,
+   currency-in-circulation in NGN millions. These overrides return the multiplier
+   back to base Naira so values display honestly (and adaptively K/M/B/T). */
+function npeScale(id) {
+  if (/^cbn_annual/.test(id)) return { mul: 1e6 };                                   // NGN millions → Naira
+  if (/^(cbn_total|cbn_gold|cbn_govt|cbn_bankers|cbn_currency_issued)/.test(id)) return { mul: 1e3 }; // NGN thousands → Naira
+  if (id === 'currency_circulation_full' || id === 'currency_circulation') return { mul: 1e6 };
+  return null;
+}
+
+function npeAbbrev(v) {
+  var a = Math.abs(v);
+  if (a >= 1e12) return (v / 1e12).toFixed(2) + 'T';
+  if (a >= 1e9) return (v / 1e9).toFixed(2) + 'B';
+  if (a >= 1e6) return (v / 1e6).toFixed(2) + 'M';
+  if (a >= 1e3) return (v / 1e3).toFixed(1) + 'K';
+  return String(Math.round(v * 100) / 100);
+}
+
+/* Scale/unit-aware value formatter for any indicator. */
+function npeFormat(v, id, unit) {
+  if (v == null || !isFinite(v)) return '—';
+  unit = unit || '';
+  var sc = npeScale(id);
+  if (sc) return '₦' + npeAbbrev(v * sc.mul);
+  if (/percent|%/i.test(unit)) return v.toFixed(2) + '%';
+  if (/per (usd|gbp|eur|[a-z]{3})|naira per/i.test(unit)) return '₦' + v.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  if (/usd billion/i.test(unit)) return '$' + v.toFixed(2) + 'B';
+  if (/^usd$/i.test(unit)) return '$' + npeAbbrev(v);
+  if (/count/i.test(unit)) return Math.round(v).toLocaleString('en-US');
+  if (/ngn billions|naira billions/i.test(unit)) return '₦' + (Math.abs(v) >= 1000 ? (v / 1000).toFixed(2) + 'T' : v.toFixed(1) + 'B');
+  if (/ngn millions|naira millions/i.test(unit)) return '₦' + (Math.abs(v) >= 1e6 ? (v / 1e6).toFixed(2) + 'T' : (Math.abs(v) >= 1e3 ? (v / 1e3).toFixed(2) + 'B' : v.toFixed(1) + 'M'));
+  if (/ngn thousands|naira thousands/i.test(unit)) return '₦' + (v / 1e9).toFixed(2) + 'T';
+  if (/ngn|naira/i.test(unit)) return '₦' + (Math.abs(v) < 1e6 ? v.toLocaleString('en-US', { maximumFractionDigits: 2 }) : npeAbbrev(v));
+  return npeAbbrev(v);
+}
+
+/* Full analytical profile of a series: stats, OLS trend, YoY, trend-vs-time. */
+function npeStats(series) {
+  var pts = series.filter(function (d) { return d.value != null && isFinite(d.value); });
+  var n = pts.length;
+  if (!n) return null;
+  var vals = pts.map(function (d) { return d.value; });
+  var mean = vals.reduce(function (a, b) { return a + b; }, 0) / n;
+  var varSum = vals.reduce(function (a, b) { return a + (b - mean) * (b - mean); }, 0);
+  var std = Math.sqrt(varSum / n);
+  var minI = 0, maxI = 0;
+  vals.forEach(function (v, i) { if (v < vals[minI]) minI = i; if (v > vals[maxI]) maxI = i; });
+  var xm = (n - 1) / 2, num = 0, den = 0;
+  vals.forEach(function (v, i) { num += (i - xm) * (v - mean); den += (i - xm) * (i - xm); });
+  var slope = den ? num / den : 0, intercept = mean - slope * xm;
+  var trendCorr = (den && varSum) ? num / Math.sqrt(den * varSum) : 0;
+  var latest = pts[n - 1], prev = n > 1 ? pts[n - 2] : null;
+  var pyKey = (parseInt(latest.obs_date.slice(0, 4)) - 1) + latest.obs_date.slice(4);
+  var py = pts.find(function (d) { return d.obs_date === pyKey; });
+  return {
+    n: n, pts: pts, vals: vals, mean: mean, std: std, slope: slope, intercept: intercept, trendCorr: trendCorr,
+    latest: latest, prev: prev,
+    min: { value: vals[minI], date: pts[minI].obs_date }, max: { value: vals[maxI], date: pts[maxI].obs_date },
+    prevChange: prev ? latest.value - prev.value : null,
+    yoy: py ? { value: latest.value - py.value, pct: py.value ? (latest.value - py.value) / Math.abs(py.value) * 100 : null, date: py.obs_date } : null,
+    trendLine: vals.map(function (_, i) { return slope * i + intercept; })
+  };
+}
+
+function npeMedianGapDays(series) {
+  if (!series || series.length < 2) return null;
+  var g = [];
+  for (var i = 1; i < series.length; i++) {
+    g.push((new Date(series[i].obs_date + 'T00:00:00Z') - new Date(series[i - 1].obs_date + 'T00:00:00Z')) / 864e5);
+  }
+  g.sort(function (a, b) { return a - b; });
+  return g[Math.floor(g.length / 2)];
+}
+function npeFreq(gap) {
+  if (gap == null) return '—';
+  if (gap <= 3) return 'daily';
+  if (gap <= 45) return 'monthly';
+  if (gap <= 135) return 'quarterly';
+  return 'annual';
+}
+
+/* Fill a <select> with catalogue options grouped by category. */
+function npeFillSelect(sel, cat, selectedId) {
+  if (!sel) return;
+  var groups = {};
+  cat.forEach(function (x) { (groups[x.category] = groups[x.category] || []).push(x); });
+  var html = '';
+  Object.keys(groups).forEach(function (g) {
+    html += '<optgroup label="' + g + '">';
+    groups[g].forEach(function (x) {
+      html += '<option value="' + x.id + '"' + (x.id === selectedId ? ' selected' : '') + '>' + x.name + '</option>';
+    });
+    html += '</optgroup>';
+  });
+  sel.innerHTML = html;
+}
+
 /* ─── Command palette (Ctrl/Cmd+K or "/") + scroll UX ─── */
 (function () {
   if (!document.body) return;
