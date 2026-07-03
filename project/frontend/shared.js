@@ -41,28 +41,113 @@
     document.querySelectorAll('.reveal').forEach(function(el) { el.classList.add('visible'); });
   }
 
-  /* ─── Chart.js dark defaults + terminal crosshair ─── */
+  /* ─── Chart.js dark defaults + terminal plugins ─── */
   if (typeof Chart !== 'undefined') {
     Chart.defaults.color = 'rgba(245,240,232,0.55)';
     Chart.defaults.borderColor = 'rgba(245,240,232,0.07)';
 
-    /* Vertical crosshair drawn at the hovered point — terminal feel */
+    /* Terminal crosshair: dashed cross at the hovered point, plus a gold
+       date pill on the x-axis and a value pill on the y-axis (readout). */
     Chart.register({
       id: 'npCrosshair',
       afterDatasetsDraw: function (chart) {
         var act = chart.getActiveElements && chart.getActiveElements();
         if (!act || !act.length) return;
         var el = act[0].element;
-        if (!el) return;
+        if (!el || !isFinite(el.x)) return;
         var a = chart.chartArea, ctx = chart.ctx;
+        var fmt = chart.$endLabelFormat || function (v) {
+          return Number(v).toLocaleString('en-US', { maximumFractionDigits: 2 });
+        };
         ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(el.x, a.top);
-        ctx.lineTo(el.x, a.bottom);
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 4]);
-        ctx.strokeStyle = 'rgba(244,160,23,0.45)';
-        ctx.stroke();
+        ctx.strokeStyle = 'rgba(244,160,23,0.5)';
+        ctx.beginPath(); ctx.moveTo(el.x, a.top); ctx.lineTo(el.x, a.bottom); ctx.stroke();
+        if (isFinite(el.y)) {
+          ctx.beginPath(); ctx.moveTo(a.left, el.y); ctx.lineTo(a.right, el.y); ctx.stroke();
+        }
+        ctx.setLineDash([]);
+
+        var idx = act[0].index;
+        /* x-axis date pill */
+        var xlab = (chart.data.labels && chart.data.labels[idx] != null) ? String(chart.data.labels[idx]) : '';
+        if (xlab) {
+          ctx.font = '600 10px "IBM Plex Mono", monospace';
+          ctx.textBaseline = 'middle';
+          ctx.textAlign = 'center';
+          var w = ctx.measureText(xlab).width + 12, h = 16;
+          var x = Math.max(a.left, Math.min(el.x - w / 2, a.right - w));
+          npRoundRect(ctx, x, a.bottom + 3, w, h, 3);
+          ctx.fillStyle = '#F4A017'; ctx.fill();
+          ctx.fillStyle = '#07080d'; ctx.fillText(xlab, x + w / 2, a.bottom + 3 + h / 2 + 0.5);
+        }
+        /* y-axis value pill (primary active series) */
+        var dsi = act[0].datasetIndex;
+        var raw = chart.data.datasets[dsi] && chart.data.datasets[dsi].data[idx];
+        var yval = (raw && typeof raw === 'object') ? raw.y : raw;
+        if (yval != null && isFinite(el.y)) {
+          var t = fmt(yval, chart.data.datasets[dsi]);
+          ctx.font = '600 10px "IBM Plex Mono", monospace';
+          ctx.textBaseline = 'middle';
+          ctx.textAlign = 'left';
+          var w2 = ctx.measureText(t).width + 10, h2 = 16;
+          var yy = Math.max(a.top, Math.min(el.y - h2 / 2, a.bottom - h2));
+          var xx = a.left - w2 - 2; if (xx < 1) xx = 1;
+          npRoundRect(ctx, xx, yy, w2, h2, 3);
+          ctx.fillStyle = '#F4A017'; ctx.fill();
+          ctx.fillStyle = '#07080d'; ctx.fillText(t, xx + 5, yy + h2 / 2 + 0.5);
+        }
+        ctx.restore();
+      }
+    });
+
+    /* End-of-line value tags — draws "● 1,360" at each line's last point.
+       Active only when a chart has chart.$endLabelFormat (set via
+       attachEndLabels). Skips bar datasets; de-collides overlapping tags. */
+    Chart.register({
+      id: 'npEndLabels',
+      afterDatasetsDraw: function (chart) {
+        var fmt = chart.$endLabelFormat;
+        if (!fmt) return;
+        var ctx = chart.ctx, a = chart.chartArea, items = [];
+        chart.data.datasets.forEach(function (ds, di) {
+          var meta = chart.getDatasetMeta(di);
+          if (meta.hidden) return;
+          if ((ds.type || chart.config.type) === 'bar') return;
+          var pts = meta.data, idx = -1;
+          for (var i = pts.length - 1; i >= 0; i--) {
+            if (ds.data[i] != null && pts[i] && isFinite(pts[i].x) && isFinite(pts[i].y)) { idx = i; break; }
+          }
+          if (idx < 0) return;
+          var p = pts[idx];
+          if (p.x < a.left - 1 || p.x > a.right + 1.5) return;
+          var raw = ds.data[idx];
+          var num = (raw && typeof raw === 'object') ? raw.y : raw;
+          if (num == null || !isFinite(num)) return;
+          items.push({ y: p.y, py: p.y, px: p.x, text: fmt(num, ds), color: ds.borderColor || '#F5F0E8' });
+        });
+        if (!items.length) return;
+        var bh = 16;
+        items.sort(function (m, n) { return m.y - n.y; });
+        for (var i = 1; i < items.length; i++) {
+          if (items[i].y < items[i - 1].y + bh) items[i].y = items[i - 1].y + bh;
+        }
+        var over = items[items.length - 1].y - (a.bottom - bh / 2);
+        if (over > 0) for (var k = 0; k < items.length; k++) items[k].y -= over;
+        ctx.save();
+        ctx.font = '600 11px "IBM Plex Mono", monospace';
+        ctx.textBaseline = 'middle';
+        items.forEach(function (it) {
+          var bw = ctx.measureText(it.text).width + 12;
+          var bx = it.px + 8, by = it.y - bh / 2;
+          ctx.beginPath(); ctx.arc(it.px, it.py, 3, 0, Math.PI * 2); ctx.fillStyle = it.color; ctx.fill();
+          ctx.beginPath(); ctx.moveTo(it.px, it.py); ctx.lineTo(bx, it.y);
+          ctx.strokeStyle = it.color; ctx.lineWidth = 1; ctx.stroke();
+          npRoundRect(ctx, bx, by, bw, bh, 3); ctx.fillStyle = it.color; ctx.fill();
+          ctx.fillStyle = '#07080d'; ctx.textAlign = 'left';
+          ctx.fillText(it.text, bx + 6, it.y + 0.5);
+        });
         ctx.restore();
       }
     });
@@ -84,6 +169,44 @@
   });
 
 })();
+
+/* ─── Rounded-rect path helper (used by the terminal chart plugins) ─── */
+function npRoundRect(ctx, x, y, w, h, r) {
+  if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); return; }
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+/* ─── End-of-line value tags ───
+   Enables the npEndLabels plugin for one chart and reserves right padding
+   so the tags fit. formatFn(value, dataset) -> label string.
+   Safe to call on every load()/redraw. */
+function attachEndLabels(canvasId, formatFn, opts) {
+  opts = opts || {};
+  var canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  var chart = (typeof Chart !== 'undefined' && Chart.getChart) ? Chart.getChart(canvas) : null;
+  if (!chart) return;
+  chart.$endLabelFormat = formatFn || function (v) {
+    return Number(v).toLocaleString('en-US', { maximumFractionDigits: 2 });
+  };
+  var pad = opts.pad != null ? opts.pad : 66;
+  /* mutate the raw config (not the chart.options resolver proxy) */
+  var co = chart.config.options || (chart.config.options = {});
+  co.layout = co.layout || {};
+  var p = co.layout.padding;
+  if (p == null || typeof p === 'number') {
+    co.layout.padding = { left: (typeof p === 'number' ? p : 0), right: pad, top: 0, bottom: 0 };
+  } else {
+    p.right = Math.max(p.right || 0, pad);
+  }
+  chart.update('none');
+}
 
 /* ─── Shared data-load error fallback ─── */
 function showLoadError(err) {
