@@ -526,6 +526,55 @@ function npeFreq(gap) {
   return 'annual';
 }
 
+/* ─── Inferential statistics: two-tailed p-value + R² for a Pearson r ───
+   Uses the Student-t distribution via the regularised incomplete beta
+   function (Numerical Recipes betacf/gammln/betai). */
+function npeGammaln(x) {
+  var cof = [76.18009172947146, -86.50532032941677, 24.01409824083091,
+    -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5];
+  var y = x, tmp = x + 5.5; tmp -= (x + 0.5) * Math.log(tmp);
+  var ser = 1.000000000190015;
+  for (var j = 0; j < 6; j++) { y++; ser += cof[j] / y; }
+  return -tmp + Math.log(2.5066282746310005 * ser / x);
+}
+function npeBetacf(x, a, b) {
+  var MAXIT = 200, EPS = 3e-7, FPMIN = 1e-30;
+  var qab = a + b, qap = a + 1, qam = a - 1;
+  var c = 1, d = 1 - qab * x / qap;
+  if (Math.abs(d) < FPMIN) d = FPMIN; d = 1 / d; var h = d;
+  for (var m = 1; m <= MAXIT; m++) {
+    var m2 = 2 * m;
+    var aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+    d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN;
+    c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN;
+    d = 1 / d; h *= d * c;
+    aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+    d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN;
+    c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN;
+    d = 1 / d; var del = d * c; h *= del;
+    if (Math.abs(del - 1) < EPS) break;
+  }
+  return h;
+}
+function npeIbeta(x, a, b) {
+  if (x <= 0) return 0; if (x >= 1) return 1;
+  var bt = Math.exp(npeGammaln(a + b) - npeGammaln(a) - npeGammaln(b) + a * Math.log(x) + b * Math.log(1 - x));
+  return x < (a + 1) / (a + b + 2) ? bt * npeBetacf(x, a, b) / a : 1 - bt * npeBetacf(1 - x, b, a) / b;
+}
+/* Two-tailed p-value that a correlation r (n observations) differs from 0. */
+function npeCorrP(r, n) {
+  if (n < 3 || Math.abs(r) >= 1) return (Math.abs(r) >= 1 && n >= 3) ? 0 : null;
+  var df = n - 2, t2 = r * r * df / (1 - r * r);
+  return npeIbeta(df / (df + t2), df / 2, 0.5);
+}
+/* Significance summary for a correlation/trend: R², p-value, plain label. */
+function npeSig(r, n) {
+  var p = npeCorrP(r, n);
+  var label = p == null ? 'n too small'
+    : (p < 0.001 ? 'p < 0.001' : (p < 0.01 ? 'p < 0.01' : (p < 0.05 ? 'p < 0.05' : 'p = ' + p.toFixed(3))));
+  return { r2: r * r, p: p, label: label, significant: p != null && p < 0.05 };
+}
+
 /* Fill a <select> with catalogue options grouped by category. */
 function npeFillSelect(sel, cat, selectedId) {
   if (!sel) return;

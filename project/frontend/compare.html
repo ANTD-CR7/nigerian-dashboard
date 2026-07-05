@@ -157,6 +157,7 @@ async function runCompare(){
     const strength=rAbs>0.8?'Strong':rAbs>0.5?'Moderate':'Weak';
     const direction=r>0?'Positive':'Negative';
     const color=rAbs>0.8?'#FF6B6B':rAbs>0.5?'#F4A017':'#00C896';
+    const sig=npeSig(r,common.length);
     // ── Honesty guards ──
     const freqA=npeFreq(npeMedianGapDays(dataA)), freqB=npeFreq(npeMedianGapDays(dataB));
     const dA=[],dB=[]; for(let i=1;i<valsA.length;i++){dA.push(valsA[i]-valsA[i-1]);dB.push(valsB[i]-valsB[i-1]);}
@@ -164,13 +165,13 @@ async function runCompare(){
     const warns=[];
     if(common.length<8) warns.push('Only <strong>'+common.length+'</strong> overlapping observations — too few for a reliable correlation. Treat r with caution.');
     if(freqA!==freqB) warns.push('Different reporting frequencies (<strong>'+indA.name+'</strong> is '+freqA+', <strong>'+indB.name+'</strong> is '+freqB+') — compared on their '+common.length+' shared dates only.');
-    if(rAbs>0.6 && Math.abs(rDiff) < rAbs-0.35) warns.push('Much of this correlation is a <strong>shared trend</strong>: correlating month-to-month <em>changes</em> (which removes the trend) drops it to r&nbsp;≈&nbsp;<strong>'+rDiff.toFixed(2)+'</strong>. The level correlation is largely spurious — the two series drift together rather than respond to each other.');
+    if(rAbs>0.6 && Math.abs(rDiff) < rAbs-0.35) warns.push('A large part of this correlation comes from a <strong>shared long-run trend</strong>: the month-to-month <em>change</em> correlation is only r&nbsp;≈&nbsp;<strong>'+rDiff.toFixed(2)+'</strong>. High correlations between trending series are common and don’t, on their own, prove a direct relationship — interpret with care.');
     warnEl.innerHTML=warns.map(w=>'<div class="prof-warn">⚠ '+w+'</div>').join('');
     document.getElementById('cmp-pearson').innerHTML=`<div style="display:flex;align-items:flex-start;gap:2rem;flex-wrap:wrap;">
       <div style="min-width:120px;"><div style="font-family:var(--font-mono);font-size:3rem;font-weight:500;color:${color};letter-spacing:-2px;line-height:1;">${rStr}</div>
       <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate);text-transform:uppercase;letter-spacing:.1em;margin-top:.3rem;">Pearson r</div></div>
       <div style="flex:1;min-width:220px;"><div style="font-family:var(--font-display);font-size:1.1rem;color:var(--white);margin-bottom:.5rem;">${strength} ${direction} Correlation</div>
-      <p style="font-family:var(--font-body);font-size:0.82rem;color:var(--slate);line-height:1.7;">Based on <strong style="color:var(--white)">${common.length}</strong> paired observations between <strong style="color:var(--white)">${indA.name}</strong> and <strong style="color:var(--white)">${indB.name}</strong> from ${fmt(common[0])} to ${fmt(common[common.length-1])}.</p></div></div>`;
+      <p style="font-family:var(--font-body);font-size:0.82rem;color:var(--slate);line-height:1.7;">Based on <strong style="color:var(--white)">${common.length}</strong> paired observations between <strong style="color:var(--white)">${indA.name}</strong> and <strong style="color:var(--white)">${indB.name}</strong> from ${fmt(common[0])} to ${fmt(common[common.length-1])}. R² = <strong style="color:var(--white)">${sig.r2.toFixed(3)}</strong> (${(sig.r2*100).toFixed(0)}% of the shared variance); the correlation is ${sig.significant?'statistically significant':'<strong style="color:var(--gold)">not statistically significant</strong>'} (${sig.label}).</p></div></div>`;
     document.getElementById('cmp-chart-title').textContent=`${indA.name} vs ${indB.name}`;
     document.getElementById('cmp-legend').innerHTML=`<span><span class="dot" style="background:${CMP_A}"></span>${indA.name}</span><span><span class="dot" style="background:${CMP_B}"></span>${indB.name}</span>`;
     document.getElementById('cmp-th-a').textContent=indA.name;
