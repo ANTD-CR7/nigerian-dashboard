@@ -82,12 +82,41 @@
           <tr><td>Frontend Structure</td><td style="font-family:var(--font-mono);">HTML5</td><td>Web page structure</td></tr>
           <tr><td>Frontend Styling</td><td style="font-family:var(--font-mono);">CSS3 (custom design system)</td><td>Lagos Noir × Data Observatory aesthetic</td></tr>
           <tr><td>Frontend Logic</td><td style="font-family:var(--font-mono);">Vanilla JavaScript (ES6+)</td><td>Supabase direct fetch, charts, analytics</td></tr>
-          <tr><td>Data Visualisation</td><td style="font-family:var(--font-mono);">Chart.js v4</td><td>Interactive line, bar and dual-axis charts</td></tr>
+          <tr><td>Data Visualisation</td><td style="font-family:var(--font-mono);">Chart.js v4</td><td>Interactive line, bar and small-multiple charts (single-axis; no misleading dual axes)</td></tr>
           <tr><td>Typography</td><td style="font-family:var(--font-mono);">Playfair Display · IBM Plex Mono · Sora</td><td>Display / data / body fonts via Google Fonts</td></tr>
           <tr><td>Hosting</td><td style="font-family:var(--font-mono);">Render.com + GitHub Pages + Cloudflare Pages</td><td>Open API + two independently-deployed static frontend mirrors for redundancy</td></tr>
         </tbody>
       </table>
     </div>
+  </div>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">Analytics — Methodology &amp; Limitations</div>
+    <p style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.75;margin-bottom:18px;">Every figure on the analytics pages is computed transparently in the browser, directly from the aggregated data. The methods are deliberately classical and explainable — no black-box models — so any result can be reproduced and checked. The platform is designed to be <strong style="color:var(--white);">correct and honest over impressive</strong>: where a result is unreliable, it says so.</p>
+    <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--green-text);letter-spacing:0.14em;text-transform:uppercase;margin:6px 0 12px;">Methods used</div>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Technique</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>Descriptive statistics</td><td>Latest value, period &amp; year-on-year change, min/max with dates, mean, standard deviation (volatility) and coefficient of variation.</td></tr>
+          <tr><td>Trend — OLS regression</td><td>Ordinary Least Squares straight-line fit; reports the slope, R² (goodness of fit) and the correlation of the series with time.</td></tr>
+          <tr><td>Correlation — Pearson r</td><td>Computed on the two series' date-aligned observations, reported with R² (share of variance) and a two-tailed significance p-value from the Student-t distribution.</td></tr>
+          <tr><td>Standardisation — z-scores</td><td>Series are expressed as standard deviations from their own mean so two different units share one honest axis, instead of a misleading dual axis.</td></tr>
+          <tr><td>Trend-robustness check</td><td>The detrended (month-to-month change) correlation is compared with the level correlation to flag results driven mainly by a shared trend.</td></tr>
+          <tr><td>Forecast — OLS extrapolation</td><td>The trend line extended a few periods, shown <em>illustratively only</em> — it is not a prediction.</td></tr>
+          <tr><td>Reliability guards</td><td>Automatic warnings for short overlaps (fewer than 8 shared observations) and for comparisons between series of different reporting frequency.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--gold);letter-spacing:0.14em;text-transform:uppercase;margin:22px 0 12px;">What it does not do</div>
+    <ul style="font-family:var(--font-body);font-size:0.84rem;color:var(--slate);line-height:1.7;padding-left:20px;margin:0;">
+      <li style="margin-bottom:9px;"><strong style="color:var(--white);">Not real-time.</strong> Figures are a manually-ingested snapshot; data is collected by hand from published CBN/NBS/World Bank reports, not through an automated live pipeline.</li>
+      <li style="margin-bottom:9px;"><strong style="color:var(--white);">No seasonal adjustment.</strong> Monthly and quarterly series are shown exactly as reported, not deseasonalised.</li>
+      <li style="margin-bottom:9px;"><strong style="color:var(--white);">The forecast is a straight line.</strong> It is a simple OLS extrapolation with no confidence interval — there is no ARIMA, exponential-smoothing or other time-series model.</li>
+      <li style="margin-bottom:9px;"><strong style="color:var(--white);">Correlation is not causation.</strong> The platform measures association only; it does not test causality (no Granger causality, lead/lag or cross-correlation analysis).</li>
+      <li style="margin-bottom:9px;"><strong style="color:var(--white);">Short or mixed-frequency comparisons are weaker.</strong> They are flagged, but a correlation over a handful of points, or between a daily and an annual series, should be treated with caution.</li>
+      <li style="margin-bottom:0;"><strong style="color:var(--white);">Coverage is bounded by the sources.</strong> Some series end earlier than others (e.g. the annual financial statement stops in 2012), so historical comparisons are limited to what each source publishes.</li>
+    </ul>
   </div>
 
   <div class="chart-card reveal" style="border-left:4px solid var(--red-accent);">
