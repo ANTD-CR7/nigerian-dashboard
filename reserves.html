@@ -87,6 +87,7 @@ async function load(start,end){
   if(!window.chartMain.__wired){document.getElementById('reset-main').addEventListener('click',()=>window.chartMain.resetZoom());window.chartMain.__wired=true;}
   attachRangeSelector('chart-main', gross.map(d=>d.obs_date));
   attachAnalystStats('chart-main', gross, 'fx_reserves', 'USD Billions');
+  attachChartTools('chart-main', {indicator:'fx_reserves', name:'Foreign Exchange Reserves', source:'CBN'});
   attachEndLabels('chart-main', v=>'$'+v.toFixed(1)+'B');
   document.getElementById('loading-blocked').style.display='none';
   const c2=document.getElementById('chart-blocked');c2.style.display='block';

@@ -211,6 +211,7 @@ async function load(start, end) {
   if (!window.chartUsd.__resetWired) { document.getElementById('reset-usd').addEventListener('click',()=>window.chartUsd.resetZoom()); window.chartUsd.__resetWired = true; }
   attachRangeSelector('chart-growth', growth.map(d=>d.obs_date));
   attachAnalystStats('chart-growth', growth, 'gdp_growth', 'Percent (%)');
+  attachChartTools('chart-growth', {indicator:'gdp_growth', name:'Real GDP Growth Rate', source:'NBS'});
   attachEndLabels('chart-usd', v=>'$'+v.toFixed(0)+'B');
   const tbody = document.getElementById('gdp-tbody');
   tbody.innerHTML = '';

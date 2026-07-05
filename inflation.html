@@ -55,6 +55,20 @@
     </div>
   </div>
   <div class="chart-card reveal"><div class="chart-card-title">Headline Inflation Rate (%) — Monthly</div><div class="chart-takeaway"><div class="takeaway-stat"><span class="takeaway-value" id="tk-inf-value">—</span><span class="takeaway-change" id="tk-inf-change"></span><span class="takeaway-meta" id="tk-inf-meta">Loading…</span></div><p class="takeaway-story"><strong>What this shows:</strong> Year-on-year headline inflation. Prices rose fastest in December 2024 at <strong>34.80%</strong>, then inflation slowed to <strong>15.38%</strong> by March 2026 — still rising, but at less than half the peak pace.</p><div class="takeaway-divider"></div></div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-inf">Loading…</div><canvas id="chart-inf" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-inf">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/inflation" download>⬇ Download CSV</a><div class="source-note">Source: NBS Consumer Price Index Report · Year-on-year headline inflation</div></div>
+  <div class="chart-card reveal" id="pp-card">
+    <div class="chart-card-title">Purchasing-Power Calculator — what inflation did to your money</div>
+    <p class="chart-context">Pick an amount and two dates to see how far prices moved between them, computed directly from the NBS headline-inflation series plotted above.</p>
+    <div class="ops-grid">
+      <section class="ops-panel"><label for="pp-amount">Amount (₦)</label><input id="pp-amount" type="number" value="100000" min="1" step="any"></section>
+      <section class="ops-panel"><label for="pp-from">From</label><select id="pp-from"></select></section>
+      <section class="ops-panel"><label for="pp-to">To</label><select id="pp-to"></select></section>
+    </div>
+    <div style="padding:18px 0 4px;">
+      <div style="font-family:var(--font-mono);font-size:2.1rem;font-weight:500;color:var(--gold);letter-spacing:-0.02em;line-height:1.1;" id="pp-result">—</div>
+      <p style="font-family:var(--font-body);font-size:0.88rem;color:rgba(245,240,232,0.8);line-height:1.7;margin-top:10px;max-width:72ch;" id="pp-sentence">Loading…</p>
+    </div>
+    <div class="source-note">Method: cumulative price change chained from the year-on-year headline-inflation series (12-month steps from the end date, with any remaining months pro-rated from that month's rate). The platform stores year-on-year rates rather than the CPI index itself, so figures are indicative approximations — not official CPI conversions.</div>
+  </div>
   <div class="chart-card reveal"><div class="chart-card-title">Food Inflation (%)</div><p class="chart-context">Food prices have consistently run hotter than headline inflation, reflecting Nigeria's exposure to local supply shocks and currency-driven import costs.</p><div class="chart-wrap"><div class="chart-loading" id="loading-food">Loading…</div><canvas id="chart-food" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-food">↺ Reset Zoom</button><div class="source-note">Source: NBS CPI Report · Year-on-year food inflation</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">Core Inflation (%)</div><p class="chart-context">Core inflation strips out volatile food and energy prices — typically lower than headline, but following the same FX-reform-driven upward trend.</p><div class="chart-wrap"><div class="chart-loading" id="loading-core">Loading…</div><canvas id="chart-core" style="display:none"></canvas></div><button class="btn-chart-reset" id="reset-core">↺ Reset Zoom</button><div class="source-note">Source: NBS CPI Report · Core inflation excludes volatile food and energy</div></div>
   <div class="chart-card reveal"><div class="chart-card-title">Headline vs Food vs Core Inflation 2003–2026</div><p class="chart-context">Comparing all three measures together shows food has driven most of the divergence from core inflation since the 2023 FX reform.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-comp">Loading…</div><canvas id="chart-comp" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#FF6B6B"></span>Headline</span><span><span class="dot" style="background:#E8820C"></span>Food</span><span><span class="dot" style="background:#4a9eff"></span>Core</span></div><button class="btn-chart-reset" id="reset-comp">↺ Reset Zoom</button></div>
@@ -75,7 +89,6 @@ const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'r
 const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
 Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
 function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
-function annotLine(label,color,idx){return{type:'line',xMin:idx,xMax:idx,borderColor:color+'66',borderWidth:1.5,borderDash:[6,4],label:{display:true,content:label,position:'end',backgroundColor:color,color:'#fff',font:{size:11,weight:'600'},padding:{x:6,y:3},borderRadius:2}};}
 function destroyChart(cid){const c=Chart.getChart(document.getElementById(cid));if(c)c.destroy();}
 async function load(start,end){
  try{
@@ -84,11 +97,7 @@ async function load(start,end){
   if(!data.length){document.getElementById('filter-status').textContent='No data in range';return;}
   const latest=data[data.length-1];
   renderTakeaway('tk-inf',{value:latest.value,prev:data.length>1?data[data.length-2].value:null,prevLabel:'vs prev month',dateLabel:fmt(latest.obs_date),source:'NBS',format:v=>Number(v).toFixed(2)+'%',betterWhenUp:false});
-  const covidIdx=data.findIndex(d=>d.obs_date.startsWith('2020-01'));
-  const fxIdx=data.findIndex(d=>d.obs_date.startsWith('2023-06'));
-  const annots={};
-  if(covidIdx>=0)annots.covid=annotLine('COVID-19 (Jan 2020)','#e05252',covidIdx);
-  if(fxIdx>=0)annots.fxReform=annotLine('FX Reform (Jun 2023)','#4FC3F7',fxIdx);
+  const annots=(typeof npeEventAnnotations==='function')?npeEventAnnotations(data.map(d=>d.obs_date)):{};
   document.getElementById('loading-inf').style.display='none';
   document.getElementById('chart-inf').style.display='block';
   destroyChart('chart-inf');
@@ -96,6 +105,9 @@ async function load(start,end){
   if(!window.chartInf.__wired){document.getElementById('reset-inf').addEventListener('click',()=>window.chartInf.resetZoom());window.chartInf.__wired=true;}
   attachRangeSelector('chart-inf', data.map(d=>d.obs_date));
   attachAnalystStats('chart-inf', data, 'inflation', 'Percent (%)');
+  attachChartTools('chart-inf', {indicator:'inflation', name:'Headline Inflation Rate', source:'NBS'});
+  attachEventToggle('chart-inf');
+  initPP(data);
   attachEndLabels('chart-inf', v=>v.toFixed(1)+'%');
   const tbody=document.getElementById('inf-tbody');
   tbody.innerHTML='';
@@ -105,6 +117,36 @@ async function load(start,end){
   attachSortableTable(document.getElementById('inf-table'));
   if(start&&end)document.getElementById('filter-status').textContent=`${fmt(start)} – ${fmt(end)} loaded`;
  }catch(err){showLoadError(err);}
+}
+/* ─── Purchasing-power calculator (chained from the YoY series above) ─── */
+let ppWired=false, ppData=[];
+function ppFmt(v){return '₦'+Number(v).toLocaleString('en-US',{maximumFractionDigits:0});}
+function initPP(data){
+  ppData=data;
+  const from=document.getElementById('pp-from'), to=document.getElementById('pp-to');
+  if(!from||!to||!data.length) return;
+  const opts=data.map((d,i)=>`<option value="${i}">${fmt(d.obs_date)}</option>`).join('');
+  from.innerHTML=opts; to.innerHTML=opts;
+  from.value=0; to.value=data.length-1;
+  if(!ppWired){['pp-amount','pp-from','pp-to'].forEach(id=>document.getElementById(id).addEventListener('input',ppCompute));ppWired=true;}
+  ppCompute();
+}
+function ppCompute(){
+  const data=ppData; if(!data.length) return;
+  const i=parseInt(document.getElementById('pp-from').value), j=parseInt(document.getElementById('pp-to').value);
+  const amt=parseFloat(document.getElementById('pp-amount').value)||0;
+  const resEl=document.getElementById('pp-result'), sEl=document.getElementById('pp-sentence');
+  if(!(i>=0)||!(j>=0)||i>=j||!amt){resEl.textContent='—';sEl.textContent='Enter an amount and choose a "From" date earlier than the "To" date.';return;}
+  // Chain year-on-year rates in 12-month steps back from the end date;
+  // pro-rate any remaining months from that month's YoY rate.
+  let cur=j, factor=1;
+  while(cur-i>=12){factor*=1+data[cur].value/100;cur-=12;}
+  const rem=cur-i;
+  if(rem>0)factor*=Math.pow(1+data[cur].value/100,rem/12);
+  const eq=amt*factor;
+  resEl.textContent=ppFmt(eq);
+  const riseStr=factor>=2?('about <strong style="color:var(--white)">'+factor.toFixed(1)+'×</strong>'):('about <strong style="color:var(--white)">'+((factor-1)*100).toFixed(0)+'%</strong>');
+  sEl.innerHTML=`You would need <strong style="color:var(--white)">${ppFmt(eq)}</strong> in ${fmt(data[j].obs_date)} to buy roughly what <strong style="color:var(--white)">${ppFmt(amt)}</strong> bought in ${fmt(data[i].obs_date)} — prices rose ${riseStr} over this period. Put differently: ${ppFmt(amt)} kept as cash since ${fmt(data[i].obs_date)} now buys only what <strong style="color:var(--white)">${ppFmt(amt/factor)}</strong> bought then.`;
 }
 document.addEventListener('DOMContentLoaded', function(){ attachLastUpdated('last-updated', 'inflation', 'NBS'); });
 load();

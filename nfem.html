@@ -85,6 +85,7 @@ async function load(start,end){
   if(!window.chartNfem.__wired){document.getElementById('reset-nfem').addEventListener('click',()=>window.chartNfem.resetZoom());window.chartNfem.__wired=true;}
   attachRangeSelector('chart-nfem', closing.map(d=>d.obs_date));
   attachAnalystStats('chart-nfem', closing, 'nfem_closing', 'NGN per USD');
+  attachChartTools('chart-nfem', {indicator:'nfem_closing', name:'NFEM Daily Closing Rate', source:'CBN'});
   attachEndLabels('chart-nfem', v=>'₦'+Math.round(v).toLocaleString('en-US'));
   const wavgMap={},highMap={},lowMap={};
   wavg.forEach(d=>wavgMap[d.obs_date]=d.value);highest.forEach(d=>highMap[d.obs_date]=d.value);lowest.forEach(d=>lowMap[d.obs_date]=d.value);

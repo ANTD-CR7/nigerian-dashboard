@@ -96,6 +96,7 @@ async function load(start,end){
   if(!window.chartMain.__wired){document.getElementById('reset-main').addEventListener('click',()=>window.chartMain.resetZoom());window.chartMain.__wired=true;}
   attachRangeSelector('chart-main', extRes.map(d=>d.obs_date));
   attachAnalystStats('chart-main', extRes, 'cbn_annual_ext_reserve', 'NGN Thousands');
+  attachChartTools('chart-main', {indicator:'cbn_annual_ext_reserve', name:'CBN External Reserves (Annual)', source:'CBN'});
   attachEndLabels('chart-main', v=>'₦'+v.toFixed(1)+'T');
   window.__surplusData=surplus;
   document.getElementById('loading-surplus').style.display='none';document.getElementById('chart-surplus').style.display='block';
