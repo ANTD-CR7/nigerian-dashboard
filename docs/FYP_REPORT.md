@@ -172,7 +172,7 @@ learning, and is not positioned as official national infrastructure.
 | Currency in circulation | Monthly | 2002–2024 | CBN |
 | Inflation (headline/food/core) | Monthly | 2003–2026 | NBS |
 | GDP growth | Quarterly | 2020–2024 | NBS |
-| Real GDP by sector (57 sectors) | Quarterly/Annual | 1981–2024 | NBS |
+| Real GDP by sector (47 sectors) | Quarterly/Annual | 1981–2024 | NBS |
 | Nominal GDP (USD) | Annual | 2020–2024 | World Bank |
 
 ### 1.5 Significance of the Study

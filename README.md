@@ -45,7 +45,7 @@ by **Taoheed Abdulmanan Olaosebikan** (2026).
 | Currency in circulation | total | monthly | 2002–2024 (₦ million) | CBN |
 | Inflation | headline / food / core | monthly | 2003–2026 | NBS |
 | GDP growth | real GDP growth rate | quarterly | 2020–2024 | NBS |
-| Real GDP by sector | 57 sectors | quarterly/annual | 1981–2024 | NBS |
+| Real GDP by sector | 47 sectors | quarterly/annual | 1981–2024 | NBS |
 | Nominal GDP | USD billions | annual | 2020–2024 | World Bank |
 
 > **Units matter.** The CBN balance-sheet series is stored in ₦'000 and the annual
