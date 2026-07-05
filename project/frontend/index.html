@@ -432,12 +432,7 @@
       <div class="ops-grid">
         <section class="ops-panel">
           <label for="analytics-indicator">Indicator</label>
-          <select id="analytics-indicator">
-            <option value="inflation">Inflation</option>
-            <option value="exchange_rate">Exchange Rate</option>
-            <option value="gdp_growth">GDP Growth</option>
-            <option value="mpr">Monetary Policy Rate</option>
-          </select>
+          <select id="analytics-indicator"><option value="inflation">Loading catalogue…</option></select>
         </section>
         <section class="ops-panel">
           <label for="analytics-start">From</label>
@@ -714,13 +709,11 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
  }
 }
 
-let forecastChart;
-const INDICATOR_UNITS = { inflation:'%', exchange_rate:' NGN/USD', gdp_growth:'%', mpr:'%' };
+let forecastChart, PANEL_CAT = {};
 function formatAnalyticsValue(indicator, value) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return 'n/a';
-  const number = Number(value);
-  if (indicator === 'exchange_rate') return `NGN ${number.toFixed(2)}`;
-  return `${number.toFixed(2)}${INDICATOR_UNITS[indicator] || ''}`;
+  const m = PANEL_CAT[indicator];
+  return (typeof npeFormat === 'function') ? npeFormat(Number(value), indicator, m ? m.unit : '') : String(Number(value).toFixed(2));
 }
 
 async function loadAnalytics() {
@@ -741,14 +734,15 @@ async function loadAnalytics() {
     const xm = (n-1)/2, ym = vals.reduce((a,b)=>a+b,0)/n;
     let num=0,den=0; vals.forEach((v,i)=>{num+=(i-xm)*(v-ym);den+=(i-xm)**2;});
     const slope = den ? num/den : 0;
-    document.getElementById('ana-trend').textContent = slope>0.05?`rising (${slope.toFixed(3)}/period)`:slope<-0.05?`falling (${slope.toFixed(3)}/period)`:'stable';
+    const relSlope = ym ? slope / Math.abs(ym) : 0; // slope as a fraction of the mean, so it's comparable across units
+    document.getElementById('ana-trend').textContent = relSlope>0.002?'rising':relSlope<-0.002?'falling':'stable';
     document.getElementById('loading-forecast').style.display = 'none';
     document.getElementById('chart-forecast').style.display = 'block';
     if (forecastChart) forecastChart.destroy();
     forecastChart = new Chart(document.getElementById('chart-forecast'), {
       type:'line',
       data:{ labels:data.map(d=>fmt(d.obs_date)), datasets:[{ data:vals, borderColor:'#008751', backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3 }] },
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>formatAnalyticsValue(indicator,ctx.parsed.y) }}}, scales:{ y:SY, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}} } }
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>formatAnalyticsValue(indicator,ctx.parsed.y) }}}, scales:{ y:{...SY,ticks:{...SY.ticks,callback:v=>formatAnalyticsValue(indicator,v)}}, x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}} } }
     });
   } catch(e) { console.error('Analytics error:',e); }
 }
@@ -792,8 +786,16 @@ document.getElementById('apply-chart-filter').addEventListener('click', async ()
 });
 
 loadData();
-loadAnalytics();
 loadCoverage();
+async function initAnalyticsPanel() {
+  try {
+    const cat = await npeCatalogue();
+    cat.forEach(x => { PANEL_CAT[x.id] = x; });
+    npeFillSelect(document.getElementById('analytics-indicator'), cat, 'inflation');
+  } catch (e) { /* fall back to the single default option */ }
+  loadAnalytics();
+}
+document.addEventListener('DOMContentLoaded', initAnalyticsPanel);
 </script>
 
 
