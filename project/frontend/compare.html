@@ -112,13 +112,6 @@ async function populateSelects(){
   npeFillSelect(a,CAT,'inflation');
   npeFillSelect(b,CAT,'exchange_rate');
 }
-function corrTime(vals){
-  const n=vals.length; if(n<2) return 0;
-  const m=vals.reduce((a,b)=>a+b,0)/n, xm=(n-1)/2;
-  let num=0,den=0,vs=0;
-  vals.forEach((v,i)=>{num+=(i-xm)*(v-m);den+=(i-xm)*(i-xm);vs+=(v-m)*(v-m);});
-  return (den&&vs)?num/Math.sqrt(den*vs):0;
-}
 
 function pearson(x,y){
   const n=Math.min(x.length,y.length);
