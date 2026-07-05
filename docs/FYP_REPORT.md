@@ -511,18 +511,51 @@ for the future work discussed in Chapter Five.
 - Figure 4.6 — API documentation page and Swagger UI (`/docs`).
 - Figure 4.7 — A sample JSON API response showing the `_links` (HATEOAS) block.
 
-### 4.7 Testing
-Testing followed several complementary strands:
-- **Unit testing (Pytest).** `tests/test_main.py` exercises the API endpoints and asserts
-  the presence and correctness of the HATEOAS link blocks.
-- **Functional testing.** Each dashboard page was loaded against live data to confirm charts,
-  filters, comparisons and downloads behave correctly.
-- **Data-truthfulness testing.** Every chart's stated figures, ranges and units were
-  cross-checked against the stored data; discrepancies (e.g. mislabelled units, incorrect
-  historical figures) were corrected.
-- **Accessibility testing.** Lighthouse audits were used to verify WCAG 2.1 AA colour
-  contrast and other accessibility criteria.
-- **API testing.** Endpoints were exercised via the browser, Swagger UI and `curl`.
+### 4.7 Testing and Validation
+The platform was validated through several complementary strands, combining automated tests,
+independent statistical validation, and systematic data auditing.
+
+**1. Automated unit testing (Pytest).** The Open API is covered by a suite of **16 unit
+tests** in `tests/test_main.py`, exercising the read endpoints, the demo-safe ingestion path,
+and — importantly — asserting the presence and correctness of the HATEOAS `_links` blocks
+that make the API Level 3. All 16 tests pass.
+
+**2. Statistical validation.** Because the analytics report inferential statistics, the
+underlying mathematics was validated independently of the user interface:
+- the correlation-significance function (a two-tailed Student-t p-value computed via the
+  regularised incomplete beta function) was checked against known reference cases — for
+  example, r = 0.70 over n = 75 yields p ≈ 4 × 10⁻¹², while r = 0.20 over n = 20 yields
+  p ≈ 0.40 (correctly *not* significant);
+- the scale-aware value formatter was unit-tested across every unit type in the catalogue
+  (percentages, exchange rates, USD billions, and the naira thousands/millions/billions
+  scales), confirming for instance that CBN total assets render as ₦81.04T rather than a raw
+  or mislabelled figure;
+- the analytics engine was exercised against deliberately awkward real series — a daily
+  series (NFEM), a series containing negative values (government deposits), a sparse
+  four-point series (AED rates), a count series, and a series whose coverage ends early
+  (services GDP) — confirming correct output and no crashes on these edge cases.
+
+**3. Data-truthfulness auditing.** Every chart's stated figures, ranges and units were
+cross-checked against the stored data. This systematic audit found and corrected genuine
+defects, including: a data-censoring routine that silently capped some balance-sheet series
+(hiding the gold revaluation and understating bankers' deposits); unit mislabels that
+mis-scaled monetary values by a factor of a thousand; a chart titled an "inverse
+relationship" that the data showed to be a weak *positive* one (r ≈ 0.33); and a sector
+comparison that inadvertently placed figures from different years side by side. Each defect
+was verified against the original source figures and corrected.
+
+**4. Functional and visual verification.** Every dashboard page was loaded against the live
+database and inspected — including through automated screenshots — to confirm that charts,
+date filters, indicator comparisons, table sorting and CSV downloads behave correctly, and
+that the responsive layout holds across screen widths.
+
+**5. Accessibility testing.** Colour contrast and related criteria were checked against the
+WCAG 2.1 AA standard (contrast ratio ≥ 4.5:1) using Lighthouse audits; contrast defects
+found during development were corrected.
+
+**6. API testing.** Endpoints were exercised manually through the browser, the
+auto-generated Swagger UI at `/docs`, and `curl`, confirming correct payloads, CSV export
+with the RFC 8288 `Link` header, and the demo-safe behaviour of the ingestion endpoints.
 
 **Table 4.1 — Representative test cases**
 
@@ -530,10 +563,14 @@ Testing followed several complementary strands:
 |---|---|---|---|
 | 1 | `GET /api/v1/summary` | 5 headline indicators + `_links` | Pass |
 | 2 | `GET /api/v1/analytics/inflation` | latest, change, trend, forecast | Pass |
-| 3 | `GET /api/v1/export/exchange_rate` | CSV + `Link` header | Pass |
-| 4 | `POST /api/v1/ingest/csv` (demo mode) | validated, not written | Pass |
-| 5 | Chart figures vs stored data | exact match, correct units | Pass (after fixes) |
-| 6 | Accessibility contrast | ≥ 4.5:1 | Pass |
+| 3 | `GET /api/v1/export/exchange_rate` | CSV + RFC 8288 `Link` header | Pass |
+| 4 | `POST /api/v1/ingest/csv` (demo mode) | validated, not written to DB | Pass |
+| 5 | Full Pytest suite | 16 / 16 tests pass | Pass |
+| 6 | Correlation p-value vs known cases | matches reference values | Pass |
+| 7 | Value formatter across all unit types | correct scale and symbol | Pass |
+| 8 | Analytics engine on edge-case series | no crash, correct output | Pass |
+| 9 | Chart figures vs stored data | exact match, correct units | Pass (after fixes) |
+| 10 | Accessibility contrast | ≥ 4.5:1 (WCAG 2.1 AA) | Pass |
 
 ### 4.8 Results and Discussion
 The implemented platform successfully aggregates 122 indicators and ~12,100 observations
