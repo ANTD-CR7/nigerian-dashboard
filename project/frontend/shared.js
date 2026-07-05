@@ -591,6 +591,88 @@ function npeFillSelect(sel, cat, selectedId) {
   sel.innerHTML = html;
 }
 
+/* ─── Reader / Analyst detail dial ───
+   One global toggle (persisted in localStorage). Reader keeps the plain-
+   language story; Analyst reveals every element marked .analyst-only.
+   attachAnalystStats() renders a researcher-grade stat panel for a plotted
+   series, reusing npeStats/npeFormat so every page shares one correct
+   implementation. */
+function npeShortDate(d) {
+  return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+
+function attachAnalystStats(canvasId, series, indId, unit) {
+  var canvas = document.getElementById(canvasId);
+  if (!canvas || !series || series.length < 2) return;
+  var card = canvas.closest('.chart-card');
+  if (!card) return;
+  var st = npeStats(series);
+  if (!st) return;
+  var F = function (v) { return npeFormat(v, indId, unit); };
+  var freq = npeFreq(npeMedianGapDays(st.pts));
+  var sig = npeSig(st.trendCorr, st.n);
+  var cv = (st.mean && st.min.value >= 0) ? Math.abs(st.std / st.mean) * 100 : null;
+  var dir = st.slope > 1e-9 ? 'Rising' : (st.slope < -1e-9 ? 'Falling' : 'Flat');
+  var yr = function (d) { return d ? d.slice(0, 4) : ''; };
+  var old = card.querySelector('.analyst-panel[data-for="' + canvasId + '"]');
+  if (old) old.remove();
+  var el = document.createElement('div');
+  el.className = 'analyst-only analyst-panel';
+  el.setAttribute('data-for', canvasId);
+  el.innerHTML =
+    '<div class="ap-head">Analyst detail</div>' +
+    '<div class="profile-stats">' + [
+      ['Range', F(st.min.value) + ' – ' + F(st.max.value), 'min ' + yr(st.min.date) + ' · max ' + yr(st.max.date)],
+      ['Mean', F(st.mean), 'over ' + st.n + ' observations'],
+      ['Volatility (σ)', F(st.std), cv != null ? cv.toFixed(0) + '% of mean' : 'standard deviation'],
+      ['Trend (OLS)', dir, 'R²=' + (st.trendCorr * st.trendCorr).toFixed(2) + ' · ' + sig.label],
+      ['Coverage', st.n + ' · ' + freq, npeShortDate(st.pts[0].obs_date) + ' → ' + npeShortDate(st.latest.obs_date)]
+    ].map(function (t) {
+      return '<div class="prof-tile"><div class="pt-label">' + t[0] + '</div><div class="pt-value">' + t[1] + '</div><div class="pt-sub">' + t[2] + '</div></div>';
+    }).join('') + '</div>' +
+    '<div class="ap-note">Computed client-side from the plotted series · methods and limitations documented on the <a href="about.html">About page</a>.</div>';
+  var note = card.querySelector('.source-note');
+  if (note) card.insertBefore(el, note); else card.appendChild(el);
+}
+
+(function () {
+  if (!document.body) return;
+  var saved = 'reader';
+  try { saved = localStorage.getItem('npe-view') || 'reader'; } catch (e) {}
+  if (saved === 'analyst') document.body.classList.add('analyst');
+
+  function setView(v) {
+    document.body.classList.toggle('analyst', v === 'analyst');
+    try { localStorage.setItem('npe-view', v); } catch (e) {}
+    document.querySelectorAll('.view-toggle button').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.view === v);
+      b.setAttribute('aria-pressed', b.dataset.view === v ? 'true' : 'false');
+    });
+  }
+  function buildToggle() {
+    var wrap = document.createElement('div');
+    wrap.className = 'view-toggle';
+    wrap.setAttribute('role', 'group');
+    wrap.setAttribute('aria-label', 'Detail level');
+    [['reader', 'Reader', 'Plain-language view'], ['analyst', 'Analyst', 'Reveal statistics, trend significance and methodology']].forEach(function (o) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.dataset.view = o[0]; b.textContent = o[1]; b.title = o[2];
+      b.classList.toggle('active', saved === o[0]);
+      b.setAttribute('aria-pressed', saved === o[0] ? 'true' : 'false');
+      b.addEventListener('click', function () { setView(o[0]); });
+      wrap.appendChild(b);
+    });
+    return wrap;
+  }
+  var cta = document.querySelector('.nav-cta');
+  if (cta) cta.insertBefore(buildToggle(), cta.firstChild);
+  var mob = document.getElementById('mobile-menu');
+  if (mob) {
+    var g = document.createElement('div'); g.className = 'mob-group'; g.textContent = 'Detail level';
+    mob.appendChild(g); mob.appendChild(buildToggle());
+  }
+})();
+
 /* ─── Command palette (Ctrl/Cmd+K or "/") + scroll UX ─── */
 (function () {
   if (!document.body) return;

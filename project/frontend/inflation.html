@@ -95,6 +95,7 @@ async function load(start,end){
   window.chartInf=new Chart(document.getElementById('chart-inf'),{type:'line',data:{labels:data.map(d=>fmt(d.obs_date)),datasets:[{label:'Inflation Rate (%)',data:data.map(d=>d.value),borderColor:'#FF6B6B',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(255,107,107,0.2)','rgba(255,107,107,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#FF6B6B',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`Inflation: ${ctx.parsed.y.toFixed(2)}%`}},annotation:{annotations:annots},zoom:ZOOM},scales:{y:{...SY,title:{display:true,text:'Inflation Rate (%)',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}}}}});
   if(!window.chartInf.__wired){document.getElementById('reset-inf').addEventListener('click',()=>window.chartInf.resetZoom());window.chartInf.__wired=true;}
   attachRangeSelector('chart-inf', data.map(d=>d.obs_date));
+  attachAnalystStats('chart-inf', data, 'inflation', 'Percent (%)');
   attachEndLabels('chart-inf', v=>v.toFixed(1)+'%');
   const tbody=document.getElementById('inf-tbody');
   tbody.innerHTML='';

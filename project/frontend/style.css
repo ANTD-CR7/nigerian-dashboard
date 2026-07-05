@@ -523,6 +523,40 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   border-left: 2px solid rgba(244,160,23,0.4);
 }
 
+/* ─── Reader / Analyst detail dial ─── */
+body:not(.analyst) .analyst-only { display: none !important; }
+.view-toggle {
+  display: inline-flex; align-items: stretch;
+  border: 1px solid rgba(245,240,232,0.14); border-radius: 8px;
+  overflow: hidden; margin-right: 12px;
+}
+.view-toggle button {
+  background: transparent; border: none; cursor: pointer;
+  font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.05em;
+  color: var(--slate); padding: 7px 13px; transition: all 0.18s;
+}
+.view-toggle button + button { border-left: 1px solid rgba(245,240,232,0.1); }
+.view-toggle button:hover { color: var(--white); }
+.view-toggle button.active { background: rgba(244,160,23,0.16); color: var(--gold); }
+#mobile-menu .view-toggle { margin: 10px 16px 6px; }
+.analyst-panel {
+  margin-top: 18px; padding-top: 16px;
+  border-top: 1px dashed rgba(245,240,232,0.1);
+  animation: apIn 0.3s ease;
+}
+@keyframes apIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.ap-head {
+  font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+}
+.ap-note {
+  font-family: var(--font-mono); font-size: 0.62rem; color: var(--slate);
+  margin-top: 4px; line-height: 1.6;
+}
+.ap-note a { color: var(--green-text); }
+.hero-lede a { color: var(--green-text); text-decoration: underline; text-underline-offset: 3px; }
+.hero-lede a:hover { color: var(--white); }
+
 /* ─── Per-indicator analytics profile tiles ─── */
 .profile-stats {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));

@@ -93,6 +93,7 @@ async function load(start,end){
   window.chartMain=new Chart(document.getElementById('chart-main'),{data:{labels,datasets:[{...mkLine(ta,'#4FC3F7'),label:'Total assets',fill:true,backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(79,195,247,0.12)','rgba(79,195,247,0)')}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`Balance sheet: ₦${ctx.parsed.y?.toFixed(1)}T`}},zoom:ZOOM},scales:{y:{...SY,ticks:{...SY.ticks,callback:v=>'₦'+Number(v).toFixed(0)+'T'},title:{display:true,text:'NGN Trillions',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
   if(!window.chartMain.__wired){document.getElementById('reset-main').addEventListener('click',()=>window.chartMain.resetZoom());window.chartMain.__wired=true;}
   attachRangeSelector('chart-main', ta.map(d=>d.obs_date));
+  attachAnalystStats('chart-main', ta, 'cbn_total_assets', 'NGN');
   attachEndLabels('chart-main', v=>'₦'+v.toFixed(1)+'T');
   subPanel('chart-gold','loading-gold',gold,'#F4A017','rgba(244,160,23,0.18)',true);
   subPanel('chart-gd','loading-gd',gd,'#00C896','rgba(0,200,150,0.14)',false);

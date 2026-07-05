@@ -106,6 +106,11 @@ without over-claiming. Fill the `[ ]` placeholders.
    scales — you read it top-to-bottom."
 2. **⌘K / the Search box** → type "reserves" → jump to FX Reserves. *Say:* "power-user
    navigation across the whole site."
+   Then flip the navbar dial **Reader → Analyst**: the page reveals a researcher-grade
+   stat panel (range, mean, volatility, OLS trend with R² and p-value) under the chart.
+   *Say:* "the platform adapts its depth to the stakeholder — plain language for the
+   public, inferential statistics for researchers — one honest codebase, no duplicated
+   pages."
 3. **Analytics → "Analyze Any Indicator"** → pick a GDP sector or a CBN item. *Say:* "any of
    122 indicators, full profile computed live, correct units."
 4. **Analytics → Compare** → set two obviously-trending series (CBN Total Assets vs Currency
