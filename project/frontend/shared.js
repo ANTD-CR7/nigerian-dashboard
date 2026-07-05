@@ -650,6 +650,7 @@ function attachAnalystStats(canvasId, series, indId, unit, label) {
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { t.classList.remove('show'); }, 3200);
   }
+  window.npeToast = toast;
   function setView(v, announce) {
     document.body.classList.toggle('analyst', v === 'analyst');
     try { localStorage.setItem('npe-view', v); } catch (e) {}
@@ -693,6 +694,154 @@ function attachAnalystStats(canvasId, series, indId, unit, label) {
     mob.appendChild(g); mob.appendChild(buildToggle());
   }
 })();
+
+/* ═══════════════════════════════════════════════════════════════════
+   Research Toolkit — share-view links, PNG export with attribution,
+   and a "cite this data" generator. One implementation for every page.
+   ═══════════════════════════════════════════════════════════════════ */
+var NPE_SOURCE_ORGS = { CBN: 'Central Bank of Nigeria', NBS: 'National Bureau of Statistics', WB: 'World Bank', 'World Bank': 'World Bank' };
+
+function npeCopy(text, doneMsg) {
+  function done() { if (window.npeToast) npeToast(doneMsg); }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, function () { npePromptCopy(text); });
+  } else { npePromptCopy(text); }
+}
+function npePromptCopy(text) { window.prompt('Copy with Ctrl+C:', text); }
+
+/* attachChartTools(canvasId, {indicator, name, source})
+   Adds ⤴ Share view · ⬇ PNG · ” Cite buttons beside the chart's controls. */
+function attachChartTools(canvasId, opts) {
+  opts = opts || {};
+  var canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  var card = canvas.closest('.chart-card');
+  if (!card || card.querySelector('.chart-tools[data-for="' + canvasId + '"]')) return;
+
+  var bar = document.createElement('span');
+  bar.className = 'chart-tools';
+  bar.setAttribute('data-for', canvasId);
+
+  function mkBtn(text, title, fn) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn-chart-tool'; b.textContent = text; b.title = title;
+    b.addEventListener('click', fn);
+    bar.appendChild(b);
+  }
+
+  mkBtn('⤴ Share view', 'Copy a link that reproduces this exact view', function () {
+    var url = new URL(window.location.href.split('#')[0].split('?')[0]);
+    var s = document.getElementById('flt-start'), e = document.getElementById('flt-end');
+    if (s && s.value) url.searchParams.set('from', s.value);
+    if (e && e.value) url.searchParams.set('to', e.value);
+    if (document.body.classList.contains('analyst')) url.searchParams.set('view', 'analyst');
+    npeCopy(url.toString(), 'Link copied — it reproduces this exact view');
+  });
+
+  mkBtn('⬇ PNG', 'Download this chart as an image with attribution', function () {
+    var chart = Chart.getChart(canvas);
+    if (!chart) return;
+    var pad = 38, w = canvas.width, h = canvas.height;
+    var out = document.createElement('canvas');
+    out.width = w; out.height = h + pad;
+    var ctx = out.getContext('2d');
+    ctx.fillStyle = '#0d0f18'; ctx.fillRect(0, 0, w, h + pad);
+    ctx.drawImage(canvas, 0, 0);
+    ctx.strokeStyle = 'rgba(245,240,232,0.12)';
+    ctx.beginPath(); ctx.moveTo(12, h + 6); ctx.lineTo(w - 12, h + 6); ctx.stroke();
+    ctx.font = '12px "IBM Plex Mono", monospace'; ctx.fillStyle = 'rgba(245,240,232,0.6)';
+    ctx.fillText('NPEDATA · ' + (opts.name || canvasId) + ' · Source: ' + (opts.source || 'CBN/NBS/World Bank') + ' · ' + window.location.host, 12, h + 24);
+    var a = document.createElement('a');
+    a.download = (opts.indicator || canvasId) + '_npedata.png';
+    a.href = out.toDataURL('image/png');
+    a.click();
+    if (window.npeToast) npeToast('Chart image downloaded with attribution');
+  });
+
+  mkBtn('” Cite', 'Copy an APA-style citation for this data', function () {
+    var now = new Date();
+    var retrieved = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    var org = NPE_SOURCE_ORGS[opts.source] || opts.source || 'Central Bank of Nigeria / National Bureau of Statistics';
+    var cite = org + '. (' + now.getFullYear() + '). ' + (opts.name || 'Nigerian economic data') +
+      ' [Data set]. NPEDATA — Nigerian Public Economic Data Aggregation and Analytics Platform. ' +
+      'Retrieved ' + retrieved + ', from ' + window.location.href.split('?')[0];
+    npeCopy(cite, 'APA citation copied to clipboard');
+  });
+
+  var anchor = card.querySelector('.btn-download') || card.querySelector('.btn-chart-reset');
+  if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(bar, anchor.nextSibling);
+  else card.appendChild(bar);
+}
+
+/* Restore a shared view: ?from=&to= set the date filter, ?view=analyst flips the dial. */
+(function () {
+  var q = new URLSearchParams(window.location.search);
+  if (q.get('view') === 'analyst') {
+    try { localStorage.setItem('npe-view', 'analyst'); } catch (e) {}
+    document.body.classList.add('analyst');
+  }
+  var from = q.get('from'), to = q.get('to');
+  if (!from || !to) return;
+  window.addEventListener('load', function () {
+    setTimeout(function () {
+      var s = document.getElementById('flt-start'), e = document.getElementById('flt-end'), b = document.getElementById('apply-filter');
+      if (s && e && b) {
+        s.value = from; e.value = to; b.click();
+        if (window.npeToast) npeToast('Shared view restored: ' + from + ' → ' + to);
+      }
+    }, 700);
+  });
+})();
+
+/* ═══ Event context layer — one registry, consistent on every chart ═══ */
+var NPE_EVENTS = [
+  { date: '2020-04', label: 'COVID-19', color: '#e05252' },
+  { date: '2023-01', label: 'Naira redesign', color: '#B39DDB' },
+  { date: '2023-06', label: 'FX reform', color: '#008751' }
+];
+/* Returns Chart.js annotation objects for every registry event that falls
+   inside the plotted dates (ISO strings, ascending). */
+function npeEventAnnotations(isoDates) {
+  var out = {};
+  if (!isoDates || !isoDates.length) return out;
+  NPE_EVENTS.forEach(function (ev, k) {
+    var idx = -1;
+    for (var i = 0; i < isoDates.length; i++) {
+      if (isoDates[i].slice(0, 7) >= ev.date) { idx = i; break; }
+    }
+    if (idx === -1) return;                                       // event after the plotted window
+    if (idx === 0 && isoDates[0].slice(0, 7) > ev.date) return;   // event before the plotted window
+    out['npeEvent' + k] = {
+      type: 'line', xMin: idx, xMax: idx,
+      borderColor: ev.color + '66', borderWidth: 1.5, borderDash: [6, 4],
+      label: { display: true, content: ev.label, position: 'end', backgroundColor: ev.color, color: '#fff', font: { size: 11, weight: '600' }, padding: { x: 6, y: 3 }, borderRadius: 2 }
+    };
+  });
+  return out;
+}
+/* Adds a "⚑ Events" chip into the chart's range-selector bar (if present)
+   that toggles the registry annotations on/off. */
+function attachEventToggle(canvasId) {
+  var canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  var chart = Chart.getChart(canvas);
+  if (!chart || !chart.options.plugins || !chart.options.plugins.annotation) return;
+  var host = canvas.closest('.chart-card');
+  var bar = host && host.querySelector('.range-selector');
+  if (!bar || bar.querySelector('.evt-chip')) return;
+  var btn = document.createElement('button');
+  btn.type = 'button'; btn.className = 'range-chip evt-chip active';
+  btn.textContent = '⚑ Events'; btn.title = 'Toggle event markers (COVID-19, FX reform, Naira redesign)';
+  btn.addEventListener('click', function () {
+    var anns = chart.options.plugins.annotation.annotations || {};
+    var on = btn.classList.toggle('active');
+    Object.keys(anns).forEach(function (k) {
+      if (k.indexOf('npeEvent') === 0) { anns[k].display = on; if (anns[k].label) anns[k].label.display = on; }
+    });
+    chart.update('none');
+  });
+  bar.appendChild(btn);
+}
 
 /* ─── Command palette (Ctrl/Cmd+K or "/") + scroll UX ─── */
 (function () {

@@ -85,6 +85,7 @@ async function load(start,end){
   if(!window.chartMpr.__wired){document.getElementById('reset-mpr').addEventListener('click',()=>window.chartMpr.resetZoom());window.chartMpr.__wired=true;}
   attachRangeSelector('chart-mpr', data.map(d=>d.obs_date));
   attachAnalystStats('chart-mpr', data, 'mpr', 'Percent (%)');
+  attachChartTools('chart-mpr', {indicator:'mpr', name:'Monetary Policy Rate', source:'CBN'});
   attachEndLabels('chart-mpr', v=>v.toFixed(2)+'%');
   const tbody=document.getElementById('mpr-tbody');
   tbody.innerHTML='';

@@ -86,7 +86,6 @@ const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'r
 Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
 function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 let allData={};let singleChart=null;let spreadChart=null;
-function annotation(label,color,idx){return{type:'line',xMin:idx,xMax:idx,borderColor:color+'66',borderWidth:1.5,borderDash:[6,4],label:{display:true,content:label,position:'end',backgroundColor:color,color:'#fff',font:{size:11,weight:'600'},padding:{x:6,y:3},borderRadius:2}};}
 function filterByDate(arr,start,end){if(!start||!end)return arr;return arr.filter(d=>d.obs_date>=start&&d.obs_date<=end);}
 let currentFilter={start:null,end:null};
 function drawSingleChart(currency){
@@ -125,8 +124,7 @@ function drawTrendChart(){
   const usd=filterByDate(allData.usd?.central||[],currentFilter.start,currentFilter.end);
   const gbp=filterByDate(allData.gbp?.central||[],currentFilter.start,currentFilter.end);
   const eur=filterByDate(allData.eur?.central||[],currentFilter.start,currentFilter.end);
-  const covidIdx=usd.findIndex(d=>d.obs_date.startsWith('2020-04'));const fxIdx=usd.findIndex(d=>d.obs_date.startsWith('2023-06'));
-  const annots={};if(covidIdx>=0)annots.covid=annotation('COVID-19','#e05252',covidIdx);if(fxIdx>=0)annots.fxReform=annotation('FX Reform','#4FC3F7',fxIdx);
+  const annots=(typeof npeEventAnnotations==='function')?npeEventAnnotations(usd.map(d=>d.obs_date)):{};
   document.getElementById('loading-trend').style.display='none';
   const ct=document.getElementById('chart-trend');ct.style.display='block';
   const existingTrend=Chart.getChart(ct);if(existingTrend)existingTrend.destroy();

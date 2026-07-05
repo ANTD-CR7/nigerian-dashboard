@@ -101,10 +101,21 @@
     <div class="use-case-card reveal" style="border-top-color:var(--red-accent);"><h3>For Students</h3><p>Use the data for dissertations, final year projects and academic analysis in economics, data science, finance or computer science. Free and openly accessible.</p></div>
   </div>
 
+  <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin:48px 0 24px;" class="reveal">Embed a Live Chart</h2>
+  <div class="chart-card reveal">
+    <p style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.75;margin-bottom:16px;">Any indicator can be embedded in a blog, article or report as a live, self-updating widget — paste one iframe, no API key. Use any indicator id from the catalogue (e.g. <code style="color:var(--gold);">inflation</code>, <code style="color:var(--gold);">exchange_rate</code>, <code style="color:var(--gold);">fx_reserves</code>, <code style="color:var(--gold);">nfem_closing</code>); an optional <code style="color:var(--gold);">&amp;months=24</code> limits the window.</p>
+    <pre style="background:var(--black);border:1px solid rgba(245,240,232,0.1);border-radius:8px;padding:14px 16px;font-family:var(--font-mono);font-size:0.7rem;color:rgba(245,240,232,0.8);overflow-x:auto;margin-bottom:18px;">&lt;iframe src="https://antd-cr7.github.io/nigerian-dashboard/embed.html?indicator=inflation"
+        width="440" height="280" style="border:0;border-radius:10px;" loading="lazy"
+        title="Nigeria headline inflation — NPEDATA"&gt;&lt;/iframe&gt;</pre>
+    <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--green-text);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:10px;">Live preview</div>
+    <iframe src="embed.html?indicator=inflation" width="440" height="280" style="border:0;border-radius:10px;max-width:100%;" loading="lazy" title="Nigeria headline inflation — NPEDATA embed preview"></iframe>
+    <div class="source-note">Each widget shows the latest value, the change vs the previous reading, the full series, the source, and links back to NPEDATA.</div>
+  </div>
+
   <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin:48px 0 24px;" class="reveal">AI Agent Access</h2>
   <div class="insight-card reveal">
     <div class="insight-label">Model Context Protocol (MCP) Server</div>
-    <p>A standalone Node.js MCP server in the repository at <strong style="color:var(--gold);">/mcp-server</strong> exposes all 12 endpoints above as read-only tools for Claude Desktop, Cursor, and other MCP-compatible clients — so an AI agent can query Nigeria's GDP, inflation, exchange rate, FX reserves and CBN balance-sheet data directly in conversation, with no API key required. Setup instructions and the client config snippet are in <a href="https://github.com/ANTD-CR7/nigerian-dashboard/tree/main/mcp-server" style="color:var(--green-text);">mcp-server/README.md</a> in the source repository.</p>
+    <p>A standalone Node.js MCP server in the repository at <strong style="color:var(--gold);">/mcp-server</strong> exposes the read endpoints above as read-only tools for Claude Desktop, Cursor, and other MCP-compatible clients — so an AI agent can query Nigeria's GDP, inflation, exchange rate, FX reserves and CBN balance-sheet data directly in conversation, with no API key required. Setup instructions and the client config snippet are in <a href="https://github.com/ANTD-CR7/nigerian-dashboard/tree/main/mcp-server" style="color:var(--green-text);">mcp-server/README.md</a> in the source repository.</p>
   </div>
 
 </div></main>

@@ -94,6 +94,7 @@ async function load(start,end){
   if(!window.chartMain.__wired){document.getElementById('reset-main').addEventListener('click',()=>window.chartMain.resetZoom());window.chartMain.__wired=true;}
   attachRangeSelector('chart-main', ta.map(d=>d.obs_date));
   attachAnalystStats('chart-main', ta, 'cbn_total_assets', 'NGN');
+  attachChartTools('chart-main', {indicator:'cbn_total_assets', name:'CBN Total Assets', source:'CBN'});
   attachEndLabels('chart-main', v=>'₦'+v.toFixed(1)+'T');
   subPanel('chart-gold','loading-gold',gold,'#F4A017','rgba(244,160,23,0.18)',true);
   subPanel('chart-gd','loading-gd',gd,'#00C896','rgba(0,200,150,0.14)',false);

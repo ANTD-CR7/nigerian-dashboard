@@ -79,9 +79,7 @@ async function load(start,end){
   if(!data.length){document.getElementById('filter-status').textContent='No data in range';return;}
   const latestCin=data[data.length-1];
   renderTakeaway('tk-cin',{value:latestCin.value,prev:data.length>1?data[data.length-2].value:null,prevLabel:'vs prev reading',dateLabel:fmt(latestCin.obs_date),source:'CBN',format:v=>'₦'+(v/1e6).toFixed(2)+'T'});
-  const redesignIdx=data.findIndex(d=>d.obs_date.startsWith('2023-01'));
-  const annots={};
-  if(redesignIdx>=0)annots.redesign={type:'line',xMin:redesignIdx,xMax:redesignIdx,borderColor:'rgba(224,82,82,0.6)',borderWidth:1.5,borderDash:[6,4],label:{display:true,content:'Naira Redesign (Jan 2023)',position:'end',backgroundColor:'#e05252',color:'#fff',font:{size:11,weight:'600'},padding:{x:6,y:3},borderRadius:2}};
+  const annots=(typeof npeEventAnnotations==='function')?npeEventAnnotations(data.map(d=>d.obs_date)):{};
   document.getElementById('loading-chart').style.display='none';
   const canvas=document.getElementById('chart-cin');
   canvas.style.display='block';
@@ -90,6 +88,8 @@ async function load(start,end){
   if(!window.chartCin.__wired){document.getElementById('reset-cin').addEventListener('click',()=>window.chartCin.resetZoom());window.chartCin.__wired=true;}
   attachRangeSelector('chart-cin', data.map(d=>d.obs_date));
   attachAnalystStats('chart-cin', data, 'currency_circulation_full', 'NGN Millions');
+  attachChartTools('chart-cin', {indicator:'currency_circulation_full', name:'Currency in Circulation', source:'CBN'});
+  attachEventToggle('chart-cin');
   attachEndLabels('chart-cin', v=>'₦'+(v/1e6).toFixed(2)+'T');
   const tbody=document.getElementById('cin-tbody');
   tbody.innerHTML='';

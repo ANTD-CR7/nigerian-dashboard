@@ -860,6 +860,18 @@ body:not(.analyst) .analyst-only { display: none !important; }
 .range-chip:hover { color: var(--white); background: rgba(245,240,232,0.04); }
 .range-chip.active { background: rgba(0,135,81,0.2); color: var(--green-text); }
 
+/* ─── Research Toolkit (share / PNG / cite) ─── */
+.chart-tools { display: inline-flex; gap: 8px; margin-left: 8px; vertical-align: middle; }
+.btn-chart-tool {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px; background: transparent;
+  border: 1px solid rgba(244,160,23,0.35); color: rgba(245,240,232,0.65);
+  font-family: var(--font-mono); font-size: 0.7rem;
+  padding: 6px 12px; border-radius: 6px; cursor: pointer;
+  letter-spacing: 0.05em; transition: all 0.2s;
+}
+.btn-chart-tool:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
 /* ─── Segmented Scale Toggle (Linear / Log) ─── */
 .scale-toggle {
   display: inline-flex; align-items: stretch;
