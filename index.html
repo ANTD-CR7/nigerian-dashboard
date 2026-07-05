@@ -672,6 +672,10 @@ async function loadData(start = '2020-01-01', end = '2026-12-31') {
   }
   window.chartInfPanel = panelChart('chart-infpanel', 'loading-infp', inf, '#F4A017', 'rgba(244,160,23,0.12)', v => v.toFixed(1) + '%', '%');
   window.chartFxPanel  = panelChart('chart-fxpanel',  'loading-fxp',  fx,  '#4a9eff', 'rgba(74,158,255,0.12)', v => '₦' + Number(v).toLocaleString('en-US', { maximumFractionDigits: 0 }), 'NGN');
+  if (typeof attachAnalystStats === 'function') {
+    attachAnalystStats('chart-infpanel', inf, 'inflation', 'Percent (%)', 'Headline inflation');
+    attachAnalystStats('chart-fxpanel', fx, 'exchange_rate', 'Naira per USD', 'Exchange rate');
+  }
 
   showChart('loading-gdp', 'chart-gdp');
   new Chart(document.getElementById('chart-gdp'), {
