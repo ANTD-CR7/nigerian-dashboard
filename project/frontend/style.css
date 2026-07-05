@@ -556,6 +556,17 @@ body:not(.analyst) .analyst-only { display: none !important; }
 .ap-note a { color: var(--green-text); }
 .hero-lede a { color: var(--green-text); text-decoration: underline; text-underline-offset: 3px; }
 .hero-lede a:hover { color: var(--white); }
+.npe-toast {
+  position: fixed; bottom: 26px; left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--black-2); border: 1px solid rgba(244,160,23,0.45);
+  color: var(--white); font-family: var(--font-mono); font-size: 0.7rem;
+  padding: 11px 20px; border-radius: 9px; z-index: 1200;
+  opacity: 0; transition: opacity 0.25s, transform 0.25s;
+  box-shadow: 0 12px 34px rgba(0,0,0,0.55); pointer-events: none;
+  max-width: 90vw; text-align: center;
+}
+.npe-toast.show { opacity: 1; transform: translateX(-50%); }
 
 /* ─── Per-indicator analytics profile tiles ─── */
 .profile-stats {

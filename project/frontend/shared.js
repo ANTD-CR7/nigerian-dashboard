@@ -601,7 +601,7 @@ function npeShortDate(d) {
   return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
-function attachAnalystStats(canvasId, series, indId, unit) {
+function attachAnalystStats(canvasId, series, indId, unit, label) {
   var canvas = document.getElementById(canvasId);
   if (!canvas || !series || series.length < 2) return;
   var card = canvas.closest('.chart-card');
@@ -620,7 +620,7 @@ function attachAnalystStats(canvasId, series, indId, unit) {
   el.className = 'analyst-only analyst-panel';
   el.setAttribute('data-for', canvasId);
   el.innerHTML =
-    '<div class="ap-head">Analyst detail</div>' +
+    '<div class="ap-head">Analyst detail' + (label ? ' — ' + label : '') + '</div>' +
     '<div class="profile-stats">' + [
       ['Range', F(st.min.value) + ' – ' + F(st.max.value), 'min ' + yr(st.min.date) + ' · max ' + yr(st.max.date)],
       ['Mean', F(st.mean), 'over ' + st.n + ' observations'],
@@ -641,13 +641,34 @@ function attachAnalystStats(canvasId, series, indId, unit) {
   try { saved = localStorage.getItem('npe-view') || 'reader'; } catch (e) {}
   if (saved === 'analyst') document.body.classList.add('analyst');
 
-  function setView(v) {
+  var toastTimer = null;
+  function toast(msg) {
+    var t = document.querySelector('.npe-toast');
+    if (!t) { t = document.createElement('div'); t.className = 'npe-toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+    t.textContent = msg;
+    requestAnimationFrame(function () { t.classList.add('show'); });
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 3200);
+  }
+  function setView(v, announce) {
     document.body.classList.toggle('analyst', v === 'analyst');
     try { localStorage.setItem('npe-view', v); } catch (e) {}
     document.querySelectorAll('.view-toggle button').forEach(function (b) {
       b.classList.toggle('active', b.dataset.view === v);
       b.setAttribute('aria-pressed', b.dataset.view === v ? 'true' : 'false');
     });
+    if (!announce) return;
+    if (v === 'analyst') {
+      var p = document.querySelector('.analyst-panel');
+      if (p) {
+        toast('Analyst view on — statistical detail revealed under each chart');
+        setTimeout(function () { p.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 200);
+      } else {
+        toast('Analyst view on — open any indicator page to see the statistical detail');
+      }
+    } else {
+      toast('Reader view — plain-language story');
+    }
   }
   function buildToggle() {
     var wrap = document.createElement('div');
@@ -659,7 +680,7 @@ function attachAnalystStats(canvasId, series, indId, unit) {
       b.type = 'button'; b.dataset.view = o[0]; b.textContent = o[1]; b.title = o[2];
       b.classList.toggle('active', saved === o[0]);
       b.setAttribute('aria-pressed', saved === o[0] ? 'true' : 'false');
-      b.addEventListener('click', function () { setView(o[0]); });
+      b.addEventListener('click', function () { setView(o[0], true); });
       wrap.appendChild(b);
     });
     return wrap;
