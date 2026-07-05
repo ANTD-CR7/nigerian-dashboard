@@ -65,7 +65,8 @@
   <div class="chart-card reveal">
     <div class="chart-card-title">Pearson Correlation</div>
     <div id="cmp-pearson" style="padding:8px 0;"><p style="font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Run a comparison to compute correlation.</p></div>
-    <div class="source-note">r is calculated client-side in pure JavaScript on paired monthly observations — the same method used on the Analytics page.</div>
+    <div id="cmp-warn"></div>
+    <div class="source-note">r is the Pearson correlation on the two series' overlapping dates, computed client-side. Any two indicators from the full catalogue can be compared — but correlation does not imply causation, and the warnings above flag when a result is unreliable.</div>
   </div>
 
   <div class="chart-card reveal">
@@ -102,26 +103,21 @@ const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'r
 const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
 Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
 
-const INDICATORS=[
-  {id:'gdp_growth',label:'GDP Growth Rate (%)',unit:'%',color:'#00C896'},
-  {id:'inflation',label:'Headline Inflation (%)',unit:'%',color:'#FF6B6B'},
-  {id:'inflation_food',label:'Food Inflation (%)',unit:'%',color:'#E8820C'},
-  {id:'inflation_core',label:'Core Inflation (%)',unit:'%',color:'#4a9eff'},
-  {id:'exchange_rate',label:'Exchange Rate NGN/USD',unit:'NGN',color:'#4a9eff'},
-  {id:'mpr',label:'Monetary Policy Rate (%)',unit:'%',color:'#F4A017'},
-  {id:'fx_reserves',label:'FX Reserves — Gross (USD Bn)',unit:'$B',color:'#00C896'},
-  {id:'reserves_liquid',label:'FX Reserves — Liquid (USD Bn)',unit:'$B',color:'#F4A017'},
-  {id:'currency_circulation_full',label:'Currency in Circulation (NGN M)',unit:'₦M',color:'#00C896'},
-  {id:'cbn_total_assets',label:'CBN Total Assets (NGN Bn)',unit:'₦B',color:'#4a9eff'},
-  {id:'cbn_total_liabilities',label:'CBN Total Liabilities (NGN Bn)',unit:'₦B',color:'#FF6B6B'},
-  {id:'nfem_closing',label:'NFEM Closing Rate (NGN/USD)',unit:'NGN',color:'#F4A017'},
-];
-
-function populateSelects(){
+let CAT=[], CATMAP={};
+const CMP_A='#4a9eff', CMP_B='#F4A017';
+async function populateSelects(){
   const a=document.getElementById('cmp-a'), b=document.getElementById('cmp-b');
-  const opts=INDICATORS.map(ind=>`<option value="${ind.id}">${ind.label}</option>`).join('');
-  a.innerHTML=opts; b.innerHTML=opts;
-  a.value='inflation'; b.value='exchange_rate';
+  CAT=await npeCatalogue();
+  CAT.forEach(x=>{CATMAP[x.id]=x;});
+  npeFillSelect(a,CAT,'inflation');
+  npeFillSelect(b,CAT,'exchange_rate');
+}
+function corrTime(vals){
+  const n=vals.length; if(n<2) return 0;
+  const m=vals.reduce((a,b)=>a+b,0)/n, xm=(n-1)/2;
+  let num=0,den=0,vs=0;
+  vals.forEach((v,i)=>{num+=(i-xm)*(v-m);den+=(i-xm)*(i-xm);vs+=(v-m)*(v-m);});
+  return (den&&vs)?num/Math.sqrt(den*vs):0;
 }
 
 function pearson(x,y){
@@ -144,7 +140,8 @@ let cmpChart=null;
 
 async function runCompare(){
   const idA=document.getElementById('cmp-a').value, idB=document.getElementById('cmp-b').value;
-  const indA=INDICATORS.find(i=>i.id===idA), indB=INDICATORS.find(i=>i.id===idB);
+  const indA=CATMAP[idA], indB=CATMAP[idB];
+  if(!indA||!indB){document.getElementById('cmp-status').textContent='Loading catalogue…';return;}
   if(idA===idB){document.getElementById('cmp-status').textContent='Choose two different indicators';return;}
   document.getElementById('cmp-status').textContent='Loading…';
   try{
@@ -153,47 +150,62 @@ async function runCompare(){
     dataA.forEach(d=>mapA[d.obs_date]=d.value);
     dataB.forEach(d=>mapB[d.obs_date]=d.value);
     const common=Object.keys(mapA).filter(d=>mapB[d]!=null).sort();
-    if(common.length<2){document.getElementById('cmp-status').textContent='Not enough overlapping dates between these two series';return;}
+    const warnEl=document.getElementById('cmp-warn');
+    if(common.length<2){
+      document.getElementById('cmp-status').textContent='No overlapping dates';
+      document.getElementById('cmp-pearson').innerHTML='<p style="font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Not enough overlap to correlate.</p>';
+      warnEl.innerHTML='<div class="prof-warn">⚠ <strong>'+indA.name+'</strong> and <strong>'+indB.name+'</strong> share no overlapping dates (different time coverage or frequency), so they can’t be correlated directly.</div>';
+      if(cmpChart){cmpChart.destroy();cmpChart=null;} document.getElementById('cmp-chart').style.display='none'; document.getElementById('cmp-loading').style.display='flex'; document.getElementById('cmp-loading').textContent='No overlapping data';
+      return;
+    }
     const valsA=common.map(d=>mapA[d]), valsB=common.map(d=>mapB[d]);
     const r=pearson(valsA,valsB);
     const rStr=r.toFixed(4), rAbs=Math.abs(r);
     const strength=rAbs>0.8?'Strong':rAbs>0.5?'Moderate':'Weak';
     const direction=r>0?'Positive':'Negative';
     const color=rAbs>0.8?'#FF6B6B':rAbs>0.5?'#F4A017':'#00C896';
+    // ── Honesty guards ──
+    const freqA=npeFreq(npeMedianGapDays(dataA)), freqB=npeFreq(npeMedianGapDays(dataB));
+    const dA=[],dB=[]; for(let i=1;i<valsA.length;i++){dA.push(valsA[i]-valsA[i-1]);dB.push(valsB[i]-valsB[i-1]);}
+    const rDiff=pearson(dA,dB);
+    const warns=[];
+    if(common.length<8) warns.push('Only <strong>'+common.length+'</strong> overlapping observations — too few for a reliable correlation. Treat r with caution.');
+    if(freqA!==freqB) warns.push('Different reporting frequencies (<strong>'+indA.name+'</strong> is '+freqA+', <strong>'+indB.name+'</strong> is '+freqB+') — compared on their '+common.length+' shared dates only.');
+    if(rAbs>0.6 && Math.abs(rDiff) < rAbs-0.35) warns.push('Much of this correlation is a <strong>shared trend</strong>: correlating month-to-month <em>changes</em> (which removes the trend) drops it to r&nbsp;≈&nbsp;<strong>'+rDiff.toFixed(2)+'</strong>. The level correlation is largely spurious — the two series drift together rather than respond to each other.');
+    warnEl.innerHTML=warns.map(w=>'<div class="prof-warn">⚠ '+w+'</div>').join('');
     document.getElementById('cmp-pearson').innerHTML=`<div style="display:flex;align-items:flex-start;gap:2rem;flex-wrap:wrap;">
       <div style="min-width:120px;"><div style="font-family:var(--font-mono);font-size:3rem;font-weight:500;color:${color};letter-spacing:-2px;line-height:1;">${rStr}</div>
       <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate);text-transform:uppercase;letter-spacing:.1em;margin-top:.3rem;">Pearson r</div></div>
       <div style="flex:1;min-width:220px;"><div style="font-family:var(--font-display);font-size:1.1rem;color:var(--white);margin-bottom:.5rem;">${strength} ${direction} Correlation</div>
-      <p style="font-family:var(--font-body);font-size:0.82rem;color:var(--slate);line-height:1.7;">Based on <strong style="color:var(--white)">${common.length}</strong> paired observations between <strong style="color:var(--white)">${indA.label}</strong> and <strong style="color:var(--white)">${indB.label}</strong> from ${fmt(common[0])} to ${fmt(common[common.length-1])}.</p></div></div>`;
-    document.getElementById('cmp-chart-title').textContent=`${indA.label} vs ${indB.label}`;
-    document.getElementById('cmp-legend').innerHTML=`<span><span class="dot" style="background:${indA.color}"></span>${indA.label}</span><span><span class="dot" style="background:${indB.color}"></span>${indB.label}</span>`;
-    document.getElementById('cmp-th-a').textContent=indA.label;
-    document.getElementById('cmp-th-b').textContent=indB.label;
+      <p style="font-family:var(--font-body);font-size:0.82rem;color:var(--slate);line-height:1.7;">Based on <strong style="color:var(--white)">${common.length}</strong> paired observations between <strong style="color:var(--white)">${indA.name}</strong> and <strong style="color:var(--white)">${indB.name}</strong> from ${fmt(common[0])} to ${fmt(common[common.length-1])}.</p></div></div>`;
+    document.getElementById('cmp-chart-title').textContent=`${indA.name} vs ${indB.name}`;
+    document.getElementById('cmp-legend').innerHTML=`<span><span class="dot" style="background:${CMP_A}"></span>${indA.name}</span><span><span class="dot" style="background:${CMP_B}"></span>${indB.name}</span>`;
+    document.getElementById('cmp-th-a').textContent=indA.name;
+    document.getElementById('cmp-th-b').textContent=indB.name;
     document.getElementById('cmp-loading').style.display='none';
     const canvas=document.getElementById('cmp-chart');
     canvas.style.display='block';
     const zA=zscores(valsA), zB=zscores(valsB);
     if(cmpChart)cmpChart.destroy();
     cmpChart=new Chart(canvas,{data:{labels:common.map(d=>fmt(d)),datasets:[
-      {type:'line',label:indA.label,data:zA,borderColor:indA.color,backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:indA.color,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},
-      {type:'line',label:indB.label,data:zB,borderColor:indB.color,backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:indB.color,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},
-    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,displayColors:true,callbacks:{title:i=>i[0].label,label:ctx=>{const raw=ctx.datasetIndex===0?valsA[ctx.dataIndex]:valsB[ctx.dataIndex];const u=ctx.datasetIndex===0?indA.unit:indB.unit;return `${ctx.dataset.label}: ${Number(raw).toFixed(2)} ${u}`;}}},zoom:ZOOM},scales:{
+      {type:'line',label:indA.name,data:zA,borderColor:CMP_A,backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:CMP_A,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},
+      {type:'line',label:indB.name,data:zB,borderColor:CMP_B,backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:CMP_B,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},
+    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,displayColors:true,callbacks:{title:i=>i[0].label,label:ctx=>{const raw=ctx.datasetIndex===0?valsA[ctx.dataIndex]:valsB[ctx.dataIndex];return `${ctx.dataset.label}: ${ctx.datasetIndex===0?npeFormat(raw,idA,indA.unit):npeFormat(raw,idB,indB.unit)}`;}}},zoom:ZOOM},scales:{
       y:{...SY,title:{display:true,text:"Standardised (z-score) — σ from each series' mean",color:'rgba(245,240,232,0.4)',font:{size:11}}},
       x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}
     }}});
     const tbody=document.getElementById('cmp-tbody');
     tbody.innerHTML='';
-    common.forEach(d=>{tbody.innerHTML+=`<tr><td>${fmt(d)}</td><td class="num">${Number(mapA[d]).toFixed(2)}</td><td class="num">${Number(mapB[d]).toFixed(2)}</td></tr>`;});
+    common.forEach(d=>{tbody.innerHTML+=`<tr><td>${fmt(d)}</td><td class="num">${npeFormat(mapA[d],idA,indA.unit)}</td><td class="num">${npeFormat(mapB[d],idB,indB.unit)}</td></tr>`;});
     document.getElementById('cmp-table').style.display='table';
     attachSortableTable(document.getElementById('cmp-table'));
-    document.getElementById('cmp-status').textContent=`${common.length} paired observations`;
+    document.getElementById('cmp-status').textContent=`${common.length} paired obs · r = ${rStr}`;
   }catch(err){showLoadError(err);document.getElementById('cmp-status').textContent='Failed to load — see error above';}
 }
 
-populateSelects();
 document.getElementById('cmp-run').addEventListener('click', runCompare);
 document.getElementById('cmp-reset').addEventListener('click', () => { if(cmpChart) cmpChart.resetZoom(); });
-runCompare();
+document.addEventListener('DOMContentLoaded', async function(){ await populateSelects(); runCompare(); });
 </script>
 <script src="shared.js"></script>
 </body></html>
