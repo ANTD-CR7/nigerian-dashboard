@@ -119,6 +119,19 @@
     </ul>
   </div>
 
+  <div class="chart-card reveal">
+    <div class="chart-card-title">Quality Assurance &amp; Testing</div>
+    <p style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.75;margin-bottom:16px;">The platform was validated through automated tests, independent statistical checks, and a systematic data-truthfulness audit — not by inspection alone.</p>
+    <ul style="font-family:var(--font-body);font-size:0.84rem;color:var(--slate);line-height:1.7;padding-left:20px;margin:0;">
+      <li style="margin-bottom:9px;"><strong style="color:var(--white);">Automated unit tests.</strong> A 16-test <span style="font-family:var(--font-mono);">pytest</span> suite covers the Open API's endpoints and asserts the HATEOAS <span style="font-family:var(--font-mono);">_links</span> blocks; all pass.</li>
+      <li style="margin-bottom:9px;"><strong style="color:var(--white);">Statistical validation.</strong> The correlation significance p-value and the scale-aware value formatter were unit-tested against known reference cases, and the analytics engine was exercised against awkward edge cases (daily, negative-valued, sparse, count and short-coverage series) to confirm correct output with no crashes.</li>
+      <li style="margin-bottom:9px;"><strong style="color:var(--white);">Data-truthfulness audit.</strong> Every chart's figures, ranges and units were cross-checked against the stored data. This found and fixed real defects — a data-censoring routine, unit mislabels, a mistitled "inverse" relationship (actually a weak positive one), and a sector chart that compared different years.</li>
+      <li style="margin-bottom:9px;"><strong style="color:var(--white);">Functional &amp; visual verification.</strong> Every page was loaded against live data and screenshotted to confirm charts, filters, comparisons, sorting and downloads work across screen widths.</li>
+      <li style="margin-bottom:9px;"><strong style="color:var(--white);">Accessibility.</strong> Colour contrast verified against WCAG 2.1 AA (≥ 4.5:1) using Lighthouse audits.</li>
+      <li style="margin-bottom:0;"><strong style="color:var(--white);">API testing.</strong> Endpoints exercised through the browser, the Swagger UI at <span style="font-family:var(--font-mono);">/docs</span>, and <span style="font-family:var(--font-mono);">curl</span>.</li>
+    </ul>
+  </div>
+
   <div class="chart-card reveal" style="border-left:4px solid var(--red-accent);">
     <div class="chart-card-title" style="color:var(--red-accent);">Disclaimer</div>
     <p style="font-family:var(--font-body);font-size:0.84rem;color:var(--slate);line-height:1.75;">This system is for <strong style="color:var(--white);">informational and educational purposes only</strong>. Data is sourced from official institutions but cannot guarantee freedom from errors or omissions. <strong style="color:var(--white);">This system does not constitute financial advice.</strong> For official economic data, refer directly to the CBN, NBS, and World Bank websites. A June 2026 data audit found 1,435 duplicate records across 1,232 indicator/date pairs introduced by repeated ETL runs (reducing the total from 13,535 to 12,100); all were reconciled against original CBN/NBS source files and resolved.</p>
