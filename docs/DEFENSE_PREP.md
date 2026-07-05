@@ -1,0 +1,219 @@
+# NPEDATA — Project Defence Pack
+
+Prep material for the final-year project defence. Three parts: a **slide outline** with
+speaker notes, a **live-demo script**, and **anticipated questions with strong answers**.
+Everything here is grounded in what the project actually does — so you can answer follow-ups
+without over-claiming. Fill the `[ ]` placeholders.
+
+- **Live dashboard:** https://antd-cr7.github.io/nigerian-dashboard/
+- **Open API:** https://npedata-api.onrender.com (docs at `/docs`)
+- **Repo:** https://github.com/ANTD-CR7/nigerian-dashboard
+
+---
+
+## PART A — Slide outline (aim for ~12–14 slides, ~10–12 min)
+
+**Slide 1 — Title**
+- Design and Implementation of a Web-Based Public Economic Data Aggregation and Analytics
+  Platform with an Open API (NPEDATA). Your name, matric no., supervisor, department, date.
+- *Say:* one sentence — "a platform that pulls Nigeria's scattered public economic data into
+  one place and serves it to both people and programs."
+
+**Slide 2 — The problem**
+- Nigeria's economic data is real and public, but **fragmented** across CBN, NBS and World
+  Bank, published in **PDFs and inconsistent spreadsheets**, with **no open API**.
+- *Say:* give the concrete pain — "to study the 2023 FX reform and inflation, a researcher
+  must find two datasets on two portals, reconcile date formats and units by hand, before
+  any analysis. There's no single, machine-readable source."
+
+**Slide 3 — Aim & objectives**
+- Aim: aggregate the data into one standardised store, accessible via a dashboard and a free
+  open API.
+- The six objectives (collect → standardise → analytics → open API → dashboard → evaluate).
+- *Say:* keep it to the aim + read the objectives; they map to your architecture.
+
+**Slide 4 — Scope: what it is and isn't** *(this slide pre-empts half the hard questions)*
+- **Is:** a working prototype + a controlled case-study dataset; open, documented, free.
+- **Is not:** national infrastructure, a bank/fintech, real-time, and uses **no AI/ML** —
+  by design.
+- *Say:* "I made a deliberate choice: a smaller, correct, trustworthy platform over a bigger
+  one that overstates itself."
+
+**Slide 5 — System architecture (the 7-stage pipeline)**
+- Collect → Validate → Standardise → Store → Analyse → API → Present. (Use the Mermaid
+  diagram from the report.)
+- *Say:* "This is the core contribution — it's a **pipeline**, not a re-display. Each number
+  is collected, validated, standardised into one schema, analysed, and exposed two ways."
+
+**Slide 6 — Data & sources**
+- 122 indicators, ~12,100 observations; CBN, NBS, World Bank; the coverage table (1960–2026).
+- The unified `indicators / data_sources / observations` model.
+- *Say:* stress the standardisation win — "one tidy table holds daily, monthly, quarterly and
+  annual series in different units, because I separated the value from its metadata."
+
+**Slide 7 — The dashboard (live-demo cue)**
+- Screenshot of the homepage flagship (the inflation/Naira small-multiples).
+- *Say:* "Charts lead with meaning — an insight title, plain-language captions, and honest
+  single-axis visuals." → switch to live demo (Part B).
+
+**Slide 8 — The Open API**
+- Free, no-auth REST API; auto Swagger docs; **HATEOAS (Richardson Maturity Level 3)** — every
+  response embeds `_links` so the whole API is navigable from the root.
+- *Say:* "This is what makes it a *platform* and not just a website — other programs can build
+  on it, where the original sources have no API at all."
+
+**Slide 9 — Analytics engine**
+- Any of the 122 indicators → full profile (latest, YoY, range, volatility, trend). Compare
+  any two with a correlation.
+- Methods: descriptive stats, OLS trend (R²), Pearson r **with a significance p-value**,
+  z-score standardisation, detrended spurious-correlation check.
+- *Say:* "The analytics are inferential, not just descriptive — I report R² and a p-value, so
+  you see both *strength* and *reliability*."
+
+**Slide 10 — Integrity features (your differentiator)**
+- Truthful charts (no dual-axis, no data censoring, correct units); the **spurious-correlation
+  guard**; explicit "correlation ≠ causation."
+- *Say:* "Most tools — even commercial ones — will happily show a misleading 0.9 correlation.
+  Mine detrends it and warns you. Example: CBN assets vs currency-in-circulation shows r=0.81,
+  but detrended it's 0.03 — the platform flags it as a shared trend."
+
+**Slide 11 — Testing & validation**
+- 16-test pytest suite (endpoints + HATEOAS); statistical validation (p-value vs known cases);
+  a systematic data-truthfulness audit that found and fixed real defects; accessibility (WCAG
+  2.1 AA).
+- *Say:* "I didn't just eyeball it — I cross-checked every chart's numbers against the database
+  and fixed genuine bugs, including a routine that was silently censoring data."
+
+**Slide 12 — Limitations & future work**
+- Manual collection (→ automated ETL); no seasonal adjustment; OLS forecast only (→ ARIMA);
+  association not causation (→ Granger/lag); client-side compute (→ server-side + caching).
+- *Say:* frame as conscious, scoped decisions — "each of these is documented and is a clear
+  next step."
+
+**Slide 13 — Contribution & conclusion**
+- A free, open, reproducible reference implementation of a unified Nigerian public-economic-
+  data platform with a HATEOAS open API — which did not previously exist in freely accessible
+  form — built entirely with free tooling.
+
+**Slide 14 — Thank you / Questions**
+
+---
+
+## PART B — Live demo script (~3–4 minutes, rehearse this exact path)
+
+1. **Homepage** → point at the KPI row (live values), scroll to **"When the Naira fell,
+   inflation followed"** — the two aligned panels. *Say:* "same timeline, honest separate
+   scales — you read it top-to-bottom."
+2. **⌘K / the Search box** → type "reserves" → jump to FX Reserves. *Say:* "power-user
+   navigation across the whole site."
+3. **Analytics → "Analyze Any Indicator"** → pick a GDP sector or a CBN item. *Say:* "any of
+   122 indicators, full profile computed live, correct units."
+4. **Analytics → Compare** → set two obviously-trending series (CBN Total Assets vs Currency
+   in Circulation) → **the spurious-correlation warning fires** (r=0.81 → detrended 0.03).
+   *Say:* "this is the integrity feature — it stops you drawing a false conclusion."
+5. **API** → open `https://npedata-api.onrender.com/docs`, run `GET /api/v1/summary`, show the
+   `_links` block. *Say:* "free, documented, and navigable — Level 3 HATEOAS."
+
+*Backup if Wi-Fi fails:* have screenshots of each step ready (see Part D).
+
+---
+
+## PART C — Anticipated questions & strong answers
+
+**Q: "Isn't this just a dashboard — a mirror of the CBN/NBS websites?"**
+A: No. The sources publish PDFs and spreadsheets with **no API and no common schema**. I
+built a **pipeline**: collection → validation → standardisation into one relational model →
+analytics → an open API. The dashboard is one output; the standardised open API — which the
+sources don't provide — is the other. The contribution is the aggregation and the machine-
+readable access, not the display.
+
+**Q: "What did you actually build versus just display?"**
+A: A unified database schema; ETL/validation that reduced 13,535 raw rows to 12,100 clean,
+de-duplicated observations; a FastAPI open API with HATEOAS; and a client-side analytics
+engine (correlation with significance, trend, standardisation, spurious-correlation
+detection) that works across all 122 indicators.
+
+**Q: "Why is data collection manual? Isn't that a weakness?"**
+A: It's a scoped decision, and it's disclosed. Most Nigerian agencies publish no API, so
+automated collection would be a project on its own. The architecture is built to accept
+automated ETL later — ingestion already goes through a validation layer. The data itself is
+a controlled case study, which is appropriate for an FYP.
+
+**Q: "Why no machine learning / AI?"**
+A: Deliberate. The problem is access and trust, not prediction. Adding an opaque ML model
+would work against the project's core value — that every result is transparent and
+checkable. The analytics are classical and reproducible on purpose.
+
+**Q: "Why only a straight-line forecast and not ARIMA?"**
+A: The forecast is explicitly labelled *illustrative, not a prediction*. A proper ARIMA/ETS
+model with prediction intervals is listed as future work. I chose not to ship a forecast that
+looks more authoritative than it is — that would be dishonest to a stakeholder.
+
+**Q: "How do you know your figures are correct?"**
+A: I ran a systematic data-truthfulness audit — every chart's stated numbers, ranges and
+units were cross-checked against the database. It found real defects (a data-censoring
+routine, unit mislabels off by a factor of a thousand, a mistitled "inverse" relationship,
+a year-mismatched chart) which I traced to source and fixed. There's also a 16-test automated
+suite on the API.
+
+**Q: "What is HATEOAS and why did you bother?"**
+A: Hypermedia As The Engine Of Application State — the top level of the Richardson Maturity
+Model. Every JSON response embeds a `_links` block pointing to related resources, so a client
+can navigate the whole API from the root without hard-coding URLs. It makes the API
+self-describing and is a recognised marker of a well-designed REST API.
+
+**Q: "Explain your spurious-correlation warning."**
+A: Two series that both trend upward will show a high correlation that means nothing. I
+compute the **detrended** correlation — the correlation of their month-to-month *changes* —
+and if the level correlation is high but the detrended one collapses, I warn the user. E.g.
+CBN assets vs currency-in-circulation: level r = 0.81, detrended r ≈ 0.03 → flagged.
+
+**Q: "Why did you avoid dual-axis charts?"**
+A: A dual axis (two y-scales on one plot) lets you fabricate a visual correlation by sliding
+the scales — it's the most-criticised chart mistake. Where two series have different units I
+use aligned panels or z-score standardisation on one axis, which is honest.
+
+**Q: "How is this different from FRED or Trading Economics?"**
+A: FRED is US-focused with little Nigerian granularity; Trading Economics is largely
+paywalled. Neither offers this granular Nigerian data free with an open API. And my platform
+adds an integrity layer — significance testing and spurious-correlation warnings — that those
+consumer tools don't.
+
+**Q: "What about scalability / performance / security?"**
+A: At 12,100 rows, client-side computation is fine and keeps the system transparent. The
+Supabase key is a public anon key gated by row-level security — read-only — so exposing it
+client-side is safe; write endpoints are disabled by default. Server-side compute and caching
+are noted as future work for larger scale.
+
+**Q: "What is your contribution to knowledge?"**
+A: A free, open-source, reproducible reference implementation of a unified Nigerian public-
+economic-data platform with a HATEOAS open API and a transparency-first analytics layer —
+an artefact that did not previously exist in freely accessible form.
+
+**Q: "If you had more time, what would you add?"**
+A: Automated ETL from the source portals; seasonal adjustment and proper time-series
+forecasting with intervals; lead/lag and causality analysis; server-side compute with
+caching; and client SDKs for the API.
+
+---
+
+## PART D — Screenshot checklist (capture these for the report figures & demo backup)
+
+Capture at a clean, wide browser window; hide personal bookmarks.
+
+- [ ] **Fig 4.1** — Homepage: KPI row + the "When the Naira fell, inflation followed" panels.
+- [ ] **Fig 4.2** — Exchange-rate page (range selector + end-labels + crosshair on hover).
+- [ ] **Fig 4.3** — Inflation page (headline/food/core comparison).
+- [ ] **Fig 4.4** — Multi-currency page (central-rate line + dealing-spread panel).
+- [ ] **Fig 4.5** — Assets & Liabilities (₦-trillions balance sheet + the three small-multiple panels).
+- [ ] **Fig 4.6** — API docs page and the Swagger UI at `/docs`.
+- [ ] **Fig 4.7** — A `GET /api/v1/summary` response showing the `_links` (HATEOAS) block.
+- [ ] **Extra** — "Analyze Any Indicator" profile (stat tiles + chart).
+- [ ] **Extra** — Compare tool showing the **spurious-correlation warning** (great demo moment).
+- [ ] **Extra** — About page: Methodology & Limitations + Quality Assurance sections.
+
+---
+
+*Tip:* your single strongest, most memorable talking point is the **integrity story** —
+"a platform that tells you when it might be misleading you." Lead with it, and return to it in
+the conclusion.
