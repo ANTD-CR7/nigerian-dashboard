@@ -222,3 +222,38 @@ Capture at a clean, wide browser window; hide personal bookmarks.
 *Tip:* your single strongest, most memorable talking point is the **integrity story** —
 "a platform that tells you when it might be misleading you." Lead with it, and return to it in
 the conclusion.
+
+---
+
+## PART E — The winning narrative (creativity & innovation brief)
+
+The judging criteria are **creativity/innovation in data aggregation** and **how the API is
+used**. Map every demo moment to one of these two, explicitly. Say the criterion's words out
+loud as you show the feature.
+
+**Innovation in DATA AGGREGATION — show, don't claim:**
+1. **The Aggregation Heatmap** (Data Sources page) — the whole achievement in one picture:
+   122 indicators × 67 years, glowing by observation density, computed live from the
+   database. *Say: "this is what aggregation means — every cell is data I collected,
+   validated and standardised into one schema."*
+2. **The pipeline that plays** (homepage) — the 7 stages lighting up in sequence. *Say:
+   "13,535 raw rows in, 12,100 clean observations out — the de-duplication is part of the
+   story, not hidden."*
+3. **One schema, any frequency** — daily NFEM, monthly CPI, quarterly GDP, annual financials
+   from 1960, all in one tidy observations table, all analysable by the same engine.
+4. **The purchasing-power calculator** — aggregation made personally meaningful: "what
+   ₦100,000 in 2020 buys today," chained from the real series with the method stated.
+
+**Innovation in HOW THE API IS USED — three consumers, live:**
+1. **Humans without docs — the HATEOAS Explorer** (API page): navigate the entire API from
+   the root by clicking `_links`, live in the browser. *Say: "Richardson Maturity Level 3 —
+   most commercial APIs never reach it; mine demonstrates it interactively."*
+2. **Other websites — the embed widgets**: one iframe line puts a live NPEDATA chart in any
+   blog or newsroom page, attribution built in. The API as infrastructure others build on.
+3. **AI agents — the MCP server + llms.txt**: an AI assistant can query Nigeria's economy
+   through this API as native tools, and llms.txt tells any agent what the platform offers.
+   *The API is consumed by people, by websites, and by machines — that's the innovation.*
+
+**The closing line:** "Aggregation is the input, the API is the output, and honesty is the
+contract between them — the platform serves people, other websites, and AI agents from one
+open, verified dataset."

@@ -101,6 +101,19 @@
     <div class="use-case-card reveal" style="border-top-color:var(--red-accent);"><h3>For Students</h3><p>Use the data for dissertations, final year projects and academic analysis in economics, data science, finance or computer science. Free and openly accessible.</p></div>
   </div>
 
+  <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin:48px 0 24px;" class="reveal">Explore the Living API — follow the links</h2>
+  <div class="chart-card reveal" id="hateoas-explorer">
+    <p class="chart-context">This API is <strong>hypermedia-driven</strong> (HATEOAS — Richardson Maturity Level 3): every response carries a <code style="color:var(--gold);">_links</code> block describing where you can go next. That means the entire API is navigable from the root <em>without reading any documentation</em> — like browsing the web. The response below is <strong>live</strong>: click any green link to follow it.</p>
+    <div class="hx-bar">
+      <button id="hx-home" type="button" class="btn-chart-reset" style="margin-top:0;">⌂ Root</button>
+      <code class="hx-url" id="hx-url">/</code>
+      <span class="hx-meta" id="hx-meta"></span>
+    </div>
+    <div class="hx-crumbs" id="hx-crumbs"></div>
+    <pre class="hx-out" id="hx-out">Contacting the live API…</pre>
+    <div class="source-note">Live requests from your browser to npedata-api.onrender.com. The free-tier server sleeps when idle — the first request can take up to ~30 seconds to wake it.</div>
+  </div>
+
   <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin:48px 0 24px;" class="reveal">Embed a Live Chart</h2>
   <div class="chart-card reveal">
     <p style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.75;margin-bottom:16px;">Any indicator can be embedded in a blog, article or report as a live, self-updating widget — paste one iframe, no API key. Use any indicator id from the catalogue (e.g. <code style="color:var(--gold);">inflation</code>, <code style="color:var(--gold);">exchange_rate</code>, <code style="color:var(--gold);">fx_reserves</code>, <code style="color:var(--gold);">nfem_closing</code>); an optional <code style="color:var(--gold);">&amp;months=24</code> limits the window.</p>
@@ -115,11 +128,63 @@
   <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin:48px 0 24px;" class="reveal">AI Agent Access</h2>
   <div class="insight-card reveal">
     <div class="insight-label">Model Context Protocol (MCP) Server</div>
-    <p>A standalone Node.js MCP server in the repository at <strong style="color:var(--gold);">/mcp-server</strong> exposes the read endpoints above as read-only tools for Claude Desktop, Cursor, and other MCP-compatible clients — so an AI agent can query Nigeria's GDP, inflation, exchange rate, FX reserves and CBN balance-sheet data directly in conversation, with no API key required. Setup instructions and the client config snippet are in <a href="https://github.com/ANTD-CR7/nigerian-dashboard/tree/main/mcp-server" style="color:var(--green-text);">mcp-server/README.md</a> in the source repository.</p>
+    <p>A standalone Node.js MCP server in the repository at <strong style="color:var(--gold);">/mcp-server</strong> exposes the read endpoints above as read-only tools for Claude Desktop, Cursor, and other MCP-compatible clients — so an AI agent can query Nigeria's GDP, inflation, exchange rate, FX reserves and CBN balance-sheet data directly in conversation, with no API key required. Setup instructions and the client config snippet are in <a href="https://github.com/ANTD-CR7/nigerian-dashboard/tree/main/mcp-server" style="color:var(--green-text);">mcp-server/README.md</a> in the source repository. The API also publishes an <a href="https://npedata-api.onrender.com/llms.txt" style="color:var(--green-text);">llms.txt</a> — a machine-readable description of the whole platform — so any AI agent that lands on the API can discover what it offers and how to use it, the same way the <code style="color:var(--gold);">_links</code> let a program navigate it.</p>
   </div>
 
 </div></main>
 <div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
 <footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>An open platform for Nigeria's public economic data.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<script>
+/* ─── HATEOAS Explorer: browse the live API by following _links ─── */
+(function(){
+  var BASE='https://npedata-api.onrender.com';
+  var out=document.getElementById('hx-out'),urlEl=document.getElementById('hx-url'),
+      meta=document.getElementById('hx-meta'),crumbs=document.getElementById('hx-crumbs');
+  if(!out)return;
+  var hist=[];
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function linkify(t){
+    return t.replace(/"(https:\/\/npedata-api\.onrender\.com[^"]*)"/g,
+      function(m,u){return '"<a href="#" class="hx-link" data-url="'+u+'">'+u+'</a>"';});
+  }
+  function go(url,push){
+    if(push===undefined)push=true;
+    var t0=performance.now();
+    out.textContent='Fetching '+(url.replace(BASE,'')||'/')+' …';
+    meta.textContent='';
+    var waking=setTimeout(function(){
+      out.textContent+='\n\n(The free-tier server is waking from sleep — this can take up to ~30 seconds. It stays fast once awake.)';
+    },3500);
+    fetch(url).then(function(r){
+      clearTimeout(waking);
+      var ms=Math.round(performance.now()-t0);
+      return r.json().then(function(j){return{r:r,j:j,ms:ms};});
+    }).then(function(res){
+      var text=JSON.stringify(res.j,null,2), truncated=false;
+      if(text.length>28000){text=text.slice(0,28000);truncated=true;}
+      out.innerHTML=linkify(esc(text))+(truncated?'\n\n… response truncated for display — fetch the endpoint directly for the full payload.':'');
+      urlEl.textContent=url.replace(BASE,'')||'/';
+      meta.textContent='HTTP '+res.r.status+' · '+res.ms+' ms · json';
+      if(push){hist.push(url);renderCrumbs();}
+      out.querySelectorAll('.hx-link').forEach(function(a){
+        a.addEventListener('click',function(e){e.preventDefault();go(a.dataset.url);});
+      });
+    }).catch(function(){
+      clearTimeout(waking);
+      out.textContent='Request failed — the server may still be waking. Press ⌂ Root to try again.';
+    });
+  }
+  function renderCrumbs(){
+    crumbs.innerHTML=hist.map(function(u,i){
+      return '<button type="button" class="hx-crumb" data-i="'+i+'">'+((u.replace(BASE,''))||'/')+'</button>';
+    }).join('<span class="hx-sep">›</span>');
+    crumbs.querySelectorAll('.hx-crumb').forEach(function(b){
+      b.addEventListener('click',function(){var i=+b.dataset.i;hist=hist.slice(0,i+1);renderCrumbs();go(hist[i],false);});
+    });
+  }
+  document.getElementById('hx-home').addEventListener('click',function(){hist=[];go(BASE+'/');});
+  go(BASE+'/');
+})();
+</script>
 <script src="shared.js"></script>
 </body></html>
