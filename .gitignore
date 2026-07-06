@@ -3,3 +3,6 @@ __pycache__/
 .env
 .wrangler/
 node_modules/
+
+.claude/worktrees/
+beautique/
