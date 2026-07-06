@@ -905,6 +905,43 @@ body:not(.analyst) .analyst-only { display: none !important; }
 .range-chip:hover { color: var(--white); background: rgba(245,240,232,0.04); }
 .range-chip.active { background: rgba(0,135,81,0.2); color: var(--green-text); }
 
+/* ─── HATEOAS Explorer ─── */
+.hx-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.hx-url {
+  font-family: var(--font-mono); font-size: 0.78rem; color: var(--gold);
+  background: var(--black); border: 1px solid rgba(245,240,232,0.1);
+  border-radius: 6px; padding: 7px 12px; flex: 1; min-width: 140px;
+}
+.hx-meta { font-family: var(--font-mono); font-size: 0.62rem; color: var(--green-text); letter-spacing: 0.04em; }
+.hx-crumbs { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; min-height: 18px; }
+.hx-crumb {
+  background: transparent; border: 1px solid rgba(245,240,232,0.12); border-radius: 5px;
+  font-family: var(--font-mono); font-size: 0.6rem; color: var(--slate);
+  padding: 3px 8px; cursor: pointer; transition: all 0.18s;
+}
+.hx-crumb:hover { color: var(--gold); border-color: rgba(244,160,23,0.4); }
+.hx-sep { color: rgba(245,240,232,0.25); font-size: 0.65rem; padding: 0 2px; }
+.hx-out {
+  background: var(--black); border: 1px solid rgba(245,240,232,0.08); border-radius: 8px;
+  padding: 16px 18px; max-height: 420px; overflow: auto;
+  font-family: var(--font-mono); font-size: 0.68rem; line-height: 1.55;
+  color: rgba(245,240,232,0.75); white-space: pre;
+}
+.hx-out .hx-link { color: var(--green-text); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.hx-out .hx-link:hover { color: var(--gold); }
+
+/* ─── Aggregation coverage heatmap ─── */
+.hm-wrap { position: relative; overflow-x: auto; border: 1px solid rgba(245,240,232,0.07); border-radius: 8px; background: var(--black); padding: 14px; }
+.hm-tip {
+  position: fixed; z-index: 1100; pointer-events: none; display: none;
+  background: rgba(13,15,24,0.97); border: 1px solid rgba(0,135,81,0.4); border-radius: 7px;
+  font-family: var(--font-mono); font-size: 0.64rem; color: rgba(245,240,232,0.85);
+  padding: 8px 11px; max-width: 300px; line-height: 1.5;
+}
+.hm-legend { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px;
+  font-family: var(--font-mono); font-size: 0.6rem; color: var(--slate); }
+.hm-legend .sw { width: 13px; height: 13px; border-radius: 3px; display: inline-block; vertical-align: middle; margin-right: 4px; }
+
 /* ─── Research Toolkit (share / PNG / cite) ─── */
 .chart-tools { display: inline-flex; gap: 8px; margin-left: 8px; vertical-align: middle; }
 .btn-chart-tool {
