@@ -140,9 +140,9 @@
     document.getElementById('bf-doc-meta').textContent='Window: '+from+' → '+to+' · Generated '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+' · NPEDATA · data: CBN / NBS / World Bank';
     var retrieved=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
     document.getElementById('bf-stamp').textContent='Suggested citation for the briefing: NPEDATA — Nigerian Public Economic Data Aggregation and Analytics Platform. ('+new Date().getFullYear()+'). Economic briefing generated '+retrieved+'. '+location.origin+location.pathname;
-    for(var k=0;k<ids.length;k++){
-      var id=ids[k], meta=CATMAP[id]||{name:id,unit:'',source:''};
-      var sec=document.createElement('div');
+    for(let k=0;k<ids.length;k++){
+      const id=ids[k], meta=CATMAP[id]||{name:id,unit:'',source:''};
+      const sec=document.createElement('div');
       sec.className='chart-card reveal visible brief-sec';
       sec.innerHTML='<div class="chart-card-title">'+(k+1)+'. '+esc(meta.name)+'</div>'+
         '<div class="chart-wrap-sm" style="height:210px"><canvas id="bf-ch-'+k+'"></canvas></div>'+
@@ -151,12 +151,12 @@
         '<div class="brief-cite" id="bf-ci-'+k+'"></div>';
       host.appendChild(sec);
       try{
-        var data=await series(id,from,to);
+        const data=await series(id,from,to);
         if(data.length<2){document.getElementById('bf-st-'+k).innerHTML='<div class="prof-tile"><div class="pt-label">No data</div><div class="pt-value flat">—</div><div class="pt-sub">no observations in this window</div></div>';continue;}
-        var st=npeStats(data);
-        var F=(function(iid,u){return function(v){return npeFormat(v,iid,u);};})(id,meta.unit);
-        var sig=npeSig(st.trendCorr,st.n);
-        var dir=st.slope>1e-9?'Rising':(st.slope<-1e-9?'Falling':'Flat');
+        const st=npeStats(data);
+        const F=function(v){return npeFormat(v,id,meta.unit);};
+        const sig=npeSig(st.trendCorr,st.n);
+        const dir=st.slope>1e-9?'Rising':(st.slope<-1e-9?'Falling':'Flat');
         document.getElementById('bf-st-'+k).innerHTML=[
           ['Latest',F(st.latest.value),fmtD(st.latest.obs_date)],
           ['Range',F(st.min.value)+' – '+F(st.max.value),'min '+st.min.date.slice(0,4)+' · max '+st.max.date.slice(0,4)],
@@ -164,11 +164,11 @@
           ['Volatility (σ)',F(st.std),'standard deviation'],
           ['Trend (OLS)',dir,'R²='+(st.trendCorr*st.trendCorr).toFixed(2)+' · '+sig.label]
         ].map(function(t){return '<div class="prof-tile"><div class="pt-label">'+t[0]+'</div><div class="pt-value">'+t[1]+'</div><div class="pt-sub">'+t[2]+'</div></div>';}).join('');
-        var evs=NPE_EVENTS.filter(function(ev){return ev.date>=from.slice(0,7)&&ev.date<=to.slice(0,7);});
+        const evs=NPE_EVENTS.filter(function(ev){return ev.date>=from.slice(0,7)&&ev.date<=to.slice(0,7);});
         document.getElementById('bf-ev-'+k).innerHTML=evs.length?('<strong>Events in this window:</strong> '+evs.map(function(e){return e.label+' ('+e.date+')';}).join(' · ')):'';
-        var org=ORG[meta.source]||meta.source||'CBN/NBS/World Bank';
+        const org=ORG[meta.source]||meta.source||'CBN/NBS/World Bank';
         document.getElementById('bf-ci-'+k).textContent=org+'. ('+new Date().getFullYear()+'). '+meta.name+' [Data set]. NPEDATA. Retrieved '+retrieved+', from '+location.origin+location.pathname.replace('briefing.html','')+' · Unit: '+(meta.unit||'—')+' · Coverage in this briefing: '+data[0].obs_date+' → '+data[data.length-1].obs_date;
-        var ctx=document.getElementById('bf-ch-'+k);
+        const ctx=document.getElementById('bf-ch-'+k);
         chartsAlive.push(new Chart(ctx,{type:'line',data:{labels:data.map(function(d){return fmtD(d.obs_date);}),datasets:[{data:data.map(function(d){return d.value;}),borderColor:'#4a9eff',borderWidth:2,pointRadius:0,tension:0.3,fill:false}]},
           options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return F(c.parsed.y);}}}},
           scales:{y:{grid:{color:'rgba(140,140,140,0.15)'},ticks:{maxTicksLimit:5,callback:function(v){return F(v);}}},x:{grid:{display:false},ticks:{maxRotation:0,maxTicksLimit:8}}}}}));
