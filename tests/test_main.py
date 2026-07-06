@@ -137,3 +137,49 @@ def test_hypermedia_related_and_extra_links_resolve():
 def test_api_links_catalog_paths_are_absolute_v1_routes():
     for name, path in main.API_LINKS.items():
         assert path.startswith("/api/v1/"), f"{name} -> {path}"
+
+
+# ── /api/v1/validate/csv — the Validation Layer as a service ──
+
+import asyncio
+import io as _io
+
+from fastapi import UploadFile
+
+
+def _validate(csv_text, indicator="inflation"):
+    upload = UploadFile(filename="t.csv", file=_io.BytesIO(csv_text.encode("utf-8")))
+    return asyncio.run(main.validate_csv(_FakeRequest(), indicator_id=indicator, file=upload))
+
+
+def test_validate_csv_accepts_clean_rows_and_never_writes():
+    out = _validate("obs_date,value\n2024-01-01,28.9\n2024-02-01,31.7\n")
+    assert out["rows_total"] == 2
+    assert out["rows_valid"] == 2
+    assert out["rows_rejected"] == 0
+    assert out["written_to_database"] is False
+    assert out["rows"][0]["normalized"]["value"] == 28.9
+
+
+def test_validate_csv_reports_every_problem_not_just_the_first():
+    out = _validate(
+        "obs_date,value\n"
+        "01/02/2024,10\n"        # bad date format
+        "2024-03-01,abc\n"       # non-numeric value
+        "2024-03-01,11\n"        # duplicate date
+        "2099-01-01,12\n"        # future date
+    )
+    assert out["rows_total"] == 4
+    assert out["rows_valid"] == 0          # every row has at least one problem
+    assert out["rows_rejected"] == 4
+    reasons = " ".join(r for row in out["rows"] if row["status"] == "rejected" for r in row["reasons"])
+    assert "ISO date" in reasons
+    assert "numeric" in reasons
+    assert "duplicate" in reasons
+    assert "future" in reasons
+
+
+def test_validate_csv_rejects_unknown_indicator():
+    with pytest.raises(HTTPException) as exc_info:
+        _validate("obs_date,value\n2024-01-01,1\n", indicator="nope")
+    assert exc_info.value.status_code == 404

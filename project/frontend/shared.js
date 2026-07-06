@@ -862,6 +862,8 @@ function attachEventToggle(canvasId) {
     { label: 'Financial Statement', url: 'financial_statement.html', cat: 'CBN Data', kw: 'surplus deficit annual income' },
     { label: 'Analytics Overview', url: 'analytics.html', cat: 'Analytics', kw: 'correlation pearson regression' },
     { label: 'Compare Indicators', url: 'compare.html', cat: 'Analytics', kw: 'two side by side correlation' },
+    { label: 'Briefing Studio', url: 'briefing.html', cat: 'Analytics', kw: 'report pdf print cite briefing document generate' },
+    { label: 'Pipeline Playground', url: 'playground.html', cat: 'Developer', kw: 'validate csv upload etl test pipeline ingestion' },
     { label: 'API Documentation', url: 'api_docs.html', cat: 'Developer', kw: 'rest endpoints swagger hateoas open json' },
     { label: 'Data Sources', url: 'data_sources.html', cat: 'About', kw: 'cbn nbs world bank provenance' },
     { label: 'About', url: 'about.html', cat: 'About', kw: 'project fyp caleb university' },

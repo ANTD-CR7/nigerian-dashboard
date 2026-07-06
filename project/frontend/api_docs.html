@@ -101,6 +101,8 @@
     <div class="use-case-card reveal" style="border-top-color:var(--red-accent);"><h3>For Students</h3><p>Use the data for dissertations, final year projects and academic analysis in economics, data science, finance or computer science. Free and openly accessible.</p></div>
   </div>
 
+  <div class="endpoint-card reveal"><div class="ep-badge" style="background:rgba(244,160,23,0.15);color:var(--gold);">POST</div><div class="ep-path">/api/v1/validate/csv</div><p class="ep-desc">The platform's Validation Layer as a service: send any CSV (obs_date,value) and get a per-row verdict report — valid or rejected with reasons (bad dates, non-numeric values, duplicates, future observations). Never writes. Try it interactively in the <a href="playground.html" style="color:var(--green-text);">Pipeline Playground</a>.</p></div>
+
   <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin:48px 0 24px;" class="reveal">Explore the Living API — follow the links</h2>
   <div class="chart-card reveal" id="hateoas-explorer">
     <p class="chart-context">This API is <strong>hypermedia-driven</strong> (HATEOAS — Richardson Maturity Level 3): every response carries a <code style="color:var(--gold);">_links</code> block describing where you can go next. That means the entire API is navigable from the root <em>without reading any documentation</em> — like browsing the web. The response below is <strong>live</strong>: click any green link to follow it.</p>

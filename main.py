@@ -534,6 +534,69 @@ def append_observation(request: Request, payload: ObservationIn, commit: bool = 
             "_links": hypermedia(request, "/api/v1/observations", indicator=payload.indicator_id, related=["coverage"])}
 
 
+@app.post("/api/v1/validate/csv")
+async def validate_csv(
+    request: Request,
+    indicator_id: str = Form(...),
+    file: UploadFile = File(...),
+):
+    """The platform's Validation Layer exposed as a service: returns a
+    per-row verdict report (valid / rejected + reasons) for any uploaded
+    CSV and NEVER writes — unlike /ingest/csv it does not stop at the
+    first bad row, so callers see everything wrong with a file at once."""
+    require_indicator(indicator_id)
+    content = await file.read()
+    try:
+        text = content.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise HTTPException(status_code=400, detail="CSV must be UTF-8 encoded.") from exc
+
+    reader = csv.DictReader(io.StringIO(text))
+    if not reader.fieldnames or "obs_date" not in reader.fieldnames or "value" not in reader.fieldnames:
+        raise HTTPException(status_code=400, detail="CSV must contain obs_date and value columns.")
+
+    rows, seen_dates, valid_count = [], set(), 0
+    for row_number, row in enumerate(reader, start=2):
+        raw_date = (row.get("obs_date") or "").strip()
+        raw_value = str(row.get("value") or "").strip().replace(",", "")
+        problems = []
+        obs_date = None
+        value = None
+        try:
+            obs_date = datetime.strptime(raw_date, "%Y-%m-%d").date()
+        except ValueError:
+            problems.append("obs_date must be an ISO date (YYYY-MM-DD)")
+        try:
+            value = float(raw_value)
+        except ValueError:
+            problems.append("value must be numeric")
+        if obs_date:
+            if obs_date > date.today():
+                problems.append("obs_date is in the future")
+            if obs_date.isoformat() in seen_dates:
+                problems.append("duplicate obs_date within this file")
+            seen_dates.add(obs_date.isoformat())
+        if problems:
+            rows.append({"row": row_number, "status": "rejected", "reasons": problems,
+                         "input": {"obs_date": raw_date, "value": raw_value}})
+        else:
+            valid_count += 1
+            rows.append({"row": row_number, "status": "valid",
+                         "normalized": {"indicator_id": indicator_id, "obs_date": obs_date.isoformat(),
+                                        "value": round(value, 4)}})
+
+    return {
+        "indicator_id": indicator_id,
+        "rows_total": len(rows),
+        "rows_valid": valid_count,
+        "rows_rejected": len(rows) - valid_count,
+        "written_to_database": False,
+        "note": "Validation report only — this endpoint never writes to the live database.",
+        "rows": rows,
+        "_links": hypermedia(request, "/api/v1/validate/csv", indicator=indicator_id, related=["coverage"]),
+    }
+
+
 @app.post("/api/v1/ingest/csv")
 async def ingest_csv(
     request: Request,

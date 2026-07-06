@@ -254,6 +254,20 @@ loud as you show the feature.
    through this API as native tools, and llms.txt tells any agent what the platform offers.
    *The API is consumed by people, by websites, and by machines — that's the innovation.*
 
+**"Make what people cannot do, done and usable" — the two capability jumps:**
+1. **The Briefing Studio** (briefing.html) — nobody offers push-button, *cited*, print-ready
+   Nigerian economic briefings. Pick indicators + a window → the platform composes a
+   document: charts, statistics with R²/p-values, event context, APA citations, method
+   notes — printable to PDF and shareable as a link that regenerates it. *Say: "the platform
+   doesn't just show data; it produces defensible documents. A journalist, student or
+   policymaker leaves with an artifact."*
+2. **The Pipeline Playground** (playground.html) — the validation layer as a public,
+   usable service. Hand the panel a broken CSV and let them watch every row get judged with
+   reasons (bad date, non-numeric, duplicate, future) — live against the Open API, provably
+   never written. *Say: "most projects hide their ETL; mine is an exhibit. Try to break it."*
+   This is the contrarian move: the foundation itself becomes a feature.
+
 **The closing line:** "Aggregation is the input, the API is the output, and honesty is the
 contract between them — the platform serves people, other websites, and AI agents from one
-open, verified dataset."
+open, verified dataset. And it doesn't stop at showing data: it validates yours, and writes
+your briefing."
