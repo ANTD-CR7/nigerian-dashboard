@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Test NPEDATA's data-validation layer live: upload or paste any CSV and watch it be validated row by row — nothing is written. Part of the Nigerian Public Economic Data Aggregation and Analytics Platform.">
+<title>Pipeline Playground — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
+    <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="#">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="briefing.html">Briefing Studio</a><a href="playground.html" class="active">Pipeline Playground</a></div></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="briefing.html">Briefing Studio</a><a href="playground.html" class="active">Pipeline Playground</a>
+</div>
+<section class="page-hero"><div class="container">
+  <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / Analytics / Pipeline Playground</div>
+  <h1>Pipeline Playground</h1><div class="page-hero-rule"></div>
+  <p>The platform's Validation Layer, live — bring your own data and try to break it. Nothing is ever written.</p>
+</div></section>
+<main class="page-content"><div class="container">
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">Test the Validation Layer with any CSV</div>
+    <p class="chart-context">Every number on this platform passed through the same pipeline: parse → type-check → date-normalise → de-duplicate. This page runs that exact layer, live on the Open API, against <strong>your</strong> data — and returns a verdict for <strong>every row</strong> with the reason it passed or failed. It is <strong>demo-safe by design</strong>: the endpoint can never write to the database.</p>
+    <div class="ops-grid">
+      <section class="ops-panel"><label for="pg-ind">Target indicator</label><select id="pg-ind">
+        <option value="inflation">Headline Inflation (%)</option><option value="exchange_rate">Exchange Rate NGN/USD</option>
+        <option value="gdp_growth">GDP Growth (%)</option><option value="mpr">Monetary Policy Rate (%)</option>
+        <option value="fx_reserves">FX Reserves (USD Bn)</option><option value="nfem_closing">NFEM Closing Rate</option>
+      </select></section>
+      <section class="ops-panel"><label for="pg-file">Upload a CSV</label><input id="pg-file" type="file" accept=".csv,text/csv"></section>
+      <section class="ops-panel ops-action"><label>&nbsp;</label><button id="pg-run" type="button">Validate ⟶</button></section>
+      <section class="ops-panel"><label>Status</label><strong class="inline-status" id="pg-status">Waiting for data…</strong></section>
+    </div>
+    <label for="pg-text" style="font-family:var(--font-mono);font-size:0.62rem;color:var(--slate);letter-spacing:0.08em;text-transform:uppercase;display:block;margin:16px 0 8px;">…or paste CSV here (obs_date,value)</label>
+    <textarea id="pg-text" rows="7" spellcheck="false" style="width:100%;background:var(--black);color:rgba(245,240,232,0.85);border:1px solid rgba(245,240,232,0.12);border-radius:8px;padding:12px 14px;font-family:var(--font-mono);font-size:0.74rem;line-height:1.6;resize:vertical;"></textarea>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button type="button" class="btn-chart-tool" id="pg-clean" style="margin-top:0;">Load a clean sample</button>
+      <button type="button" class="btn-chart-tool" id="pg-messy" style="margin-top:0;">Load a deliberately broken sample</button>
+    </div>
+    <div class="source-note">Runs live against POST /api/v1/validate/csv on the Open API. The free-tier server sleeps when idle — the first request can take up to ~30 seconds.</div>
+  </div>
+
+  <div class="chart-card reveal" id="pg-result-card" style="display:none;">
+    <div class="chart-card-title">Validation report</div>
+    <div class="profile-stats" style="margin-bottom:18px;">
+      <div class="prof-tile"><div class="pt-label">Rows received</div><div class="pt-value" id="pg-total">—</div><div class="pt-sub">parsed from your CSV</div></div>
+      <div class="prof-tile"><div class="pt-label">Valid</div><div class="pt-value up" id="pg-valid">—</div><div class="pt-sub">would be accepted</div></div>
+      <div class="prof-tile"><div class="pt-label">Rejected</div><div class="pt-value down" id="pg-rej">—</div><div class="pt-sub">with the reason for each</div></div>
+      <div class="prof-tile"><div class="pt-label">Written to DB</div><div class="pt-value flat">NO</div><div class="pt-sub">validation only, always</div></div>
+    </div>
+    <div class="data-table-wrap"><table class="data-table" id="pg-table"><thead><tr><th>Row</th><th>Status</th><th>Detail</th></tr></thead><tbody id="pg-tbody"></tbody></table></div>
+    <div class="source-note">The same rules that guard the live dataset: ISO dates, numeric values, no duplicates, no future observations.</div>
+  </div>
+
+</div></main>
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>An open platform for Nigeria's public economic data.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<script src="shared.js"></script>
+<script>
+(function(){
+  var API='https://npedata-api.onrender.com/api/v1/validate/csv';
+  var CLEAN='obs_date,value\n2025-01-01,24.48\n2025-02-01,23.18\n2025-03-01,24.23\n2025-04-01,23.71\n';
+  var MESSY='obs_date,value\n2025-01-01,24.48\n01/02/2025,23.18\n2025-03-01,twenty\n2025-03-01,24.23\n2099-12-01,19.02\n2025-05-01,\n';
+  var txt=document.getElementById('pg-text'), status=document.getElementById('pg-status');
+  document.getElementById('pg-clean').addEventListener('click',function(){txt.value=CLEAN;status.textContent='Clean sample loaded — press Validate';});
+  document.getElementById('pg-messy').addEventListener('click',function(){txt.value=MESSY;status.textContent='Broken sample loaded — press Validate';});
+  document.getElementById('pg-run').addEventListener('click',run);
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  async function run(){
+    var fileInput=document.getElementById('pg-file');
+    var blob=null;
+    if(fileInput.files&&fileInput.files[0]) blob=fileInput.files[0];
+    else if(txt.value.trim()) blob=new Blob([txt.value],{type:'text/csv'});
+    if(!blob){status.textContent='Upload or paste a CSV first';return;}
+    status.textContent='Validating… (first request may wake the server, ~30s)';
+    var fd=new FormData();
+    fd.append('indicator_id',document.getElementById('pg-ind').value);
+    fd.append('file',blob,'playground.csv');
+    try{
+      var r=await fetch(API,{method:'POST',body:fd});
+      var j=await r.json();
+      if(!r.ok){status.textContent='Rejected: '+(j.detail||('HTTP '+r.status));return;}
+      document.getElementById('pg-result-card').style.display='';
+      document.getElementById('pg-total').textContent=j.rows_total;
+      document.getElementById('pg-valid').textContent=j.rows_valid;
+      document.getElementById('pg-rej').textContent=j.rows_rejected;
+      var tb=document.getElementById('pg-tbody'); tb.innerHTML='';
+      j.rows.forEach(function(row){
+        var ok=row.status==='valid';
+        var detail=ok
+          ? 'normalised → '+esc(row.normalized.obs_date)+' · '+esc(String(row.normalized.value))
+          : esc(row.reasons.join('; '))+' <span style="color:var(--slate)">(input: '+esc(row.input.obs_date||'—')+' , '+esc(row.input.value||'—')+')</span>';
+        tb.innerHTML+='<tr><td>'+row.row+'</td><td><span class="takeaway-change '+(ok?'good':'bad')+'">'+(ok?'✓ valid':'✗ rejected')+'</span></td><td style="font-family:var(--font-mono);font-size:0.7rem;">'+detail+'</td></tr>';
+      });
+      status.textContent=j.rows_valid+' valid · '+j.rows_rejected+' rejected · nothing written';
+      document.getElementById('pg-result-card').scrollIntoView({behavior:'smooth',block:'start'});
+    }catch(e){status.textContent='Request failed — the server may be waking; try again.';}
+  }
+})();
+</script>
+</body></html>
