@@ -1,5 +1,6 @@
 import csv
 import io
+import math
 import os
 import statistics
 import threading
@@ -57,7 +58,7 @@ INDICATORS = {
 class ObservationIn(BaseModel):
     indicator_id: str = Field(..., examples=["inflation"])
     obs_date: date = Field(..., examples=["2025-01-01"])
-    value: float = Field(..., examples=[34.8])
+    value: float = Field(..., allow_inf_nan=False, examples=[34.8])
     source: str = Field(default="MANUAL", max_length=20, examples=["MANUAL"])
 
 
@@ -568,6 +569,9 @@ async def validate_csv(
             problems.append("obs_date must be an ISO date (YYYY-MM-DD)")
         try:
             value = float(raw_value)
+            if not math.isfinite(value):
+                value = None
+                problems.append("value must be a finite number (NaN/Infinity rejected)")
         except ValueError:
             problems.append("value must be numeric")
         if obs_date:

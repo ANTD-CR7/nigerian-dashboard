@@ -183,3 +183,16 @@ def test_validate_csv_rejects_unknown_indicator():
     with pytest.raises(HTTPException) as exc_info:
         _validate("obs_date,value\n2024-01-01,1\n", indicator="nope")
     assert exc_info.value.status_code == 404
+
+
+def test_validate_csv_rejects_nan_and_infinity():
+    out = _validate("obs_date,value\n2025-01-01,nan\n2025-02-01,inf\n2025-03-01,1e309\n2025-04-01,5.5\n")
+    assert out["rows_valid"] == 1
+    assert out["rows_rejected"] == 3
+    reasons = " ".join(r for row in out["rows"] if row["status"] == "rejected" for r in row["reasons"])
+    assert "finite" in reasons
+
+
+def test_observation_in_rejects_nan():
+    with pytest.raises(ValidationError):
+        main.ObservationIn(indicator_id="inflation", obs_date=date(2025, 1, 1), value=float("nan"))
