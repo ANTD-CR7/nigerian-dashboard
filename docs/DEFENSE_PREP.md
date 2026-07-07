@@ -184,6 +184,18 @@ paywalled. Neither offers this granular Nigerian data free with an open API. And
 adds an integrity layer — significance testing and spurious-correlation warnings — that those
 consumer tools don't.
 
+**Q: "People argue Nigeria was better off before the 2023 reforms — what does your platform say about that?"**
+A: It doesn't take a side, and that's the point. The platform doesn't argue for or against the
+reform — it puts inflation, the exchange rate, FX reserves and GDP on the same timeline with
+the reform dates marked as event annotations, and computes the correlation and significance
+directly from the data rather than from opinion. A critic of the reform can point to the
+inflation spike and the Naira's depreciation after unification; a supporter can point to the
+same reserves series recovering from its $32.5B low in April 2024 back to a rising trend. Both
+readings are visible in the same charts, computed the same way, from the same source data —
+the platform's job is to make that data checkable, not to settle the argument. That neutrality is itself the contribution: a Nigerian citizen or a policymaker on
+either side of the debate can verify a specific claim against primary CBN/NBS numbers instead
+of a partisan summary.
+
 **Q: "Isn't your tech stack limiting? Why no React / bigger stack?"**
 A: I re-evaluated the stack at the end of the build with measurements, not opinions
 (report §4.9). At this scale it isn't the limit: the no-framework frontend scores 100/100
