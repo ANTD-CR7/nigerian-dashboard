@@ -15,6 +15,9 @@ from docx.shared import Inches, Pt, RGBColor
 
 from PIL import Image
 
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+
 SRC = Path(__file__).parent / "FYP_REPORT.md"
 DST = Path(__file__).parent / "FYP_REPORT.docx"
 
@@ -74,6 +77,20 @@ def add_image(doc, alt, rel_path):
     r.italic = True
     r.font.size = Pt(9)
     cap.paragraph_format.space_after = Pt(14)
+
+
+def add_toc_field(doc):
+    """Insert a live Word TOC field (headings 1-3, hyperlinked)."""
+    par = doc.add_paragraph()
+    run = par.add_run()
+    beg = OxmlElement("w:fldChar"); beg.set(qn("w:fldCharType"), "begin")
+    ins = OxmlElement("w:instrText"); ins.set(qn("xml:space"), "preserve")
+    ins.text = r' TOC \o "1-3" \h \z \u '
+    sep = OxmlElement("w:fldChar"); sep.set(qn("w:fldCharType"), "separate")
+    txt = OxmlElement("w:t"); txt.text = "Right-click here and choose Update Field to refresh the table of contents."
+    end = OxmlElement("w:fldChar"); end.set(qn("w:fldCharType"), "end")
+    for el in (beg, ins, sep, txt, end):
+        run._r.append(el)
 
 
 def add_table(doc, rows):
@@ -177,6 +194,8 @@ def main():
                 h = style_heading(doc.add_heading(current_h2, level=2))
                 if current_h2 in ("Declaration", "Certification"):
                     h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            if current_h2 == "Table of Contents":
+                add_toc_field(doc)
         elif line.startswith("#### "):
             style_heading(doc.add_heading(re.sub(r"\*\*", "", line[5:]).strip(), level=3))
         elif line.startswith("> "):

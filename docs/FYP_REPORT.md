@@ -82,10 +82,6 @@ correct and programmatically consumable resource using free and open-source tool
 FastAPI, data visualisation.
 
 ### Table of Contents
-*(Generate automatically in your word processor once formatted.)*
-Chapter One — Introduction · Chapter Two — Literature Review · Chapter Three — System
-Analysis and Design · Chapter Four — System Implementation and Testing · Chapter Five —
-Summary, Conclusion and Recommendations · References · Appendices.
 
 ### List of Figures
 - Figure 3.1 Seven-stage system architecture
