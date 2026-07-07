@@ -21,9 +21,9 @@ TAOHEED ABDULMANAN OLAOSEBIKAN
 
 A PROJECT SUBMITTED TO THE DEPARTMENT OF
 
-COMPUTER SCIENCE, [COLLEGE NAME],
+COMPUTER SCIENCE, COLLEGE OF SCIENCE AND INFORMATION
 
-CALEB UNIVERSITY, LAGOS
+SCIENCE (COSIS), CALEB UNIVERSITY, LAGOS
 
 IN PARTIAL FULFILLMENT OF THE REQUIREMENTS
 
@@ -43,13 +43,13 @@ Student's Name — Signature & Date
 ### Certification
 I certify that this project is ready for departmental and college presentation:
 
-MISS ILORI DEBORAH _______________________
-
-Supervisor's Name — Signature & Date
-
 DR. ODUROYE _______________________
 
 Head of Department's Name — Signature & Date
+
+MISS ILORI DEBORAH _______________________
+
+Supervisor's Name — Signature & Date
 
 ### Dedication
 `[Your dedication.]`
