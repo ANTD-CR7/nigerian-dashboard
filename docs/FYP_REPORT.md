@@ -17,7 +17,7 @@ BY
 
 TAOHEED ABDULMANAN OLAOSEBIKAN
 
-[MATRIC NUMBER]
+22/10267
 
 A PROJECT SUBMITTED TO THE DEPARTMENT OF
 
@@ -43,11 +43,11 @@ Student's Name — Signature & Date
 ### Certification
 I certify that this project is ready for departmental and college presentation:
 
-[SUPERVISOR NAME] _______________________
+MISS ILORI DEBORAH _______________________
 
 Supervisor's Name — Signature & Date
 
-[HOD NAME] _______________________
+DR. ODUROYE _______________________
 
 Head of Department's Name — Signature & Date
 
