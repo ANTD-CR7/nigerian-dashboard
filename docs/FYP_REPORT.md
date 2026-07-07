@@ -92,6 +92,7 @@ Summary, Conclusion and Recommendations · References · Appendices.
 ### List of Tables
 - Table 1.1 Data coverage summary
 - Table 2.1 Comparison of related systems
+- Table 2.2 Feature-level gap analysis
 - Table 3.0 Methodology comparison
 - Table 3.0b Weaknesses of the existing workflow
 - Table 3.0c Existing vs proposed system
@@ -101,6 +102,7 @@ Summary, Conclusion and Recommendations · References · Appendices.
 - Table 3.2 Database schema (core tables)
 - Table 3.2b Data dictionary
 - Table 4.1 Test cases and results
+- Table 5.1 Achievement of objectives
 
 ---
 
@@ -220,56 +222,216 @@ reproducible reference implementation built entirely from free and open-source t
 ## CHAPTER TWO — LITERATURE REVIEW
 
 ### 2.1 Introduction
-This chapter reviews the concepts underpinning the project — open data, data aggregation,
-web APIs and hypermedia — and examines existing systems that publish economic data, in
-order to identify the gap this project fills.
+This chapter situates the project in its intellectual and practical context. It reviews the
+concepts the platform is built on (open data, aggregation and standardisation, data
+quality, REST and hypermedia, honest visualisation, and the classical statistics used by
+the analytics layer); states the theoretical framework adopted; reviews the systems that
+publish economic data today — international and Nigerian — and analyses the gap between
+them; and reviews the enabling technologies from which the implementation stack was chosen.
+The chapter closes with the specific, evidenced gaps that Chapter Three's design answers.
 
 ### 2.2 Conceptual Review
-**Open data** is data that anyone can freely access, use and share. The open-data movement
-holds that publicly-funded information, such as national statistics, should be available in
-machine-readable, reusable forms. **Data aggregation** is the process of gathering data
-from disparate sources and expressing it in a common structure — a prerequisite for
-comparison and analysis. A **data platform** combines storage, processing, an access
-interface and a presentation layer over such aggregated data.
 
-**Web APIs and REST.** Representational State Transfer (REST), introduced by Fielding
-(2000), is the dominant architectural style for web APIs; it models data as *resources*
-addressed by URLs and manipulated with standard HTTP verbs. The **Richardson Maturity
-Model** (Richardson & Ruby, 2007; Fowler, 2010) grades REST APIs on three levels — resources,
-HTTP verbs, and hypermedia controls. Level 3, **HATEOAS**, adds links to responses so that a
-client can discover related actions without hard-coding URLs, improving discoverability and
-decoupling. This project targets Level 3.
+**2.2.1 Open data and open government data.** Open data is data that anyone can access,
+use, modify and share for any purpose, subject at most to attribution (Open Knowledge
+Foundation, n.d.). For *government* data, widely cited principles hold that public data
+should be complete, primary, timely, accessible, **machine-processable**, non-discriminatory,
+non-proprietary and licence-free (Open Government Working Group, 2007). Two of these
+principles do the heaviest work in this project's context: *machine-processability* (a PDF
+table is technically "published" but practically closed to computation) and
+*accessibility* (data behind fragmented portals carries a real access cost even when it is
+nominally free). The economic argument for open data is that it converts a cost centre
+(publication) into public value, because every downstream user — researcher, journalist,
+start-up — no longer repeats the same cleaning work. That argument is precisely the
+motivation established by the Nigerian scenario in §3.3.
 
-### 2.3 Review of Related Systems
-Several platforms publish economic data and informed this design:
+**2.2.2 Data aggregation, standardisation and tidy data.** Aggregation — gathering series
+from disparate sources — is only useful when paired with **standardisation** into a common
+structure. This project's storage design follows the "tidy data" principle (Wickham, 2014):
+one observation per row, one variable per column, with metadata (unit, source, frequency)
+separated from values. The practical force of the principle is that series of *any*
+frequency — daily NFEM fixings, monthly CPI, quarterly GDP, the 1960–2012 annual financial
+statement — can coexist in one relational table and be queried, compared and analysed by
+one engine. The alternative (one bespoke table per dataset, mirroring each source file's
+layout) is exactly the fragmentation the project set out to remove, reproduced inside the
+database. The relational model itself (Codd, 1970) supplies the integrity machinery the
+pipeline relies on: typed columns, foreign keys from observations to indicator metadata,
+and a uniqueness constraint that makes duplicate ingestion impossible at the storage layer.
 
-**Table 2.1 — Comparison of related systems**
+**2.2.3 Data quality.** Data-quality literature commonly assesses datasets along dimensions
+of accuracy, completeness, consistency, timeliness and validity. Three of these dimensions
+materially shaped this project. *Consistency*: the same institution publishes related
+series in different units (the CBN's monthly balance sheet in thousands of naira; its
+annual statement in millions), so a platform that merges them must carry unit metadata or
+it will silently mislead — a defect class Chapter Four documents finding and fixing.
+*Accuracy/validity*: aggregation multiplies the opportunities for error, which is why the
+design elevates validation to a first-class pipeline stage (and, unusually, exposes it as a
+public service). *Completeness*: no source is complete — series start and stop (services-
+sector GDP, for instance, ends earlier than its siblings) — so honest presentation requires
+stating coverage rather than papering over it.
 
-| System | Strength | Limitation for the Nigerian use case |
-|---|---|---|
-| **FRED** (US Federal Reserve, St. Louis) | Huge catalogue, excellent API and charts | US-focused; minimal Nigerian coverage |
-| **World Bank Open Data** | Global, open API, standardised | Coarse (mostly annual); no CBN/NBS granularity |
-| **Trading Economics** | Broad, polished visuals | Largely paywalled; not open |
-| **CBN Statistics Database** | Authoritative Nigerian source | Fragmented UI; data in PDF/Excel; no open API |
-| **NBS Data Portal** | Authoritative Nigerian source | Inconsistent formats; no unified API |
+**2.2.4 Web APIs, REST and the Richardson Maturity Model.** Representational State
+Transfer (REST), introduced by Fielding (2000), is the dominant architectural style for
+web APIs: data is modelled as *resources* addressed by URLs and manipulated with standard
+HTTP verbs. The **Richardson Maturity Model** (Richardson & Ruby, 2007; Fowler, 2010)
+grades REST maturity in three levels: Level 1 introduces distinct resources; Level 2 uses
+HTTP verbs and status codes properly; Level 3 — **HATEOAS** (Hypermedia As The Engine Of
+Application State) — embeds links in every response so a client can *discover* related
+actions instead of hard-coding URLs. Level 3 is rarely implemented in practice, yet it is
+disproportionately valuable for an *open* API whose consumers are strangers: the API
+becomes self-describing, navigable from its root without documentation. For non-JSON
+representations, the equivalent mechanism is the standard Link header (Nottingham, 2017).
+This project implements Level 3 end-to-end and — unusually — demonstrates it interactively
+(the HATEOAS Explorer of Chapter Four).
 
-The review shows a clear gap: the authoritative Nigerian sources are not machine-friendly
-and lack a unified open API, while the polished international platforms do not offer
-granular Nigerian data for free. NPEDATA addresses precisely this gap.
+**2.2.5 Honest data visualisation.** The visualisation literature is, at its core, a
+literature about *not misleading people*. Tufte (1983) argued for maximising the share of
+ink that carries data and against decoration that distorts; a long line of practice
+criticism identifies **dual-axis charts** as a special hazard, because two independent
+y-scales let a designer manufacture or exaggerate correlation by sliding the scales.
+Anscombe (1973) demonstrated, with four datasets sharing identical summary statistics but
+wildly different shapes, why summary numbers must be accompanied by plots — and why plots
+must be trustworthy. These findings become concrete design rules in this project: no dual
+axes anywhere (different scales are shown as aligned panels or standardised z-scores);
+axes are never truncated to dramatise; units are always stated; and every chart carries a
+plain-language reading aid, because a correct chart that a non-expert cannot read is only
+half honest.
 
-### 2.4 Technologies Reviewed
-- **FastAPI** — a modern, high-performance Python web framework with automatic OpenAPI
-  documentation, chosen for the API layer.
-- **PostgreSQL / Supabase** — a relational database and a managed backend-as-a-service that
-  exposes PostgreSQL over REST with row-level security; chosen for storage.
-- **Chart.js** — an open-source JavaScript charting library; chosen for visualisation.
-- **GitHub Pages / Render** — free static and application hosting; chosen for deployment.
+**2.2.6 Statistical foundations of the analytics layer.** The platform's analytics are
+deliberately classical. The **Pearson product-moment correlation coefficient** measures
+linear association between paired series; its significance is assessed with a two-tailed
+Student-t test, computed via the regularised incomplete beta function (Press et al., 2007).
+**Ordinary least squares** supplies trend estimation, reported with the coefficient of
+determination R². Two well-known cautions from the statistics literature are engineered
+into the product rather than left in a footnote: correlation is not causation, and two
+series that both trend over time will correlate spuriously (Granger & Newbold, 1974) — the
+platform therefore re-computes correlations on first differences and warns the user when
+the detrended association collapses. Statistical *significance* is likewise separated from
+*strength* in the interface, because a weak correlation can be highly significant in a
+large sample and users routinely conflate the two.
 
-### 2.5 Summary
-The literature establishes that (a) open, machine-readable economic data is valuable but
-under-supplied for Nigeria, (b) REST with HATEOAS is a suitable, well-founded style for an
-open API, and (c) free open-source tools are sufficient to build such a platform. This
-project synthesises these findings into a working system.
+### 2.3 Theoretical Framework
+Two established frameworks organise the design and the evaluation of this project:
+
+1. **The FAIR data principles** — data should be **F**indable, **A**ccessible,
+   **I**nteroperable and **R**eusable (Wilkinson et al., 2016). FAIR provides the yardstick
+   for the *data* side of the platform: findability is served by one catalogue of 122
+   indicators with searchable metadata; accessibility by a free dashboard and a
+   no-authentication API; interoperability by one tidy schema with ISO-8601 dates and
+   stated units; reusability by CSV export, citation generation, provenance fields and a
+   reproducible seed snapshot.
+2. **The Richardson Maturity Model** (§2.2.4) provides the yardstick for the *interface*
+   side: the Open API is designed to, and verifiably does, operate at Level 3.
+
+Together they frame the thesis of the project: fragmentation is not solved by another
+website but by making the data itself FAIR and its interface hypermedia-driven.
+
+### 2.4 Review of Related Systems
+**FRED (Federal Reserve Economic Data, St. Louis Fed).** The reference point for what a
+national economic-data platform can be: hundreds of thousands of series, a documented API,
+charting, downloads and citations. Its relevance to Nigeria, however, is thin — Nigerian
+coverage is limited to coarse international aggregates. FRED demonstrates the *category*
+this project belongs to, while underlining that no Nigerian equivalent exists.
+
+**World Bank Open Data.** Genuinely open, with a long-standing public API and standardised
+indicator codes — this project both reviews it and *consumes* it (nominal GDP). Its
+limitation is granularity: mostly annual, country-level aggregates, published with a lag.
+It cannot answer intra-year questions (monthly inflation dynamics, daily FX behaviour)
+that domestic sources cover.
+
+**IMF Data.** Authoritative macroeconomic and financial statistics with programmatic
+access, but like the World Bank it is oriented to cross-country aggregates rather than the
+granular domestic series (NFEM daily fixings, CBN balance-sheet lines) this project carries.
+
+**Our World in Data.** Not an API platform but the strongest available model of
+*explanatory* data publication: every chart embedded in plain-language narrative, with
+sources and methods disclosed. Its influence on this project is visible in the
+storytelling pattern (what happened / why it matters / how to read it) attached to every
+indicator page. Nigerian macroeconomic coverage is, again, limited to international
+aggregates.
+
+**Trading Economics and Statista.** Broad commercial aggregators with polished interfaces.
+Both are largely paywalled, and their Nigerian series ultimately derive from the same CBN
+and NBS publications. They demonstrate commercial demand for exactly the aggregation this
+project performs — while their pricing model is itself part of the access problem for the
+Nigerian students and journalists this project targets.
+
+**Central Bank of Nigeria (CBN) publications.** The authoritative source for monetary and
+financial data — and the clearest illustration of the machine-readability gap: statistics
+are published across web pages, PDF bulletins and per-topic Excel files, with layouts and
+units that vary between documents and no public API (§3.3 details the workflow this forces
+on users).
+
+**National Bureau of Statistics (NBS).** The authoritative source for CPI and GDP.
+Publications are report-oriented (PDF with accompanying tables); series are periodically
+rebased; and there is no unified programmatic interface for the indicators this project
+covers.
+
+**data.gov.ng and Nigerian open-data initiatives.** Nigeria has an official open-data
+portal and has participated in international open-government initiatives; civic-technology
+organisations (notably BudgIT, which visualises public budgets) demonstrate a domestic
+ecosystem hungry for usable public data. These efforts, however, centre on budgets,
+spending and static dataset publication rather than continuously usable, API-accessible
+*economic time series* — the specific niche this project occupies.
+
+### 2.5 Gap Analysis
+**Table 2.2 — Feature-level gap analysis**
+
+| Capability | FRED | World Bank | Trading Econ. | CBN | NBS | **NPEDATA** |
+|---|---|---|---|---|---|---|
+| Granular Nigerian series (daily/monthly) | No | No | Partial | Source | Source | **Yes (aggregated)** |
+| Free, no-authentication API | Key req. | Yes | No | No | No | **Yes** |
+| Hypermedia (HATEOAS L3) API | No | No | No | — | — | **Yes** |
+| One standardised schema across sources | Yes | Yes | Yes | No | No | **Yes** |
+| Correlation with significance (R², p) | No | No | No | — | — | **Yes** |
+| Spurious-correlation warnings | No | No | No | — | — | **Yes** |
+| Plain-language interpretation per series | No | Partial | No | No | No | **Yes** |
+| Public validation-as-a-service | No | No | No | — | — | **Yes** |
+| Citable exports (CSV/PNG/APA) | Yes | Yes | Partial | No | No | **Yes** |
+
+The pattern is consistent: the systems with excellent access lack granular Nigerian data;
+the systems with the Nigerian data lack machine access; and **no reviewed system, at any
+scale, combines statistical honesty aids (significance, spurious-correlation detection)
+with plain-language interpretation**. That combination — not any single feature — is the
+gap NPEDATA fills.
+
+### 2.6 Review of Enabling Technologies
+- **API framework — FastAPI** (chosen) over Flask and Django REST Framework: automatic
+  OpenAPI/Swagger documentation, Pydantic request validation (the ingestion layer's type
+  checks come largely free), and async support, at a fraction of Django's footprint. An
+  auto-documented API is not a convenience here but part of the product, since the API *is*
+  a deliverable.
+- **Database — PostgreSQL via Supabase** (chosen) over MySQL, MongoDB and Firebase: the
+  data is inherently relational (sources → indicators → observations) with integrity
+  constraints doing real work, which argues against document stores; Supabase adds a
+  managed free tier, an auto-generated REST layer with row-level security (letting the
+  dashboard read the database directly and safely), and standard PostgreSQL underneath —
+  no lock-in.
+- **Visualisation — Chart.js v4** (chosen) over D3.js and commercial libraries: D3 offers
+  unlimited control at a steep cost in code volume for standard chart types; commercial
+  options conflict with the open ethos. Chart.js's plugin system proved sufficient for the
+  project's honesty-driven customisations (annotations, crosshairs, end-labels).
+- **Frontend approach — static HTML/CSS/vanilla JavaScript** (chosen) over React/Vue:
+  no build step, free static hosting, full view-source auditability, and a deliberate
+  mitigation (a single shared library) for the approach's known drift weakness — assessed
+  quantitatively in §4.9.
+- **Hosting — GitHub Pages + Render + Supabase**: an entirely free, reproducible deployment
+  whose trade-offs (cold starts) are measured and mitigated rather than hidden (§4.9).
+- **Machine-consumer interfaces — MCP and llms.txt**: the Model Context Protocol allows AI
+  assistants to call the API as tools, and llms.txt provides machine-readable platform
+  discovery — extending "open" beyond human developers to automated consumers.
+
+### 2.7 Summary
+The review establishes four propositions that carry into the design chapter: (1) open,
+machine-processable economic data is valuable and under-supplied in Nigeria, where the
+authoritative sources publish for reading rather than computation; (2) mature conceptual
+machinery exists to fix this — tidy data for standardisation, FAIR for openness, REST
+Level 3 for the interface — and simply needs disciplined application; (3) the visualisation
+and statistics literature supplies concrete honesty rules (no dual axes, significance
+separated from strength, detrending checks) that can be engineered into a product rather
+than left as caveats; and (4) no existing system, international or Nigerian, combines
+granular Nigerian coverage, open machine access and built-in statistical honesty. Chapter
+Three designs the system that does.
 
 ---
 
@@ -990,6 +1152,17 @@ a unified model; analytics were implemented; a HATEOAS-compliant API and an acce
 explanatory dashboard were delivered; and the system was tested for correctness and
 accessibility.
 
+**Table 5.1 — Achievement of objectives**
+
+| # | Objective (Ch. 1) | Delivered evidence |
+|---|---|---|
+| 1 | Collect indicators from CBN, NBS, World Bank | 122 indicators, ~12,100 observations; reproducible seed snapshot |
+| 2 | Unified standardised data model | One tidy observations schema holding daily-to-annual series; data dictionary §3.7.3 |
+| 3 | Server-side analytics | Descriptives, YoY, OLS trend, correlation with R²/p-value; TTL-cached API |
+| 4 | Free documented HATEOAS API | Versioned endpoints, _links throughout, RFC 8288 on CSV; interactive Explorer |
+| 5 | Clear, truthful dashboard | Storytelling pattern, single-axis policy, Reader/Analyst dial, WCAG AA 100/100 |
+| 6 | Test and evaluate | 24-test suite, statistical validation, adversarial stress test, live sweeps (§4.7) |
+
 ### 5.2 Conclusion
 The work demonstrates that Nigeria's scattered, non-machine-readable public economic data
 can be consolidated into a single, correct, and programmatically consumable resource using
@@ -1020,6 +1193,10 @@ achievable with free tooling.
 *(Sample list — verify each source and reformat to your department's citation style, e.g.
 APA 7th. Add the specific works your report actually cites.)*
 
+- Anscombe, F. J. (1973). Graphs in statistical analysis. *The American Statistician, 27*(1), 17–21.
+- BudgIT. (n.d.). *BudgIT — making public data meaningful*. https://www.budgit.org
+- Codd, E. F. (1970). A relational model of data for large shared data banks. *Communications of the ACM, 13*(6), 377–387.
+- Federal Reserve Bank of St. Louis. (n.d.). *FRED — Federal Reserve Economic Data*. https://fred.stlouisfed.org
 - Fielding, R. T. (2000). *Architectural Styles and the Design of Network-based Software
   Architectures* (Doctoral dissertation). University of California, Irvine.
 - Richardson, L., & Ruby, S. (2007). *RESTful Web Services*. O'Reilly Media.
@@ -1031,7 +1208,16 @@ APA 7th. Add the specific works your report actually cites.)*
 - PostgreSQL Global Development Group. (n.d.). *PostgreSQL Documentation*.
   https://www.postgresql.org/docs
 - Chart.js. (n.d.). *Chart.js Documentation*. https://www.chartjs.org/docs
+- Granger, C. W. J., & Newbold, P. (1974). Spurious regressions in econometrics. *Journal of Econometrics, 2*(2), 111–120.
+- International Monetary Fund. (n.d.). *IMF Data*. https://data.imf.org
 - Nottingham, M. (2017). *Web Linking* (RFC 8288). Internet Engineering Task Force.
+- Open Government Working Group. (2007). *Eight principles of open government data*. https://opengovdata.org
+- Open Knowledge Foundation. (n.d.). *The Open Definition*. https://opendefinition.org
+- Our World in Data. (n.d.). *Our World in Data*. https://ourworldindata.org
+- Press, W. H., Teukolsky, S. A., Vetterling, W. T., & Flannery, B. P. (2007). *Numerical Recipes: The Art of Scientific Computing* (3rd ed.). Cambridge University Press.
+- Tufte, E. R. (1983). *The Visual Display of Quantitative Information*. Graphics Press.
+- Wickham, H. (2014). Tidy data. *Journal of Statistical Software, 59*(10), 1–23.
+- Wilkinson, M. D., Dumontier, M., Aalbersberg, I. J., et al. (2016). The FAIR Guiding Principles for scientific data management and stewardship. *Scientific Data, 3*, 160018.
 
 ---
 
