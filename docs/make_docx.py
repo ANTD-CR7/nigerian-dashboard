@@ -10,6 +10,7 @@ from pathlib import Path
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.text import WD_LINE_SPACING
 from docx.shared import Inches, Pt, RGBColor
 
 from PIL import Image
@@ -19,13 +20,18 @@ DST = Path(__file__).parent / "FYP_REPORT.docx"
 
 
 def add_runs(par, text):
-    """Split **bold** segments into runs; strip stray backticks/italics markers."""
+    """Render **bold** and *italic* segments as runs; strip backticks."""
     text = text.replace("`", "")
-    for i, chunk in enumerate(re.split(r"\*\*", text)):
-        if not chunk:
+    for i, bchunk in enumerate(re.split(r"\*\*", text)):
+        if not bchunk:
             continue
-        run = par.add_run(chunk)
-        run.bold = (i % 2 == 1)
+        bold = (i % 2 == 1)
+        for j, ichunk in enumerate(re.split(r"\*", bchunk)):
+            if not ichunk:
+                continue
+            run = par.add_run(ichunk)
+            run.bold = bold
+            run.italic = (j % 2 == 1)
 
 
 def add_code(doc, lines, mermaid=False):
@@ -92,8 +98,36 @@ def add_table(doc, rows):
 def main():
     md = SRC.read_text(encoding="utf-8").splitlines()
     doc = Document()
-    doc.styles["Normal"].font.name = "Calibri"
-    doc.styles["Normal"].font.size = Pt(11)
+    # ── Department template: Times New Roman 12, 1" margins ──
+    doc.styles["Normal"].font.name = "Times New Roman"
+    doc.styles["Normal"].font.size = Pt(12)
+    for name in ("Heading 1", "Heading 2", "Heading 3", "Title"):
+        st = doc.styles[name]
+        st.font.name = "Times New Roman"
+        st.font.color.rgb = RGBColor(0, 0, 0)
+        st.font.bold = True
+    doc.styles["Title"].font.size = Pt(14)
+    doc.styles["Heading 1"].font.size = Pt(14)
+    doc.styles["Heading 2"].font.size = Pt(12)
+    doc.styles["Heading 3"].font.size = Pt(12)
+    for sec in doc.sections:
+        sec.top_margin = sec.bottom_margin = sec.left_margin = sec.right_margin = Inches(1)
+
+    current_h1 = ""
+    current_h2 = ""
+
+    def style_heading(h):
+        for r in h.runs:
+            r.font.name = "Times New Roman"
+            r.font.color.rgb = RGBColor(0, 0, 0)
+            r.bold = True
+        return h
+
+    def body_format(par, center=False):
+        """Template body: double-spaced, justified (centered for title page)."""
+        pf = par.paragraph_format
+        pf.line_spacing_rule = WD_LINE_SPACING.DOUBLE
+        par.alignment = WD_ALIGN_PARAGRAPH.CENTER if center else WD_ALIGN_PARAGRAPH.JUSTIFY
 
     i = 0
     while i < len(md):
@@ -124,32 +158,69 @@ def main():
             continue
 
         if line.startswith("# "):
-            p = doc.add_heading(re.sub(r"\*\*", "", line[2:]).strip(), level=0)
-            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            pass  # the Title Page section carries the title; no separate doc heading
         elif line.startswith("## "):
+            current_h1 = re.sub(r"\*\*", "", line[3:]).strip()
+            if current_h1 == "FRONT MATTER":
+                current_h2 = ""
+                i += 1
+                continue
             doc.add_page_break()
-            doc.add_heading(re.sub(r"\*\*", "", line[3:]).strip(), level=1)
+            current_h2 = ""
+            h = style_heading(doc.add_heading(current_h1, level=1))
+            h.alignment = WD_ALIGN_PARAGRAPH.CENTER
         elif line.startswith("### "):
-            doc.add_heading(re.sub(r"\*\*", "", line[4:]).strip(), level=2)
+            current_h2 = re.sub(r"\*\*", "", line[4:]).strip()
+            if current_h2 in ("Declaration", "Certification", "Dedication", "Acknowledgements", "Abstract", "Table of Contents", "List of Figures", "List of Tables"):
+                doc.add_page_break()
+            if current_h2 != "Title Page":  # sample title page has no "Title Page" label
+                h = style_heading(doc.add_heading(current_h2, level=2))
+                if current_h2 in ("Declaration", "Certification"):
+                    h.alignment = WD_ALIGN_PARAGRAPH.CENTER
         elif line.startswith("#### "):
-            doc.add_heading(re.sub(r"\*\*", "", line[5:]).strip(), level=3)
+            style_heading(doc.add_heading(re.sub(r"\*\*", "", line[5:]).strip(), level=3))
         elif line.startswith("> "):
+            if current_h1 == "":
+                i += 1
+                continue  # internal draft note before the first chapter — not for submission
             p = doc.add_paragraph()
             add_runs(p, line[2:])
             for run in p.runs:
                 run.italic = True
                 run.font.color.rgb = RGBColor(0x55, 0x55, 0x55)
         elif re.match(r"^\s*[-*] ", line):
-            p = doc.add_paragraph(style="List Bullet")
-            add_runs(p, re.sub(r"^\s*[-*] ", "", line))
+            if current_h1.startswith("REFERENCES"):
+                # APA 7: no bullets, hanging indent, double-spaced
+                p = doc.add_paragraph()
+                add_runs(p, re.sub(r"^\s*[-*] ", "", line))
+                pf = p.paragraph_format
+                pf.line_spacing_rule = WD_LINE_SPACING.DOUBLE
+                pf.left_indent = Inches(0.5)
+                pf.first_line_indent = Inches(-0.5)
+            else:
+                p = doc.add_paragraph(style="List Bullet")
+                add_runs(p, re.sub(r"^\s*[-*] ", "", line))
+                body_format(p)
         elif re.match(r"^\s*\d+\. ", line):
             p = doc.add_paragraph(style="List Number")
             add_runs(p, re.sub(r"^\s*\d+\. ", "", line))
+            body_format(p)
         elif line.strip() in ("---", "***"):
             pass
         elif line.strip():
+            block = [line.strip()]
+            while (i + 1 < len(md) and md[i + 1].strip()
+                   and not re.match(r"^(#{1,4} |> |\s*[-*] |\s*\d+\. |```|\||!\[)", md[i + 1])
+                   and md[i + 1].strip() not in ("---", "***")):
+                i += 1
+                block.append(md[i].strip())
             p = doc.add_paragraph()
-            add_runs(p, line)
+            add_runs(p, " ".join(block))
+            on_title = current_h2 in ("Title Page", "Declaration", "Certification")
+            body_format(p, center=(current_h2 == "Title Page"))
+            if on_title:
+                for r in p.runs:
+                    r.bold = True
         i += 1
 
     doc.save(DST)

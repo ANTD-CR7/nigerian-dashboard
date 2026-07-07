@@ -11,37 +11,45 @@
 ## FRONT MATTER
 
 ### Title Page
-**DESIGN AND IMPLEMENTATION OF A WEB-BASED PUBLIC ECONOMIC DATA AGGREGATION AND ANALYTICS PLATFORM WITH AN OPEN API**
+DESIGN AND IMPLEMENTATION OF A WEB-BASED PUBLIC ECONOMIC DATA AGGREGATION AND ANALYTICS PLATFORM WITH AN OPEN API (NPEDATA)
 
 BY
 
-**TAOHEED ABDULMANAN OLAOSEBIKAN**
-Matriculation Number: `[MATRIC NO.]`
+TAOHEED ABDULMANAN OLAOSEBIKAN
 
-A Project Submitted to the Department of Computer Science, College of `[COLLEGE]`,
-**Caleb University, Imota, Lagos**, in Partial Fulfilment of the Requirements for the
-Award of the Degree of Bachelor of Science (B.Sc.) in Computer Science.
+[MATRIC NUMBER]
 
-Supervisor: `[SUPERVISOR NAME]` · `[MONTH, 2026]`
+A PROJECT SUBMITTED TO THE DEPARTMENT OF
+
+COMPUTER SCIENCE, [COLLEGE NAME],
+
+CALEB UNIVERSITY, LAGOS
+
+IN PARTIAL FULFILLMENT OF THE REQUIREMENTS
+
+FOR THE AWARD OF B.Sc. DEGREE
+
+IN COMPUTER SCIENCE.
+
+[MONTH] 2026
 
 ### Declaration
-I, **Taoheed Abdulmanan Olaosebikan**, declare that this project titled *"Design and
-Implementation of a Web-Based Public Economic Data Aggregation and Analytics Platform with
-an Open API"* is the product of my own research effort, undertaken under supervision, and
-has not been presented elsewhere for the award of any degree or certificate. All sources
-have been duly acknowledged.
+I declare that this project was written by me:
 
-_____________________     _____________________
-Signature                 Date
+TAOHEED ABDULMANAN OLAOSEBIKAN _______________________
+
+Student's Name — Signature & Date
 
 ### Certification
-This is to certify that this project was carried out by **Taoheed Abdulmanan Olaosebikan**
-`[MATRIC NO.]` and has been read and approved as meeting the requirements of the Department
-of Computer Science, Caleb University, Imota, Lagos.
+I certify that this project is ready for departmental and college presentation:
 
-`[SUPERVISOR NAME]` (Supervisor) — Signature / Date
-`[HOD NAME]` (Head of Department) — Signature / Date
-`[EXTERNAL EXAMINER]` — Signature / Date
+[SUPERVISOR NAME] _______________________
+
+Supervisor's Name — Signature & Date
+
+[HOD NAME] _______________________
+
+Head of Department's Name — Signature & Date
 
 ### Dedication
 `[Your dedication.]`
