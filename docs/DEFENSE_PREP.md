@@ -14,8 +14,8 @@ without over-claiming. Fill the `[ ]` placeholders.
 ## PART A — Slide outline (aim for ~12–14 slides, ~10–12 min)
 
 **Slide 1 — Title**
-- Design and Implementation of a Web-Based Public Economic Data Aggregation and Analytics
-  Platform with an Open API (NPEDATA). Your name, matric no., supervisor, department, date.
+- Design and Development of a Nigerian Public Economic Data Aggregation and Analytics
+  Platform with Open API Access: A 2020–2026 Case Study (NPEDATA). Your name, matric no., supervisor, department, date.
 - *Say:* one sentence — "a platform that pulls Nigeria's scattered public economic data into
   one place and serves it to both people and programs."
 
