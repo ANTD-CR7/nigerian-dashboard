@@ -81,16 +81,25 @@ Summary, Conclusion and Recommendations · References · Appendices.
 
 ### List of Figures
 - Figure 3.1 Seven-stage system architecture
+- Figure 3.1b Deployment view
 - Figure 3.2 Use-case diagram
 - Figure 3.3 Data-flow diagram (Level 0 / Level 1)
 - Figure 3.4 Entity-relationship diagram
+- Figure 3.5 Sequence diagram — loading an indicator page
+- Figure 3.6 Sequence diagram — validating a CSV through the Open API
 - Figure 4.1–4.n System screenshots
 
 ### List of Tables
 - Table 1.1 Data coverage summary
 - Table 2.1 Comparison of related systems
+- Table 3.0 Methodology comparison
+- Table 3.0b Weaknesses of the existing workflow
+- Table 3.0c Existing vs proposed system
 - Table 3.1 Functional requirements
-- Table 3.2 Database schema
+- Table 3.1b Non-functional requirements with measurable targets
+- Table 3.1c Use-case descriptions
+- Table 3.2 Database schema (core tables)
+- Table 3.2b Data dictionary
 - Table 4.1 Test cases and results
 
 ---
@@ -267,51 +276,147 @@ project synthesises these findings into a working system.
 ## CHAPTER THREE — SYSTEM ANALYSIS AND DESIGN
 
 ### 3.1 Introduction
-This chapter presents the methodology, the analysis of the existing and proposed systems,
-the requirements, and the architectural and detailed design of NPEDATA.
+This chapter presents the methodology adopted for the project and justifies it against the
+alternatives; analyses how Nigerian public economic data is obtained today (the existing
+system) using a concrete, realistic scenario; specifies the proposed system and its
+requirements; and then develops the design in detail — architecture, use cases, data flow,
+database design and data dictionary, API design, core algorithms, input/output design,
+security and integrity design, and user-interface design. Throughout, design decisions are
+tied back to the specific realities of the Nigerian data landscape identified in Chapters
+One and Two, rather than treated as abstract choices.
 
-### 3.2 Methodology
+### 3.2 Research and Development Methodology
 An **iterative and incremental prototyping** methodology was adopted. The system was built
-in successive increments — first the data model and ingestion, then the API, then the
-dashboard, then analytics and refinements — with each increment reviewed and improved
-before the next. This suited a project with evolving data sources and a strong emphasis on
-correctness and presentation, allowing the truthfulness of each visualisation to be
-validated against the stored data at every iteration.
+in successive increments — first the data model and ingestion scripts, then the Open API,
+then the dashboard pages, then the analytics engine, and finally the refinement passes
+(visualisation honesty, accessibility, stakeholder views) — with each increment reviewed,
+validated against the stored data, and corrected before the next began.
+
+**Justification against the alternatives.** Three candidate methodologies were considered:
+
+**Table 3.0 — Methodology comparison**
+
+| Methodology | Strength | Why it was unsuitable here |
+|---|---|---|
+| Waterfall | Strong documentation discipline; predictable phases | Assumes requirements are fully known up-front. The structure, units and quirks of CBN/NBS publications only became clear *during* ingestion (e.g. the CBN balance sheet is published in ₦'000 but its annual statement in ₦ millions) — a frozen upfront specification would have been wrong. |
+| Scrum/agile (team-oriented) | Responsive to change; strong feedback cadence | Designed around a multi-person team with roles (product owner, scrum master); ceremony overhead is wasted on a single-developer academic project. |
+| **Iterative prototyping (chosen)** | Working software early; each cycle absorbs what the previous one taught | Fits a solo developer, evolving data sources, and a supervisor-feedback loop; every iteration ended with a *data-truthfulness check* — re-verifying that what the screens claimed matched what the database contained. |
+
+The distinctive feature of the process was that **verification was part of every iteration,
+not a final phase**: after each increment, the figures displayed by the frontend were
+cross-checked against the database, and discrepancies (documented in Chapter Four) were
+fixed before new work began. This is why the methodology chapter and the testing chapter of
+this report are tightly connected.
 
 ### 3.3 Analysis of the Existing System
-In the "existing system", a user seeking Nigerian economic data must visit multiple
-institutional websites, download PDF or Excel files individually, and manually clean, align
-and reconcile them. There is no single query interface and no programmatic access. This is
-slow, error-prone, and inaccessible to non-technical users and to programs.
+"The existing system" is not a single piece of software — it is the *manual workflow* a
+Nigerian data user must follow today, across the publishing practices of the three
+institutions concerned:
+
+- **The Central Bank of Nigeria (CBN)** publishes its exchange rates, money and credit
+  statistics and its Statistical Bulletin through its website, largely as **PDF documents
+  and per-topic Excel downloads**. Different datasets live on different pages, with
+  different layouts, different date formats, and units that change between publications
+  (thousands of naira in one table, millions in another). There is no public API.
+- **The National Bureau of Statistics (NBS)** publishes the monthly Consumer Price Index
+  and quarterly GDP reports as **PDF reports with accompanying spreadsheet tables**. Sector
+  GDP tables run to dozens of columns, are periodically rebased, and are formatted for
+  reading rather than for computation. There is likewise no public API for these series.
+- **The World Bank** offers a proper API for its indicators, but its Nigerian coverage is
+  coarse (mostly annual national aggregates), so it cannot substitute for the domestic
+  sources.
+
+**A concrete scenario (the contextual test case used throughout this report).** Consider a
+final-year economics student in Lagos who wants to answer a genuinely topical question:
+*"How did the June 2023 foreign-exchange unification reform relate to the 2023–2024
+inflation surge?"* Under the existing system she must: (1) locate the CBN's exchange-rate
+statistics page and download the monthly rates; (2) separately locate the NBS CPI report
+archive and extract headline inflation month by month; (3) reconcile the two by hand —
+different date formats, different file layouts; (4) align them in a spreadsheet and compute
+a correlation herself, with no guidance on whether the result is statistically meaningful;
+and (5) repeat all of it whenever a new month is published. In practice this is **hours to
+days of work before analysis can even begin**, it is error-prone at every manual step, and
+it is completely out of reach of a journalist on deadline, a secondary-school teacher, or a
+software developer who simply wants the numbers in a program.
+
+**Table 3.0b — Weaknesses of the existing workflow**
+
+| # | Weakness | Consequence |
+|---|---|---|
+| 1 | Data scattered across institutions and pages | High search cost; no single point of access |
+| 2 | PDF/spreadsheet formats designed for reading | Not machine-readable; manual re-typing and extraction |
+| 3 | Inconsistent date formats, layouts and units | Reconciliation errors; silent unit mistakes (₦'000 vs ₦m) |
+| 4 | No public API at CBN/NBS | Programmatic and third-party use effectively impossible |
+| 5 | No built-in analysis or interpretation | Non-experts cannot judge trends or correlation reliability |
+| 6 | Work is repeated by every user, every month | Nationally duplicated effort; no shared cleaned dataset |
 
 ### 3.4 Analysis of the Proposed System
-The proposed system consolidates the data into one standardised store and offers two access
-paths: an interactive dashboard and an open API. Its advantages over the existing system
-are: single point of access; consistent schema and units; programmatic retrieval; built-in
-analytics; explanatory visualisation; and free, no-authentication availability.
+The proposed system, NPEDATA, replaces that manual workflow with a maintained pipeline and
+two access paths — an interactive dashboard for people and a free Open API for programs.
+
+**The same scenario, replayed on NPEDATA.** The same student opens the *Compare Indicators*
+page, selects *Headline Inflation* and *Exchange Rate NGN/USD*, and presses Compare. In
+under a minute she has: both series date-aligned automatically; a single honest chart
+(z-score standardised, not a misleading dual axis); the Pearson correlation **with its R²
+and statistical-significance p-value**; a warning if the relationship is likely a shared
+trend rather than a real association; the full paired data table; and a citable CSV export.
+If she wants a document, the *Briefing Studio* composes a cited, print-ready brief of the
+same indicators. What previously took days of error-prone preparation now takes minutes,
+with the statistical caveats supplied rather than left to chance.
+
+**Table 3.0c — Existing vs proposed system**
+
+| Dimension | Existing workflow | NPEDATA |
+|---|---|---|
+| Access | Many sites, many files | One dashboard + one API |
+| Format | PDF/Excel for reading | Standardised machine-readable series |
+| Units/dates | Inconsistent, error-prone | One schema: ISO dates, stated units |
+| Programmatic use | None (CBN/NBS) | Free REST API, HATEOAS Level 3, no key |
+| Analysis | Do-it-yourself | Built-in stats with significance + honesty guards |
+| Interpretation | None | Plain-language storytelling per indicator |
+| Cost & repetition | Every user repeats the work | Cleaned once, shared by all |
 
 ### 3.5 System Requirements
+Requirements were gathered from the scenario analysis in §3.3, the project objectives in
+Chapter One, and supervisor feedback across iterations. They are stated per stakeholder
+group where relevant.
+
 **Table 3.1 — Functional requirements**
 
-| ID | Requirement |
-|---|---|
-| FR1 | Ingest indicators and observations from CSV/API into the database |
-| FR2 | Validate and standardise incoming data (types, dates, units) |
-| FR3 | Serve each indicator's series through REST endpoints |
-| FR4 | Provide analytics (latest, period change, YoY, trend, forecast, correlation) |
-| FR5 | Embed hypermedia links (HATEOAS) in API responses |
-| FR6 | Export any indicator as CSV |
-| FR7 | Display interactive charts and data tables in the dashboard |
-| FR8 | Allow date-range filtering and comparison of indicators |
+| ID | Requirement | Primary stakeholder |
+|---|---|---|
+| FR1 | Ingest indicators and observations from CSV/Excel source files into the database | Maintainer |
+| FR2 | Validate incoming data (ISO dates, numeric finite values, duplicates, future dates) before storage | Maintainer / data quality |
+| FR3 | Standardise all series — any frequency, any unit — into one observations schema | All |
+| FR4 | Serve every indicator's series through documented REST endpoints, no authentication | Developers |
+| FR5 | Embed hypermedia controls (`_links`, RFC 8288 `Link` header) so the API is navigable from the root (HATEOAS Level 3) | Developers |
+| FR6 | Provide per-indicator analytics for the full catalogue: latest, period change, year-on-year, range, mean, volatility, OLS trend with R² and p-value, illustrative forecast | Researchers |
+| FR7 | Provide cross-indicator comparison with Pearson r, R², significance p-value, and reliability warnings (short overlap, mixed frequency, shared-trend/detrended check) | Researchers |
+| FR8 | Display interactive charts with plain-language storytelling (what happened / why it matters / how to read it) | Public / students |
+| FR9 | Allow date-range filtering, range presets (1Y/3Y/5Y/All), and event-context markers on charts | All |
+| FR10 | Export any indicator as CSV; download any chart as an attributed image; generate an APA citation | Researchers / students |
+| FR11 | Offer two reading depths — plain-language Reader view and statistics-rich Analyst view — from one codebase | All |
+| FR12 | Compose a cited, print-ready multi-indicator briefing, shareable as a regenerating link | Journalists / policymakers |
+| FR13 | Expose the validation layer as a public service returning per-row verdicts, guaranteed never to write | Developers / demonstration |
+| FR14 | Provide embeddable live chart widgets for third-party sites | Publishers |
+| FR15 | Provide machine-readable platform discovery for AI agents (llms.txt; MCP server) | AI agents |
 
-**Non-functional requirements:** correctness (figures must match source data),
-availability (hosted and reachable), usability (clear to non-experts), accessibility
-(WCAG 2.1 AA contrast), performance (responsive charts), and portability (runs on free
-tiers).
+**Table 3.1b — Non-functional requirements (with measurable targets)**
 
-**Hardware/Software:** development on a standard laptop; Python 3.10+, a modern web browser,
-and internet access; deployment on GitHub Pages (frontend) and Render (API) with a Supabase
-database.
+| ID | Requirement | Target | Achieved (evidence in Ch. 4) |
+|---|---|---|---|
+| NFR1 | Correctness | Every displayed figure matches the stored data exactly | Systematic audit; defects found were fixed and documented |
+| NFR2 | Accessibility | WCAG 2.1 AA contrast (≥ 4.5:1) | Lighthouse accessibility 100/100 |
+| NFR3 | Performance | Interactive charts on consumer hardware; API responses in low seconds when warm | Warm endpoints ≈0.7–3 s; repeat reads cached to ≈1 s |
+| NFR4 | Availability | Publicly hosted, free to access | GitHub Pages + Render + Supabase, all free tiers |
+| NFR5 | Honesty | No misleading visual encodings; uncertainty stated | Single-axis policy, significance reporting, warning system |
+| NFR6 | Portability/reproducibility | Rebuildable from the repository alone | Seed snapshot + setup.sql + pinned dependencies |
+| NFR7 | Robustness | Malformed input never corrupts data or crashes the API | Adversarial test suite (incl. NaN/∞, 5,000-row floods) passes |
+
+**Hardware and software requirements.** Development: a standard laptop, Python 3.10+, a
+modern browser, internet access. Deployment: GitHub Pages (static frontend), Render
+(FastAPI service), Supabase (managed PostgreSQL). End users need only a browser — including
+on mobile; API consumers need any HTTP client.
 
 ### 3.6 System Architecture
 The system is organised as a seven-stage pipeline (Figure 3.1).
@@ -329,34 +434,150 @@ flowchart LR
   D --> G
 ```
 
+**What each stage does in this specific project:**
+1. **Collect** — source files are obtained from the three institutions' published outputs
+   (CBN statistical pages, NBS CPI/GDP report tables, World Bank indicators) as CSV/Excel.
+2. **Validate** — loader scripts type-check every row, normalise dates to ISO 8601, and
+   reject malformed records; during the build this stage caught and removed **1,435
+   duplicate records** introduced by repeated ETL runs, reducing 13,535 raw rows to the
+   12,100 clean observations in production — evidence that the stage does real work.
+3. **Standardise** — every series, whether daily NFEM rates or the 1960–2012 annual
+   financial statement, is reduced to the same `(indicator_id, obs_date, value)` shape,
+   with unit and source held as metadata.
+4. **Store** — Supabase-hosted PostgreSQL with a uniqueness constraint preventing
+   re-duplication; public read access is gated by row-level security.
+5. **Analyse** — classical statistics (descriptives, OLS trend, Pearson correlation with a
+   Student-t significance test) computed in the API and, for interactive pages, in the
+   browser from the same data.
+6. **API** — FastAPI service exposing the catalogue as versioned REST with hypermedia
+   controls; ingestion endpoints are demo-safe by default.
+7. **Present** — the static dashboard, which deliberately reads the database's REST layer
+   directly so the primary user experience does not depend on the API host being awake.
+
+**Figure 3.1b — Deployment view**
+```mermaid
+flowchart LR
+  subgraph User
+    B[Browser]
+    P[Programs / AI agents]
+  end
+  subgraph GitHub Pages
+    FE[Static dashboard\nHTML/CSS/JS]
+  end
+  subgraph Render
+    API[FastAPI Open API\n+ TTL cache]
+  end
+  subgraph Supabase
+    DB[(PostgreSQL\nRLS: public read-only)]
+  end
+  B --> FE
+  FE -->|REST reads| DB
+  B -->|Explorer / Playground| API
+  P -->|JSON + _links| API
+  API --> DB
+```
+The two data paths are intentional: the dashboard's independence from the API host is an
+availability decision (assessed further in §4.9).
+
 ### 3.7 System Design
 
 **3.7.1 Use-case design (Figure 3.2)**
 ```mermaid
 flowchart TB
-  V([Public / Researcher])
+  Pub([Public / Student])
+  Res([Researcher / Analyst])
   Dev([Developer])
+  AI([AI agent])
   Adm([Maintainer])
   subgraph NPEDATA
-    U1[View dashboard & charts]
-    U2[Filter by date / compare indicators]
-    U3[Download CSV]
-    U4[Call open API]
-    U5[Read API docs]
-    U6[Ingest / update data]
+    U1[View & interpret indicators\nReader / Analyst depth]
+    U2[Filter, range presets,\nevent context]
+    U3[Compare any two indicators\nr, R², p-value + warnings]
+    U4[Profile any of 122 indicators]
+    U5[Export CSV / PNG / citation]
+    U6[Compose cited briefing\nprint / share link]
+    U7[Call Open API / follow _links]
+    U8[Validate own CSV\nper-row verdicts, never writes]
+    U9[Embed live chart widget]
+    U10[Query via MCP tools / llms.txt]
+    U11[Ingest & update snapshots]
   end
-  V --- U1
-  V --- U2
-  V --- U3
-  Dev --- U4
-  Dev --- U5
-  Adm --- U6
+  Pub --- U1
+  Pub --- U2
+  Res --- U3
+  Res --- U4
+  Res --- U5
+  Res --- U6
+  Dev --- U7
+  Dev --- U8
+  Dev --- U9
+  AI --- U10
+  Adm --- U11
 ```
 
-**3.7.2 Data-flow design (Figure 3.3)** — At Level 0, external sources supply raw data to
+**Table 3.1c — Use-case descriptions (three representative cases in full)**
+
+**UC-1: Interpret an indicator (Public/Student).**
+*Precondition:* none — public site. *Main flow:* (1) user opens an indicator page, e.g.
+Inflation; (2) system fetches the series and renders the headline stat, the plain-language
+story blocks, and the chart with event markers; (3) user narrows the window with a range
+preset; (4) optionally flips the navbar dial to *Analyst*, revealing the statistical panel
+(range, mean, σ, OLS trend with R² and p-value). *Postcondition:* none (read-only).
+*Alternative flow:* data unavailable → a labelled error state with retry, never a blank chart.
+
+**UC-2: Test a correlation hypothesis (Researcher).**
+*Precondition:* none. *Main flow:* (1) researcher opens Compare Indicators and selects any
+two of the 122 indicators; (2) system date-aligns the two series on their common
+observations; (3) system computes Pearson r, R², and a two-tailed p-value, and plots both
+series z-score-standardised on one axis; (4) system runs the reliability guards — if the
+overlap is short, the frequencies differ, or the detrended (month-to-month change)
+correlation collapses relative to the level correlation, a visible warning explains the
+caveat; (5) researcher exports the paired table as CSV or copies the citation.
+*Postcondition:* none. *Alternative flow:* no overlapping dates → explanatory notice, no
+correlation shown.
+
+**UC-3: Validate a dataset via the API (Developer).**
+*Precondition:* developer has a CSV with `obs_date,value` columns. *Main flow:* (1) client
+POSTs the file with a target `indicator_id` to `/api/v1/validate/csv` (or uses the Pipeline
+Playground UI); (2) system checks the header, then judges every row — ISO date, numeric and
+finite value, no in-file duplicate date, no future date; (3) system returns a per-row
+verdict report with reasons and normalised values, plus `written_to_database: false`.
+*Postcondition:* **no state change ever** — the endpoint is validation-only by design.
+*Alternative flows:* unknown indicator → 404 listing valid ids; non-UTF-8 file or missing
+columns → 400 with the specific message.
+
+**3.7.2 Data-flow and interaction design.** At Level 0, external sources supply raw data to
 the NPEDATA process, which stores standardised observations and returns charts, JSON and
 CSV to users. At Level 1 the process decomposes into *Ingest → Validate → Store → Query →
-Analyse → Serve*.
+Analyse → Serve*. Two representative interactions are shown as sequence diagrams.
+
+**Figure 3.5 — Sequence: loading an indicator page**
+```mermaid
+sequenceDiagram
+  actor U as User
+  participant D as Dashboard (browser)
+  participant S as Supabase (PostgREST)
+  U->>D: open inflation.html
+  D->>S: GET observations?indicator_id=eq.inflation
+  S-->>D: JSON rows (date, value)
+  D->>D: npeStats(): latest, YoY, σ, OLS trend + p-value
+  D->>D: render takeaway, chart, event markers, analyst panel
+  D-->>U: story + chart + (Analyst) statistics
+```
+
+**Figure 3.6 — Sequence: validating a CSV through the Open API**
+```mermaid
+sequenceDiagram
+  actor Dev as Developer / Playground
+  participant A as FastAPI (/api/v1/validate/csv)
+  Dev->>A: POST indicator_id + CSV file
+  A->>A: check UTF-8, header columns
+  loop every row
+    A->>A: ISO date? numeric & finite? duplicate? future?
+  end
+  A-->>Dev: per-row verdicts + reasons + written_to_database:false
+  Note over A: never writes — validation-only by design
+```
 
 **3.7.3 Database design (Figure 3.4 — ERD)**
 ```mermaid
@@ -392,19 +613,115 @@ erDiagram
 The long/tidy `observations` table lets indicators of any frequency or unit coexist in one
 structure — the key standardisation decision of the project.
 
+**Table 3.2b — Data dictionary**
+
+*Table `data_sources`*
+| Field | Type | Constraints | Description | Example |
+|---|---|---|---|---|
+| code | text | PK | Short institution code | `CBN` |
+| name | text | not null | Full institution name | Central Bank of Nigeria |
+
+*Table `indicators`*
+| Field | Type | Constraints | Description | Example |
+|---|---|---|---|---|
+| id | text | PK, snake_case | Stable series identifier | `exchange_rate` |
+| name | text | not null | Human-readable name | Exchange Rate NGN/USD |
+| unit | text | not null | Unit **as stored** (critical — see note) | Naira per USD |
+| description | text | — | What the series measures | … |
+| source | text | FK → data_sources.code | Publishing institution | `CBN` |
+
+*Table `observations`*
+| Field | Type | Constraints | Description | Example |
+|---|---|---|---|---|
+| indicator_id | text | FK → indicators.id; unique with obs_date | Which series | `inflation` |
+| obs_date | date | ISO 8601; unique with indicator_id | Observation date | 2024-12-01 |
+| value | numeric | not null, finite | The observation, in the indicator's stored unit | 34.80 |
+| source | text | — | Provenance tag for the row | `NBS` |
+
+*Unit note (a genuine design lesson of this project):* stored units differ by series — the
+CBN monthly balance sheet is in ₦'000, its annual statement in ₦ millions, GDP sectors in
+₦ billions. The presentation layer therefore carries a single scale-aware formatter so
+values are always displayed honestly (e.g. ₦81.04T); Chapter Four documents the defects
+this discipline caught.
+
 **3.7.4 API design.** The API is versioned under `/api/v1/` and returns JSON with an
 embedded `_links` object (HATEOAS). Representative endpoints include `/summary`, per-indicator
 series endpoints (`/gdp`, `/inflation`, `/exchange-rate`, `/fx-reserves`, `/nfem`,
-`/multicurrency`, …), `/analytics/{indicator_id}`, `/coverage`, and `/export/{indicator_id}`
-(CSV, with an RFC 8288 `Link` header). Ingestion endpoints are demo-safe by default,
-validating without writing unless explicitly enabled.
+`/multicurrency`, …), `/analytics/{indicator_id}`, `/coverage`, `/export/{indicator_id}`
+(CSV, with an RFC 8288 `Link` header), and `/validate/csv` (the validation layer as a
+service). Four design rules govern every endpoint: (1) **versioned paths** so future changes
+cannot break consumers; (2) **hypermedia everywhere** — every JSON response includes
+`_links` (self, index, docs, related resources, per-indicator analytics/export), making the
+whole API navigable from the root; (3) **no authentication, open CORS** — the mission is
+access; (4) **writes are demo-safe by default** — ingestion validates and normalises but
+persists nothing unless the server-side `ALLOW_DATA_WRITES` flag *and* an explicit
+`commit=true` are both set.
 
-**3.7.5 User-interface design.** The dashboard uses a dark "Lagos Noir" visual theme with a
+**3.7.5 Algorithm design.** The three core computations, as implemented:
+
+*Validation (per CSV row):*
+```
+for each row (r = 2, 3, …):
+    problems ← []
+    if obs_date does not parse as YYYY-MM-DD:        problems += "ISO date required"
+    if value does not parse as a number:             problems += "numeric required"
+    else if value is NaN or ±Infinity:               problems += "finite number required"
+    if obs_date parsed:
+        if obs_date > today:                         problems += "future date"
+        if obs_date already seen in this file:       problems += "duplicate date"
+    emit {row, status: valid|rejected, reasons, normalized}
+never write; return counts + verdicts
+```
+
+*Pearson correlation with significance:*
+```
+align the two series on common dates → x[], y[] (n pairs)
+r ← Σ(xᵢ−x̄)(yᵢ−ȳ) / √(Σ(xᵢ−x̄)² · Σ(yᵢ−ȳ)²)
+t² ← r²(n−2)/(1−r²)
+p ← I_{(n−2)/((n−2)+t²)}((n−2)/2, 1/2)        # regularised incomplete beta (two-tailed)
+report r, R² = r², p; warn if n < 8, frequencies differ,
+or |r_detrended| (on month-to-month changes) ≪ |r|
+```
+
+*OLS trend and illustrative forecast:*
+```
+slope ← Σ(i−ī)(vᵢ−v̄) / Σ(i−ī)²   over index i = 0…n−1
+intercept ← v̄ − slope·ī
+trend line ← slope·i + intercept; extrapolate k periods, labelled "illustrative only"
+```
+
+**3.7.6 Input and output design.** *Inputs:* date-range pickers (From/To) on every data
+page; range-preset chips (1Y/3Y/5Y/All); grouped indicator selectors driven by the live
+catalogue (single-select for profiles, multi-select for briefings); a currency-converter
+amount field; CSV upload/paste in the Playground; URL query parameters (`?from=&to=&view=`,
+`?ids=`) so any composed view is shareable and regenerable. All inputs are validated
+client-side and, for the API, server-side. *Outputs:* interactive charts with plain-language
+captions; statistic tiles; sortable data tables; CSV downloads; attributed PNG chart
+exports; APA citations; the print-ready briefing document; and machine outputs (JSON with
+`_links`, the llms.txt discovery file).
+
+**3.7.7 Security and data-integrity design.** The system is public-read by design, so the
+security question is *integrity*, not secrecy: (1) the browser-side database credential is
+a **public anonymous key gated by PostgreSQL row-level security** — read-only; it cannot
+modify data, so shipping it client-side is safe and intentional; (2) **all write paths are
+demo-safe by default** (`ALLOW_DATA_WRITES=false`), and the public validation endpoint is
+*incapable* of writing; (3) a **uniqueness constraint** on (indicator_id, obs_date)
+prevents duplicate ingestion at the database level; (4) user-supplied content echoed by the
+frontend (e.g. Playground verdicts) is HTML-escaped, and adversarial inputs — script tags,
+NaN/Infinity, 5,000-row floods — are part of the test suite; (5) real secrets (service
+keys) exist only as server-side environment variables, never in the repository.
+
+**3.7.8 User-interface design.** The dashboard uses a dark "Lagos Noir" visual theme with a
 consistent per-indicator storytelling pattern — a headline statistic, three short
 explanatory blocks (*what happened / why it matters / how to read it*), the chart(s), and a
 data table — plus a "markets-terminal" chart treatment (range selectors, hover crosshair,
-end-of-line value tags). Accessibility (colour contrast, keyboard focus) is a design
-constraint throughout.
+end-of-line value tags, event markers). Two design policies are treated as requirements
+rather than aesthetics: **honest encoding** (no dual y-axes — different scales are shown as
+aligned panels or z-scores; no data-censoring transforms; units always stated) and
+**layered depth** — the Reader/Analyst dial serves the general public and researchers from
+the same pages instead of forking the interface per audience. Accessibility (WCAG 2.1 AA
+contrast, keyboard focus, aria labelling, reduced-motion support) is a design constraint
+throughout.
 
 ---
 
