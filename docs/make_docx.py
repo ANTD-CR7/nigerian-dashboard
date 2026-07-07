@@ -10,7 +10,9 @@ from pathlib import Path
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Pt, RGBColor
+from docx.shared import Inches, Pt, RGBColor
+
+from PIL import Image
 
 SRC = Path(__file__).parent / "FYP_REPORT.md"
 DST = Path(__file__).parent / "FYP_REPORT.docx"
@@ -38,6 +40,34 @@ def add_code(doc, lines, mermaid=False):
         r.font.name = "Consolas"
         r.font.size = Pt(9)
         p.paragraph_format.space_after = Pt(0)
+
+
+def add_image(doc, alt, rel_path):
+    """![caption](figures/x.png) → centered picture sized to the page, + caption."""
+    img = Path(__file__).parent / rel_path
+    if not img.exists():
+        p = doc.add_paragraph()
+        r = p.add_run(f"[missing image: {rel_path}]")
+        r.italic = True
+        return
+    w_px, h_px = Image.open(img).size
+    # fit within 6.2" wide and 7.5" tall (portrait A4 with margins)
+    width = min(6.2, 6.2 * (w_px / max(w_px, 1)))
+    height_at_width = h_px / w_px * width
+    if height_at_width > 7.5:
+        width = width * 7.5 / height_at_width
+    # small diagrams shouldn't be blown up past ~2x native (96dpi assumption)
+    native_in = w_px / 96
+    width = min(width, max(native_in * 1.6, 3.0))
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.add_run().add_picture(str(img), width=Inches(width))
+    cap = doc.add_paragraph()
+    cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = cap.add_run(alt)
+    r.italic = True
+    r.font.size = Pt(9)
+    cap.paragraph_format.space_after = Pt(14)
 
 
 def add_table(doc, rows):
@@ -85,6 +115,12 @@ def main():
                 rows.append(md[i]); i += 1
             add_table(doc, rows)
             doc.add_paragraph()
+            continue
+
+        m_img = re.match(r"^!\[(.*?)\]\((.*?)\)\s*$", line.strip())
+        if m_img:
+            add_image(doc, m_img.group(1), m_img.group(2))
+            i += 1
             continue
 
         if line.startswith("# "):

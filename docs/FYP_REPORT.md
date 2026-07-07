@@ -2,8 +2,8 @@
 
 > **Draft project report — fill the bracketed placeholders `[ ]` and reformat to your
 > department's exact style guide (font, spacing, margins, chapter numbering, referencing
-> style) before submission. Diagrams are provided as Mermaid/ASCII so you can render them
-> in draw.io, Lucidchart or Word. Nothing here is fabricated about the system; verify the
+> style) before submission. Diagrams are embedded as rendered images (sources included in docs/figures and as
+> Mermaid in this file). Nothing here is fabricated about the system; verify the
 > external citations against the actual sources and format them per your school's guide.**
 
 ---
@@ -87,7 +87,7 @@ Summary, Conclusion and Recommendations · References · Appendices.
 - Figure 3.4 Entity-relationship diagram
 - Figure 3.5 Sequence diagram — loading an indicator page
 - Figure 3.6 Sequence diagram — validating a CSV through the Open API
-- Figure 4.1–4.n System screenshots
+- Figures 4.1–4.13 System screenshots (deployed system)
 
 ### List of Tables
 - Table 1.1 Data coverage summary
@@ -422,6 +422,9 @@ on mobile; API consumers need any HTTP client.
 The system is organised as a seven-stage pipeline (Figure 3.1).
 
 **Figure 3.1 — Seven-stage architecture**
+
+![Figure 3.1 — Seven-stage system architecture](figures/fig3_1_architecture.png)
+
 ```mermaid
 flowchart LR
   A[Collection\nCBN / NBS / World Bank\nCSV + Excel] --> B[Validation\ntype & date checks]
@@ -455,6 +458,9 @@ flowchart LR
    directly so the primary user experience does not depend on the API host being awake.
 
 **Figure 3.1b — Deployment view**
+
+![Figure 3.1b — Deployment view](figures/fig3_1b_deployment.png)
+
 ```mermaid
 flowchart LR
   subgraph User
@@ -482,8 +488,11 @@ availability decision (assessed further in §4.9).
 ### 3.7 System Design
 
 **3.7.1 Use-case design (Figure 3.2)**
+
+![Figure 3.2 — Use-case diagram](figures/fig3_2_usecases.png)
+
 ```mermaid
-flowchart TB
+flowchart LR
   Pub([Public / Student])
   Res([Researcher / Analyst])
   Dev([Developer])
@@ -552,6 +561,9 @@ CSV to users. At Level 1 the process decomposes into *Ingest → Validate → St
 Analyse → Serve*. Two representative interactions are shown as sequence diagrams.
 
 **Figure 3.5 — Sequence: loading an indicator page**
+
+![Figure 3.5 — Sequence diagram: loading an indicator page](figures/fig3_5_seq_pageload.png)
+
 ```mermaid
 sequenceDiagram
   actor U as User
@@ -566,6 +578,9 @@ sequenceDiagram
 ```
 
 **Figure 3.6 — Sequence: validating a CSV through the Open API**
+
+![Figure 3.6 — Sequence diagram: validating a CSV through the Open API](figures/fig3_6_seq_validate.png)
+
 ```mermaid
 sequenceDiagram
   actor Dev as Developer / Playground
@@ -580,6 +595,9 @@ sequenceDiagram
 ```
 
 **3.7.3 Database design (Figure 3.4 — ERD)**
+
+![Figure 3.4 — Entity-relationship diagram](figures/fig3_4_erd.png)
+
 ```mermaid
 erDiagram
   DATA_SOURCES ||--o{ INDICATORS : publishes
@@ -819,14 +837,33 @@ preferred over a larger one that overstates its capabilities, and each item is a
 for the future work discussed in Chapter Five.
 
 ### 4.6 System Screenshots
-*(Insert captured screenshots; suggested set below.)*
-- Figure 4.1 — Homepage dashboard with KPIs and the "how it works" pipeline.
-- Figure 4.2 — Exchange-rate page (terminal chart with range selector and end-labels).
-- Figure 4.3 — Inflation page (headline/food/core comparison).
-- Figure 4.4 — Multi-currency page (buying/central/selling + dealing-spread panel).
-- Figure 4.5 — Assets & liabilities (naira-trillions balance sheet).
-- Figure 4.6 — API documentation page and Swagger UI (`/docs`).
-- Figure 4.7 — A sample JSON API response showing the `_links` (HATEOAS) block.
+The figures below are actual captures of the deployed system.
+
+![Figure 4.1 — Homepage: live KPI cards with trend sparklines and coverage strip](figures/fig4_1_homepage_kpis.png)
+
+![Figure 4.2 — The seven-stage "How It Works" pipeline section](figures/fig4_2_pipeline.png)
+
+![Figure 4.3 — Flagship story: inflation and the NGN/USD rate as aligned single-axis panels with event markers](figures/fig4_3_flagship_panels.png)
+
+![Figure 4.4 — The Reader/Analyst dial revealing statistical panels on the homepage](figures/fig4_4_analyst_dial.png)
+
+![Figure 4.5 — Inflation page: research toolkit (Share/PNG/Cite), event toggle and purchasing-power calculator](figures/fig4_5_inflation_toolkit.png)
+
+![Figure 4.6 — Multi-currency page: central rate with the isolated dealing-spread panel](figures/fig4_6_multicurrency_spread.png)
+
+![Figure 4.7 — CBN balance sheet: gold, government and bankers' deposits as small multiples](figures/fig4_7_balance_sheet_panels.png)
+
+![Figure 4.8 — "Analyze Any Indicator": statistical profile tiles with trend R² and p-value](figures/fig4_8_indicator_profile.png)
+
+![Figure 4.9 — Compare tool reporting Pearson r with R² and statistical significance](figures/fig4_9_compare_significance.png)
+
+![Figure 4.10 — The Aggregation Heatmap: 122 indicators × 1960–2026, computed live](figures/fig4_10_heatmap.png)
+
+![Figure 4.11 — HATEOAS Explorer browsing the live API by following _links](figures/fig4_11_hateoas_explorer.png)
+
+![Figure 4.12 — Pipeline Playground: per-row validation verdicts, nothing written](figures/fig4_12_playground.png)
+
+![Figure 4.13 — Briefing Studio: generated, cited, print-ready economic briefing](figures/fig4_13_briefing.png)
 
 ### 4.7 Testing and Validation
 The platform was validated through several complementary strands, combining automated tests,
