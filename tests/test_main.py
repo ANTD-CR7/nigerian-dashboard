@@ -196,3 +196,51 @@ def test_validate_csv_rejects_nan_and_infinity():
 def test_observation_in_rejects_nan():
     with pytest.raises(ValidationError):
         main.ObservationIn(indicator_id="inflation", obs_date=date(2025, 1, 1), value=float("nan"))
+
+
+# ── TTL cache primitives ──
+
+def test_cache_roundtrip_and_ttl_expiry(monkeypatch):
+    main._CACHE.clear()
+    now = [1000.0]
+    monkeypatch.setattr(main.time, "time", lambda: now[0])
+    main._cache_put(("series", "x", "a", "b"), [{"v": 1}])
+    assert main._cache_get(("series", "x", "a", "b")) == [{"v": 1}]
+    now[0] += main._CACHE_TTL_SECONDS + 1
+    assert main._cache_get(("series", "x", "a", "b")) is None
+    main._CACHE.clear()
+
+
+def test_cache_size_cap_evicts_oldest(monkeypatch):
+    main._CACHE.clear()
+    monkeypatch.setattr(main.time, "time", lambda: 1000.0)
+    for i in range(main._CACHE_MAX_KEYS):
+        main._cache_put(("k", i), i)
+    main._cache_put(("k", "overflow"), "new")
+    assert len(main._CACHE) <= main._CACHE_MAX_KEYS
+    assert main._cache_get(("k", "overflow")) == "new"
+    main._CACHE.clear()
+
+
+def test_fetch_uses_cache(monkeypatch):
+    main._CACHE.clear()
+    calls = {"n": 0}
+    class _Q:
+        def __init__(self): pass
+        def select(self, *a): return self
+        def eq(self, *a): return self
+        def gte(self, *a): return self
+        def lte(self, *a): return self
+        def order(self, *a): return self
+        def execute(self):
+            calls["n"] += 1
+            class R: data = [{"obs_date": "2024-01-01", "value": 1, "source": "T"}]
+            return R()
+    class _SB:
+        def table(self, *a): return _Q()
+    monkeypatch.setattr(main, "supabase", _SB())
+    a = main.fetch("inflation", "2024-01-01", "2024-12-31")
+    b = main.fetch("inflation", "2024-01-01", "2024-12-31")
+    assert a == b
+    assert calls["n"] == 1  # second call served from cache
+    main._CACHE.clear()

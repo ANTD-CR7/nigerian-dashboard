@@ -582,6 +582,49 @@ displays, aligning the presentation with the objective of truthful analytics.
 
 ---
 
+### 4.9 Technology-Stack Assessment
+The stack was re-evaluated at the end of implementation against the question: *is any
+technology choice limiting the platform?* The assessment was evidence-based, using the
+measurements gathered during stress testing rather than opinion.
+
+**Choices that proved themselves (kept deliberately):**
+- **Static HTML/CSS/vanilla JavaScript frontend (no framework, no build step).** At this
+  scale it delivered a 100/100 Lighthouse accessibility score, zero build/dependency
+  maintenance, free hosting, and complete auditability — any panelist can View-Source the
+  entire implementation. The known weakness of the approach (duplicated code drifting apart
+  across pages) was addressed architecturally with a single shared library (`shared.js`)
+  carrying all chart, analytics and UI logic, so a fix in one place applies everywhere.
+- **FastAPI + Supabase (PostgreSQL).** Handled every stress-test scenario (including a
+  5,000-row adversarial CSV) with 17/17 live endpoints passing; the relational
+  tidy-observations model absorbed daily, monthly, quarterly and annual series in one schema.
+
+**Measured limitations, and what was done about each:**
+1. **Free-tier API cold starts (~30 s).** Render's free tier sleeps after idle. Mitigated
+   three ways: a scheduled keep-alive workflow pings the service every 10 minutes; every
+   API-dependent page shows an explicit "server waking" state instead of appearing broken;
+   and the dashboard itself is architecturally independent of the API (it reads the
+   database's REST layer directly), so the primary user experience cannot be taken down by
+   the API host.
+2. **Repeated-query latency.** The multi-currency endpoint (33 series) measured ~5.4 s per
+   request because every call repeated 33 database round-trips. A size-capped, 5-minute-TTL
+   in-process cache was added at the data-access layer — appropriate because the dataset
+   changes only at ingestion time — cutting repeat responses to well under a second and
+   reducing database load. This is the standard first scaling step (caching) applied inside
+   the existing stack rather than replacing it.
+3. **PostgREST row-window limits.** Bulk reads return at most ~1,000 rows per request; the
+   coverage heatmap therefore fetches the full 12,100-observation dataset with paged
+   parallel requests. Acceptable at this scale; a server-side aggregate endpoint is the
+   documented next step if the dataset grows.
+
+**Scaling path (if requirements outgrow the stack):** the layers are decoupled, so each can
+be upgraded independently without a rewrite — the database is already PostgreSQL (scales to
+a paid tier unchanged); the API is containerisable FastAPI (moves to an always-on host,
+gaining zero-cold-start); and because all data access goes through the documented Open API
+or the database's REST layer, the frontend could be rebuilt in any framework without
+touching the backend. The conclusion of the assessment is that the stack is not the
+limiting factor at the platform's current scope; where friction was measured, it was
+engineered around within the stack, and the upgrade path for each layer is documented.
+
 ## CHAPTER FIVE — SUMMARY, CONCLUSION AND RECOMMENDATIONS
 
 ### 5.1 Summary

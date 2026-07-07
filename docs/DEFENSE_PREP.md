@@ -184,6 +184,20 @@ paywalled. Neither offers this granular Nigerian data free with an open API. And
 adds an integrity layer — significance testing and spurious-correlation warnings — that those
 consumer tools don't.
 
+**Q: "Isn't your tech stack limiting? Why no React / bigger stack?"**
+A: I re-evaluated the stack at the end of the build with measurements, not opinions
+(report §4.9). At this scale it isn't the limit: the no-framework frontend scores 100/100
+on accessibility, has zero build complexity, and any panelist can View-Source the whole
+implementation; the drift risk of plain HTML is solved architecturally with one shared
+library. Where I *measured* friction I fixed it inside the stack: the multi-currency
+endpoint was ~5.4 s, so I added a TTL cache at the data layer — repeat responses are now
+sub-second. Cold starts on the free API tier are mitigated by a keep-alive job, explicit
+"waking" states, and the dashboard being architecturally independent of the API. And the
+layers are decoupled, so each has a documented upgrade path — Postgres scales unchanged,
+FastAPI containerises to an always-on host, and the frontend could be rebuilt in any
+framework without touching the backend. Choosing a bigger stack by default would have been
+résumé-driven engineering; choosing this one was a measured decision.
+
 **Q: "What about scalability / performance / security?"**
 A: At 12,100 rows, client-side computation is fine and keeps the system transparent. The
 Supabase key is a public anon key gated by row-level security — read-only — so exposing it
