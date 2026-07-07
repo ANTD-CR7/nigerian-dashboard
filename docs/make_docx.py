@@ -182,7 +182,8 @@ def main():
                 current_h2 = ""
                 i += 1
                 continue
-            doc.add_page_break()
+            if len(doc.element.body) > 1:  # never open the document with a blank page
+                doc.add_page_break()
             current_h2 = ""
             h = style_heading(doc.add_heading(current_h1, level=1))
             h.alignment = WD_ALIGN_PARAGRAPH.CENTER
