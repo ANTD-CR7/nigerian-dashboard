@@ -151,8 +151,13 @@
         '<div class="brief-cite" id="bf-ci-'+k+'"></div>';
       host.appendChild(sec);
       try{
-        const data=await series(id,from,to);
-        if(data.length<2){document.getElementById('bf-st-'+k).innerHTML='<div class="prof-tile"><div class="pt-label">No data</div><div class="pt-value flat">—</div><div class="pt-sub">no observations in this window</div></div>';continue;}
+        let data=await series(id,from,to);
+        let usedFallback=false;
+        if(data.length<2){
+          data=await series(id,'1900-01-01','2100-12-31');
+          usedFallback=true;
+          if(data.length<2){document.getElementById('bf-st-'+k).innerHTML='<div class="prof-tile"><div class="pt-label">No data</div><div class="pt-value flat">—</div><div class="pt-sub">no observations available for this indicator</div></div>';continue;}
+        }
         const st=npeStats(data);
         const F=function(v){return npeFormat(v,id,meta.unit);};
         const sig=npeSig(st.trendCorr,st.n);
@@ -164,8 +169,10 @@
           ['Volatility (σ)',F(st.std),'standard deviation'],
           ['Trend (OLS)',dir,'R²='+(st.trendCorr*st.trendCorr).toFixed(2)+' · '+sig.label]
         ].map(function(t){return '<div class="prof-tile"><div class="pt-label">'+t[0]+'</div><div class="pt-value">'+t[1]+'</div><div class="pt-sub">'+t[2]+'</div></div>';}).join('');
-        const evs=NPE_EVENTS.filter(function(ev){return ev.date>=from.slice(0,7)&&ev.date<=to.slice(0,7);});
-        document.getElementById('bf-ev-'+k).innerHTML=evs.length?('<strong>Events in this window:</strong> '+evs.map(function(e){return e.label+' ('+e.date+')';}).join(' · ')):'';
+        const rangeFrom=usedFallback?data[0].obs_date:from, rangeTo=usedFallback?data[data.length-1].obs_date:to;
+        const evs=NPE_EVENTS.filter(function(ev){return ev.date>=rangeFrom.slice(0,7)&&ev.date<=rangeTo.slice(0,7);});
+        var fallbackNote=usedFallback?('<div style="color:var(--gold);margin-bottom:6px;">This indicator has no observations between '+from+' and '+to+' — shown using its full available coverage instead ('+data[0].obs_date+' → '+data[data.length-1].obs_date+').</div>'):'';
+        document.getElementById('bf-ev-'+k).innerHTML=fallbackNote+(evs.length?('<strong>Events in this window:</strong> '+evs.map(function(e){return e.label+' ('+e.date+')';}).join(' · ')):'');
         const org=ORG[meta.source]||meta.source||'CBN/NBS/World Bank';
         document.getElementById('bf-ci-'+k).textContent=org+'. ('+new Date().getFullYear()+'). '+meta.name+' [Data set]. NPEDATA. Retrieved '+retrieved+', from '+location.origin+location.pathname.replace('briefing.html','')+' · Unit: '+(meta.unit||'—')+' · Coverage in this briefing: '+data[0].obs_date+' → '+data[data.length-1].obs_date;
         const ctx=document.getElementById('bf-ch-'+k);
