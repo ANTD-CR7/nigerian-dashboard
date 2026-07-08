@@ -62,11 +62,19 @@ David and Ayowole Abraham.
 
 ### Acknowledgements
 I acknowledge my uncle, Lasisi Adedoyin, and my aunty, Lasisi Kehinde, and the whole Lasisi
-family, for their support. I thank Caleb University's Master's Chapel and Counselling
-Department; my roommates Michael Keston, Sam Odetayo, Kunle Fasanya, Korede and Mayowa; and my
-friends Salako Priscilia, Muogho Matilda, Mosunmola, Oreoluwa, Mojisola, Adewale, Mohammed,
-Abdul Azeez, Timileyin, Nogho Precious and Monica Divine. I am grateful to my tutor, Silas
-Bankole, and to Lasisi Hammed.
+family, for their support. I thank my level adviser, Dr. Ajilore; my aunties Alaba and Lara;
+and my relative, Hakeem "The Law" Mujidat. I thank Caleb University's Master's Chapel and
+Counselling Department; my roommates Michael Keston, Sam Odetayo, Kunle Fasanya, Korede and
+Mayowa; and my friends Salako Priscilia, Muogho Matilda, Mosunmola, Oreoluwa, Mojisola,
+Adewale, Mohammed, Abdul Azeez, Timileyin, Nogho Precious and Monica Divine. I am grateful to
+my tutor, Silas Bankole, and to Lasisi Hammed.
+
+I further acknowledge Moses D Great, Scholar Steve, Akintunde Praise, Jedidiah, Chosen,
+Venture, Caviar Humphrey, Ife, Katule, Benji, hypeman CallMeAjay, Akintunde Raph, Moweta Sean,
+Osas, BMAX Ugochukwu, RXN Charmy, RXN Dave, Tobi, Tumise, Dipson, Oluwaseyi, Animashaun
+Abimbola, Machinery FX, Al Ameen, Joker, King Richard, Nico Stonz, Akinmulaye Blessing,
+Akinmulaye Elizabeth, Michael Ani, Henry, Deon, Iteoluwa, Vicman, Pappy Media, Nathan Kelly,
+Njoku Sunday, Osebor and Rashford.
 
 I also acknowledge Fidelity Bank for the internship experience that shaped this project, and
 Mr Basit; the Lagos State Ministry of Science and Technology for the exposure it gave me, and
@@ -74,12 +82,14 @@ Mr Bravo and Mr Sam for their guidance on networking; Ola Bello ("Mildey"); Prin
 Street Boi"); Pastor Yomi; and Alfa Sultan.
 
 Beyond those who guided me directly, this project was shaped by the discipline and example of
-Ayodeji Ibrahim Balogun (Wizkid) and Cristiano Ronaldo, and by the thinking of Peter Thiel,
-Stanley Druckenmiller, Jamie Dimon and Baltasar Gracián. I acknowledge the Federal Republic of
-Nigeria — may Allah bless Nigeria — and its policymakers, and the financial journalists whose
-coverage informed this work: Aruoture Oddiri, Reuben Abati and Rufai Oseni of Arise TV; and
-President Asiwaju Bola Ahmed Adekunle Tinubu, GCFR, for the reminder that anything is possible
-once you say it, accept where you stand, and contend with reality.
+Ayodeji Ibrahim Balogun (Wizkid) and Cristiano Ronaldo; by the nation-building examples of
+Olusegun Obasanjo, Obafemi Awolowo and MKO Abiola; and by the thinking of Isaac Newton, Warren
+Buffett, Charlie Munger (mental models), Michael Bloomberg, Peter Thiel, Stanley Druckenmiller,
+Jamie Dimon and Baltasar Gracián. I acknowledge the Federal Republic of Nigeria — may Allah
+bless Nigeria — and its policymakers, and the financial journalists whose coverage informed
+this work: Aruoture Oddiri, Reuben Abati and Rufai Oseni of Arise TV; and President Asiwaju
+Bola Ahmed Adekunle Tinubu, GCFR, for the reminder that anything is possible once you say it,
+accept where you stand, and contend with reality.
 
 Finally, to every student of the Federal Republic of Nigeria working to understand this
 economy — and to myself, Taoheed Abdulmanan Olaosebikan — this project is for you too.
