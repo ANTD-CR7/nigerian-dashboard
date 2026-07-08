@@ -52,10 +52,37 @@ MISS ILORI DEBORAH _______________________
 Supervisor's Name — Signature & Date
 
 ### Dedication
-`[Your dedication.]`
+I dedicate this project first to Almighty Allah, for His blessing and grace over its
+completion and over every part of the process. I also dedicate it to my supervisor, Miss
+Ilori Deborah; to my Head of Department, Dr. Oduroye, for his calmness and advice; and to Dr.
+Pappy Jae, for the time and correction he committed to guiding me. Finally, I dedicate this
+project to my father, Lamidi Taoheed Ayankojo, and my mother, Lamidi Wakilat Idowu; to my
+sisters, Taoheed Naheemat and Taoheed Zainab; and to my brothers, Taoheed Abdulrasheed, Lasisi
+David and Ayowole Abraham.
 
 ### Acknowledgements
-`[Acknowledge God, supervisor, family, friends, department.]`
+I acknowledge my uncle, Lasisi Adedoyin, and my aunty, Lasisi Kehinde, and the whole Lasisi
+family, for their support. I thank Caleb University's Master's Chapel and Counselling
+Department; my roommates Michael Keston, Sam Odetayo, Kunle Fasanya, Korede and Mayowa; and my
+friends Salako Priscilia, Muogho Matilda, Mosunmola, Oreoluwa, Mojisola, Adewale, Mohammed,
+Abdul Azeez, Timileyin, Nogho Precious and Monica Divine. I am grateful to my tutor, Silas
+Bankole, and to Lasisi Hammed.
+
+I also acknowledge Fidelity Bank for the internship experience that shaped this project, and
+Mr Basit; the Lagos State Ministry of Science and Technology for the exposure it gave me, and
+Mr Bravo and Mr Sam for their guidance on networking; Ola Bello ("Mildey"); Prince Imona ("Wall
+Street Boi"); Pastor Yomi; and Alfa Sultan.
+
+Beyond those who guided me directly, this project was shaped by the discipline and example of
+Ayodeji Ibrahim Balogun (Wizkid) and Cristiano Ronaldo, and by the thinking of Peter Thiel,
+Stanley Druckenmiller, Jamie Dimon and Baltasar Gracián. I acknowledge the Federal Republic of
+Nigeria — may Allah bless Nigeria — and its policymakers, and the financial journalists whose
+coverage informed this work: Aruoture Oddiri, Reuben Abati and Rufai Oseni of Arise TV; and
+President Asiwaju Bola Ahmed Adekunle Tinubu, GCFR, for the reminder that anything is possible
+once you say it, accept where you stand, and contend with reality.
+
+Finally, to every student of the Federal Republic of Nigeria working to understand this
+economy — and to myself, Taoheed Abdulmanan Olaosebikan — this project is for you too.
 
 ### Abstract
 Nigeria's official economic data is published by several institutions — the Central Bank
