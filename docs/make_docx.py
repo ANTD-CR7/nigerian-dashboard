@@ -209,17 +209,24 @@ def main():
                 run.italic = True
                 run.font.color.rgb = RGBColor(0x55, 0x55, 0x55)
         elif re.match(r"^\s*[-*] ", line):
+            item = [re.sub(r"^\s*[-*] ", "", line).strip()]
+            while (i + 1 < len(md) and md[i + 1].strip()
+                   and re.match(r"^\s+\S", md[i + 1])
+                   and not re.match(r"^\s*[-*] ", md[i + 1])):
+                i += 1
+                item.append(md[i].strip())
+            text = " ".join(item)
             if current_h1.startswith("REFERENCES"):
                 # APA 7: no bullets, hanging indent, double-spaced
                 p = doc.add_paragraph()
-                add_runs(p, re.sub(r"^\s*[-*] ", "", line))
+                add_runs(p, text)
                 pf = p.paragraph_format
                 pf.line_spacing_rule = WD_LINE_SPACING.DOUBLE
                 pf.left_indent = Inches(0.5)
                 pf.first_line_indent = Inches(-0.5)
             else:
                 p = doc.add_paragraph(style="List Bullet")
-                add_runs(p, re.sub(r"^\s*[-*] ", "", line))
+                add_runs(p, text)
                 body_format(p)
         elif re.match(r"^\s*\d+\. ", line):
             p = doc.add_paragraph(style="List Number")

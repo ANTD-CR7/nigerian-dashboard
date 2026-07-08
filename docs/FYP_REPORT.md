@@ -31,7 +31,7 @@ FOR THE AWARD OF B.Sc. DEGREE
 
 IN COMPUTER SCIENCE.
 
-[MONTH] 2026
+JULY 2026
 
 ### Declaration
 I declare that this project was written by me:
@@ -129,6 +129,8 @@ FastAPI, data visualisation.
 - Figure 3.5 Sequence diagram — loading an indicator page
 - Figure 3.6 Sequence diagram — validating a CSV through the Open API
 - Figures 4.1–4.13 System screenshots (deployed system)
+- Figure 4.14 Correlation Matrix — 12 headline indicators, computed live
+- Figure 4.15 Reform Impact — before/after June 2023 averages
 
 ### List of Tables
 - Table 1.1 Data coverage summary
@@ -1241,23 +1243,19 @@ achievable with free tooling.
 ---
 
 ## REFERENCES
-*(Sample list — verify each source and reformat to your department's citation style, e.g.
-APA 7th. Add the specific works your report actually cites.)*
 
 - Anscombe, F. J. (1973). Graphs in statistical analysis. *The American Statistician, 27*(1), 17–21.
 - BudgIT. (n.d.). *BudgIT — making public data meaningful*. https://www.budgit.org
 - Codd, E. F. (1970). A relational model of data for large shared data banks. *Communications of the ACM, 13*(6), 377–387.
 - Federal Reserve Bank of St. Louis. (n.d.). *FRED — Federal Reserve Economic Data*. https://fred.stlouisfed.org
-- Fielding, R. T. (2000). *Architectural Styles and the Design of Network-based Software
-  Architectures* (Doctoral dissertation). University of California, Irvine.
+- Fielding, R. T. (2000). *Architectural Styles and the Design of Network-based Software Architectures* (Doctoral dissertation). University of California, Irvine.
 - Richardson, L., & Ruby, S. (2007). *RESTful Web Services*. O'Reilly Media.
 - Fowler, M. (2010). *Richardson Maturity Model*. martinfowler.com.
 - Central Bank of Nigeria. (n.d.). *Statistics Database*. https://www.cbn.gov.ng
 - National Bureau of Statistics. (n.d.). *NBS Data Portal*. https://www.nigerianstat.gov.ng
 - World Bank. (n.d.). *World Bank Open Data*. https://data.worldbank.org
 - FastAPI. (n.d.). *FastAPI Documentation*. https://fastapi.tiangolo.com
-- PostgreSQL Global Development Group. (n.d.). *PostgreSQL Documentation*.
-  https://www.postgresql.org/docs
+- PostgreSQL Global Development Group. (n.d.). *PostgreSQL Documentation*. https://www.postgresql.org/docs
 - Chart.js. (n.d.). *Chart.js Documentation*. https://www.chartjs.org/docs
 - Granger, C. W. J., & Newbold, P. (1974). Spurious regressions in econometrics. *Journal of Econometrics, 2*(2), 111–120.
 - International Monetary Fund. (n.d.). *IMF Data*. https://data.imf.org
