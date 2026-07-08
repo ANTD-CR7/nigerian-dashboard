@@ -527,8 +527,14 @@ under a minute she has: both series date-aligned automatically; a single honest 
 and statistical-significance p-value**; a warning if the relationship is likely a shared
 trend rather than a real association; the full paired data table; and a citable CSV export.
 If she wants a document, the *Briefing Studio* composes a cited, print-ready brief of the
-same indicators. What previously took days of error-prone preparation now takes minutes,
-with the statistical caveats supplied rather than left to chance.
+same indicators. Better still, since this exact question — how the reform relates to what
+followed — is one people genuinely argue about, the dedicated *Reform Impact* page answers it
+directly: every headline indicator is split into a before-June-2023 and an after-June-2023
+average, computed live from the same database, with no side favoured. A critic of the reform
+and a supporter of it can both point to real numbers on that one page (§4.6, Figure 4.15).
+What previously took days of error-prone preparation now takes minutes, with the statistical
+caveats supplied rather than left to chance, and the platform itself taking no side in the
+debate the numbers are used to have.
 
 **Table 3.0c — Existing vs proposed system**
 
@@ -1030,6 +1036,10 @@ The figures below are actual captures of the deployed system.
 ![Figure 4.12 — Pipeline Playground: per-row validation verdicts, nothing written](figures/fig4_12_playground.png)
 
 ![Figure 4.13 — Briefing Studio: generated, cited, print-ready economic briefing](figures/fig4_13_briefing.png)
+
+![Figure 4.14 — Correlation Matrix: 12 headline indicators cross-correlated on annual averages, computed live](figures/fig4_14_correlation_matrix.png)
+
+![Figure 4.15 — Reform Impact: before/after June 2023 averages for five headline indicators, with neutral critic/supporter readings generated from the same numbers](figures/fig4_15_reform_impact.png)
 
 ### 4.7 Testing and Validation
 The platform was validated through several complementary strands, combining automated tests,
