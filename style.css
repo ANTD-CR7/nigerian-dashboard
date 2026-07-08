@@ -1272,6 +1272,14 @@ footer p {
 }
 
 /* ─── Responsive ─── */
+/* Below this, the full nav (links + search + Reader/Analyst toggle + API
+   Docs CTA) no longer fits the bar and would silently clip off-screen
+   (body has overflow-x:hidden) - fall back to the hamburger menu, which
+   already carries equivalent controls for every one of those items. */
+@media (max-width: 1240px) {
+  .nav-links, .nav-cta { display: none; }
+  .nav-burger { display: flex; cursor: pointer; }
+}
 @media (max-width: 1100px) {
   .kpi-grid { grid-template-columns: repeat(3,1fr); }
   .explore-grid { grid-template-columns: repeat(2,1fr); }
