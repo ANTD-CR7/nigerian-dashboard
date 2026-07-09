@@ -152,65 +152,71 @@ FastAPI, data visualisation.
 ## CHAPTER ONE — INTRODUCTION
 
 ### 1.1 Background to the Study
-Economic data is a public good. Decisions by students, academic researchers, journalists,
-software developers and ordinary citizens increasingly depend on timely access to reliable
-figures such as the inflation rate, the naira–dollar exchange rate, gross domestic product
-(GDP) and foreign reserves. In Nigeria, this data is produced by credible institutions —
-principally the Central Bank of Nigeria (CBN) and the National Bureau of Statistics (NBS),
-supplemented by international bodies such as the World Bank — but it is **scattered** across
-many locations and **published in formats designed for reading, not for computation**:
-PDF statistical bulletins, individual Excel downloads, and web tables that differ in
-structure from one indicator to the next.
+The idea for this project did not start in a classroom. During an internship at Fidelity
+Bank, I found myself needing to look at Nigeria's inflation rate and the naira–dollar
+exchange rate for the same stretch of months, and getting the two to sit side by side took
+far longer than it should have. Both figures are published by credible institutions —
+mainly the Central Bank of Nigeria (CBN) and the National Bureau of Statistics (NBS), with
+the World Bank filling gaps the domestic sources leave open — but nothing about the data is
+built for that kind of use. It comes as PDF statistical bulletins, individual Excel
+downloads, and web tables that change structure from one indicator to the next, which is
+fine for reading a single number but painful for comparing two.
 
-The consequence is a high "friction cost" to using the data. A researcher who wants to
-study, for example, the relationship between the 2023 foreign-exchange reform and the
-subsequent inflation surge must locate two different datasets from two different portals,
-reconcile their date formats and units, and manually align them before any analysis can
-begin. A developer who wishes to build an application on top of this data has no single,
-documented programming interface to call. This project addresses that gap by consolidating,
-standardising and re-publishing the data through both a human-facing dashboard and a
-machine-facing open Application Programming Interface (API).
+That friction is really the whole starting point for this project. Anyone who wants to ask
+a genuinely interesting question about the Nigerian economy — how the 2023 foreign-exchange
+unification, say, relates to the inflation surge that followed — ends up spending more time
+reconciling spreadsheets than actually answering the question. A developer is in a worse
+position still, since there is no single documented interface to call; every project that
+wants this data has to scrape or re-key it from scratch. This project tries to remove that
+friction by pulling the data into one place, standardising it, and publishing it back out
+twice over — once as a dashboard a person can read, and once as an open Application
+Programming Interface (API) a program can call.
 
 ### 1.2 Statement of the Problem
-Public Nigerian economic data suffers from the following problems:
-1. **Fragmentation** — indicators are spread across multiple institutional websites and
-   documents with no common access point.
-2. **Non-machine-readable formats** — much of the data is locked in PDFs and inconsistent
-   spreadsheets, making programmatic use difficult.
-3. **Inconsistent structure and units** — different indicators use different date
-   granularities (daily, monthly, quarterly, annual) and units (naira thousands, naira
-   millions, percentages, USD billions), with no unified schema.
-4. **Absence of an open API** — there is no free, documented, authentication-free interface
-   through which developers and researchers can retrieve this data programmatically.
-5. **Limited analytical presentation** — the raw sources present tables and figures but
-   little interactive, comparative or explanatory visualisation for non-expert users.
+Narrowed down, the problems with how this data currently reaches the public are:
+1. It is fragmented — spread across multiple institutional sites and documents with no
+   common access point.
+2. It is not machine-readable — much of it is locked inside PDFs and inconsistently laid
+   out spreadsheets, so every reuse starts with manual extraction.
+3. Its structure and units are inconsistent from one indicator to the next: some series are
+   daily, others monthly, quarterly or annual, and units range across naira thousands,
+   naira millions, plain percentages and USD billions with no unified schema tying them
+   together.
+4. There is no open API — nothing free, documented and authentication-free that a
+   developer or researcher can query programmatically.
+5. Presentation is minimal. Where a chart exists at all, it rarely goes beyond a single
+   static figure, with little of the comparison or plain-language explanation a
+   non-specialist reader would need.
 
 ### 1.3 Aim and Objectives
-**Aim:** To design and implement a web-based platform that aggregates public Nigerian
-economic data into a single standardised store and makes it accessible through an
+**Aim:** To design and develop a web-based platform that aggregates Nigeria's public
+economic data into a single standardised store and makes it accessible through both an
 interactive analytics dashboard and a free open API.
 
-**Objectives:** The specific objectives are to:
+**Objectives:** Specifically, to:
 1. Collect public economic indicators from the CBN, NBS and World Bank and ingest them into
-   a single repository.
+   one repository.
 2. Design a unified relational data model that standardises indicators, sources and
    observations regardless of frequency or unit.
-3. Implement server-side analytics (period change, year-on-year comparison, trend and
-   correlation) over the stored data.
-4. Develop a free, documented REST API — with hypermedia controls (HATEOAS) — that requires
-   no authentication.
-5. Build an interactive web dashboard that visualises the indicators with clear,
-   truthful, explanatory charts.
-6. Test and evaluate the platform for correctness, usability and accessibility.
+3. Implement server-side analytics — period change, year-on-year comparison, trend and
+   correlation — over the stored data.
+4. Build a free, documented REST API with hypermedia controls (HATEOAS) that requires no
+   authentication.
+5. Build an interactive web dashboard that presents the indicators through clear, honest,
+   explanatory charts.
+6. Test and evaluate the finished platform for correctness, usability and accessibility.
 
 ### 1.4 Scope of the Study
-The project covers the aggregation, standardisation, storage, analysis, API exposure and
-visualisation of a defined set of Nigerian public economic indicators. The current dataset
-comprises **122 indicators** and approximately **12,100 observations** across the domains
-summarised in Table 1.1. The dataset is a controlled case study; the architecture supports
-continuing updates through CSV and API ingestion. The project does **not** attempt
-automated real-time data collection, does not use artificial intelligence or machine
-learning, and is not positioned as official national infrastructure.
+The project covers collection, standardisation, storage, analysis, API exposure and
+visualisation for a defined set of Nigerian public economic indicators — currently 122
+indicators and roughly 12,100 observations, spread across the domains listed in Table 1.1.
+This is deliberately a controlled case study rather than a claim to cover everything Nigeria
+publishes; the architecture is built to keep accepting more data through CSV or API
+ingestion as it becomes available. It is also worth being upfront about what the project is
+not: it does not attempt automated real-time collection, it does not use artificial
+intelligence or machine learning anywhere in its analytics, and it is not positioned as
+official government or national infrastructure — it is a student-built reference
+implementation, and I have tried not to oversell it as more than that.
 
 **Table 1.1 — Data coverage summary**
 
@@ -230,22 +236,28 @@ learning, and is not positioned as official national infrastructure.
 | Nominal GDP (USD) | Annual | 2020–2024 | World Bank |
 
 ### 1.5 Significance of the Study
-The platform lowers the cost of accessing Nigerian economic data for four groups:
-**students and researchers** gain a single, comparable, downloadable dataset; **developers**
-gain a free open API to build upon; **journalists and the public** gain clear, explanatory
-visualisations; and the **discipline of open data in Nigeria** gains a demonstrable,
-reproducible reference implementation built entirely from free and open-source tools.
+Four groups benefit from this, each in a different way. Students and researchers get one
+comparable, downloadable dataset instead of five disconnected ones. Developers get a free
+API they can build on without having to ask anyone's permission first. Journalists and the
+general public get charts that try to explain what a number means rather than just stating
+it. And more broadly, I'd like to think that a working, reproducible platform built entirely
+from free and open-source tools is itself a small argument for what open Nigerian data could
+look like, if the institutions that hold it chose to publish it this way themselves.
 
 ### 1.6 Limitations of the Study
-1. Data collection is currently **manual** (downloaded from published sources and ingested),
-   not an automated live feed.
-2. Figures are **not real-time**; they are as current as the most recent ingested snapshot.
-3. Coverage is bounded by what the sources publish (e.g. the CBN annual financial statement
-   series ends in 2012).
-4. Analytics are **classical statistics** (correlation, ordinary-least-squares trend and
-   forecast); no machine learning is employed.
-5. The project was developed and maintained by a single student within an academic
-   timeframe.
+None of this is presented as a finished, production-grade national system, and it would be
+dishonest to pretend otherwise:
+1. Data collection is manual — I download and ingest the published source files myself;
+   there is no live automated feed yet.
+2. Figures are therefore only as current as the most recent snapshot I ingested, not
+   real-time.
+3. Coverage stops wherever the sources stop — the CBN's annual financial statement series,
+   for instance, ends in 2012, and no amount of engineering on my part extends it.
+4. The analytics are classical statistics — correlation, OLS trend and forecast — not
+   machine learning, and that was a deliberate choice rather than an oversight (§2.3
+   explains why).
+5. This was built and maintained by one student inside an academic timeframe, which
+   realistically bounds how much of the roadmap in Chapter Five could be attempted here.
 
 ### 1.7 Definition of Terms
 - **Aggregation:** collecting data from multiple sources into one place.
@@ -265,157 +277,167 @@ reproducible reference implementation built entirely from free and open-source t
 ## CHAPTER TWO — LITERATURE REVIEW
 
 ### 2.1 Introduction
-This chapter situates the project in its intellectual and practical context. It reviews the
-concepts the platform is built on (open data, aggregation and standardisation, data
-quality, REST and hypermedia, honest visualisation, and the classical statistics used by
-the analytics layer); states the theoretical framework adopted; reviews the systems that
-publish economic data today — international and Nigerian — and analyses the gap between
-them; and reviews the enabling technologies from which the implementation stack was chosen.
-The chapter closes with the specific, evidenced gaps that Chapter Three's design answers.
+Before settling on the design in Chapter Three, I wanted to be sure the problem was real
+and not just a personal annoyance, and that the solution I had in mind wasn't reinventing
+something that already existed. This chapter is that groundwork. It works through the ideas
+the platform rests on — open data, aggregation and standardisation, data quality, REST and
+hypermedia, honest visualisation, and the classical statistics behind the analytics layer —
+then states the theoretical framework I adopted, reviews the systems already publishing
+economic data (both international and Nigerian) to see where they fall short, and closes
+with the technology choices the implementation is built from. By the end of it, the gaps
+that Chapter Three's design has to answer should be concrete rather than assumed.
 
 ### 2.2 Conceptual Review
 
-**2.2.1 Open data and open government data.** Open data is data that anyone can access,
-use, modify and share for any purpose, subject at most to attribution (Open Knowledge
-Foundation, n.d.). For *government* data, widely cited principles hold that public data
-should be complete, primary, timely, accessible, **machine-processable**, non-discriminatory,
-non-proprietary and licence-free (Open Government Working Group, 2007). Two of these
-principles do the heaviest work in this project's context: *machine-processability* (a PDF
-table is technically "published" but practically closed to computation) and
-*accessibility* (data behind fragmented portals carries a real access cost even when it is
-nominally free). The economic argument for open data is that it converts a cost centre
-(publication) into public value, because every downstream user — researcher, journalist,
-start-up — no longer repeats the same cleaning work. That argument is precisely the
-motivation established by the Nigerian scenario in §3.3.
+**2.2.1 Open data and open government data.** Open data is data anyone can access, use,
+modify and share for any purpose, at most subject to attribution (Open Knowledge
+Foundation, n.d.). For government data specifically, the widely cited principles hold that
+it should be complete, primary, timely, accessible, machine-processable, non-discriminatory,
+non-proprietary and licence-free (Open Government Working Group, 2007). Two of those do
+most of the work here. Machine-processability matters because a PDF table is technically
+"published" while being practically closed to computation. Accessibility matters because
+data spread across fragmented portals carries a real cost to reach even when it is
+nominally free. The economic case for open data, in short, is that it turns publication
+from a cost centre into public value — every downstream user, researcher, journalist or
+start-up, stops repeating the same cleaning work someone before them already did. That is
+essentially the same argument the Nigerian scenario in §3.3 makes, just stated more
+formally.
 
-**2.2.2 Data aggregation, standardisation and tidy data.** Aggregation — gathering series
-from disparate sources — is only useful when paired with **standardisation** into a common
-structure. This project's storage design follows the "tidy data" principle (Wickham, 2014):
-one observation per row, one variable per column, with metadata (unit, source, frequency)
-separated from values. The practical force of the principle is that series of *any*
-frequency — daily NFEM fixings, monthly CPI, quarterly GDP, the 1960–2012 annual financial
-statement — can coexist in one relational table and be queried, compared and analysed by
-one engine. The alternative (one bespoke table per dataset, mirroring each source file's
-layout) is exactly the fragmentation the project set out to remove, reproduced inside the
-database. The relational model itself (Codd, 1970) supplies the integrity machinery the
-pipeline relies on: typed columns, foreign keys from observations to indicator metadata,
-and a uniqueness constraint that makes duplicate ingestion impossible at the storage layer.
+**2.2.2 Data aggregation, standardisation and tidy data.** Gathering series from disparate
+sources is only useful once they are standardised into a common structure, and for that I
+leaned on the "tidy data" principle (Wickham, 2014): one observation per row, one variable
+per column, with metadata such as unit, source and frequency kept separate from the values
+themselves. What this buys in practice is that series of any frequency at all — daily NFEM
+fixings, monthly CPI, quarterly GDP, even the CBN's 1960–2012 annual financial statement —
+can sit in one relational table and be queried by the same engine. The alternative, a
+bespoke table per dataset mirroring each source file's own layout, would just reproduce the
+fragmentation this project is trying to remove, only now inside the database instead of
+across it. The relational model itself (Codd, 1970) is what makes that safe: typed columns,
+foreign keys tying observations back to indicator metadata, and a uniqueness constraint
+that makes duplicate ingestion structurally impossible rather than merely discouraged.
 
-**2.2.3 Data quality.** Data-quality literature commonly assesses datasets along dimensions
-of accuracy, completeness, consistency, timeliness and validity. Three of these dimensions
-materially shaped this project. *Consistency*: the same institution publishes related
-series in different units (the CBN's monthly balance sheet in thousands of naira; its
-annual statement in millions), so a platform that merges them must carry unit metadata or
-it will silently mislead — a defect class Chapter Four documents finding and fixing.
-*Accuracy/validity*: aggregation multiplies the opportunities for error, which is why the
-design elevates validation to a first-class pipeline stage (and, unusually, exposes it as a
-public service). *Completeness*: no source is complete — series start and stop (services-
-sector GDP, for instance, ends earlier than its siblings) — so honest presentation requires
-stating coverage rather than papering over it.
+**2.2.3 Data quality.** The data-quality literature usually judges datasets against
+accuracy, completeness, consistency, timeliness and validity, and three of those mattered a
+great deal here. On consistency: the same institution often publishes related series in
+different units — the CBN's monthly balance sheet in thousands of naira, its annual
+statement in millions — so a platform merging them has to carry that unit metadata
+explicitly, or it will silently mislead. Chapter Four documents a case where exactly this
+went wrong before it was caught. On accuracy and validity: aggregation multiplies the
+places an error can creep in, which is why validation became a first-class pipeline stage
+rather than an afterthought, and why it is unusually exposed as a public service anyone can
+try. On completeness: no source is complete — services-sector GDP, for instance, simply
+ends earlier than its sibling series — and I decided the honest response was to state that
+coverage plainly rather than paper over it.
 
 **2.2.4 Web APIs, REST and the Richardson Maturity Model.** Representational State
-Transfer (REST), introduced by Fielding (2000), is the dominant architectural style for
-web APIs: data is modelled as *resources* addressed by URLs and manipulated with standard
-HTTP verbs. The **Richardson Maturity Model** (Richardson & Ruby, 2007; Fowler, 2010)
-grades REST maturity in three levels: Level 1 introduces distinct resources; Level 2 uses
-HTTP verbs and status codes properly; Level 3 — **HATEOAS** (Hypermedia As The Engine Of
-Application State) — embeds links in every response so a client can *discover* related
-actions instead of hard-coding URLs. Level 3 is rarely implemented in practice, yet it is
-disproportionately valuable for an *open* API whose consumers are strangers: the API
-becomes self-describing, navigable from its root without documentation. For non-JSON
-representations, the equivalent mechanism is the standard Link header (Nottingham, 2017).
-This project implements Level 3 end-to-end and — unusually — demonstrates it interactively
-(the HATEOAS Explorer of Chapter Four).
+Transfer (REST), introduced by Fielding (2000), remains the dominant architectural style
+for web APIs: data as resources addressed by URLs, manipulated with standard HTTP verbs.
+The Richardson Maturity Model (Richardson & Ruby, 2007; Fowler, 2010) grades how far an API
+actually goes with that idea, across three levels. Level 1 introduces distinct resources;
+Level 2 uses HTTP verbs and status codes properly; Level 3, HATEOAS (Hypermedia As The
+Engine Of Application State), embeds links in every response so a client can discover
+related actions instead of hard-coding URLs. Very few APIs bother reaching Level 3, but it
+is disproportionately useful for an open API whose consumers are strangers, because the API
+ends up describing itself — navigable from the root with no documentation required. For
+non-JSON responses the equivalent mechanism is the standard Link header (Nottingham, 2017).
+I implemented Level 3 end-to-end here, and unusually, built an interactive way to see it
+work (the HATEOAS Explorer in Chapter Four) rather than just asserting it in a spec.
 
-**2.2.5 Honest data visualisation.** The visualisation literature is, at its core, a
-literature about *not misleading people*. Tufte (1983) argued for maximising the share of
-ink that carries data and against decoration that distorts; a long line of practice
-criticism identifies **dual-axis charts** as a special hazard, because two independent
-y-scales let a designer manufacture or exaggerate correlation by sliding the scales.
-Anscombe (1973) demonstrated, with four datasets sharing identical summary statistics but
-wildly different shapes, why summary numbers must be accompanied by plots — and why plots
-must be trustworthy. These findings become concrete design rules in this project: no dual
-axes anywhere (different scales are shown as aligned panels or standardised z-scores);
-axes are never truncated to dramatise; units are always stated; and every chart carries a
-plain-language reading aid, because a correct chart that a non-expert cannot read is only
-half honest.
+**2.2.5 Honest data visualisation.** At its core, the visualisation literature is a
+literature about not misleading people. Tufte (1983) argued for maximising the share of ink
+that actually carries data and against decoration that distorts it, and a long line of
+practitioner criticism singles out dual-axis charts as a particular hazard, since two
+independent y-scales let a designer manufacture or exaggerate a correlation just by sliding
+one scale. Anscombe (1973) made the underlying point unavoidable with four datasets that
+share identical summary statistics but look nothing alike plotted — summary numbers need a
+trustworthy plot alongside them, not instead of one. I turned these into concrete rules
+rather than good intentions: no dual axes anywhere on the platform (different scales become
+aligned panels or standardised z-scores instead), axes are never truncated for drama, units
+are always stated, and every chart carries a plain-language note, because a technically
+correct chart that a non-expert can't read is only half honest.
 
-**2.2.6 Statistical foundations of the analytics layer.** The platform's analytics are
-deliberately classical. The **Pearson product-moment correlation coefficient** measures
-linear association between paired series; its significance is assessed with a two-tailed
-Student-t test, computed via the regularised incomplete beta function (Press et al., 2007).
-**Ordinary least squares** supplies trend estimation, reported with the coefficient of
-determination R². Two well-known cautions from the statistics literature are engineered
-into the product rather than left in a footnote: correlation is not causation, and two
-series that both trend over time will correlate spuriously (Granger & Newbold, 1974) — the
-platform therefore re-computes correlations on first differences and warns the user when
-the detrended association collapses. Statistical *significance* is likewise separated from
-*strength* in the interface, because a weak correlation can be highly significant in a
-large sample and users routinely conflate the two.
+**2.2.6 Statistical foundations of the analytics layer.** The analytics on this platform
+are deliberately classical rather than fashionable. The Pearson product-moment correlation
+coefficient measures linear association between paired series, and its significance is
+assessed with a two-tailed Student-t test computed via the regularised incomplete beta
+function (Press et al., 2007). Ordinary least squares supplies the trend line, reported
+alongside R². Two cautions that the statistics literature usually leaves as footnotes are
+instead built into the product itself: correlation is not causation, and two series that
+both simply trend over time will correlate even when nothing connects them (Granger &
+Newbold, 1974), so the platform recomputes correlation on first differences and warns the
+user when that detrended figure collapses relative to the headline one. Significance is
+also kept visually separate from strength, because it's an easy pair of ideas to conflate —
+a weak correlation can still be highly significant in a large enough sample, and the
+interface tries not to let that nuance get lost.
 
 ### 2.3 Theoretical Framework
-Two established frameworks organise the design and the evaluation of this project:
+I organised both the design and the evaluation of this project around two established
+frameworks rather than inventing my own criteria as I went.
 
-1. **The FAIR data principles** — data should be **F**indable, **A**ccessible,
-   **I**nteroperable and **R**eusable (Wilkinson et al., 2016). FAIR provides the yardstick
-   for the *data* side of the platform: findability is served by one catalogue of 122
-   indicators with searchable metadata; accessibility by a free dashboard and a
-   no-authentication API; interoperability by one tidy schema with ISO-8601 dates and
-   stated units; reusability by CSV export, citation generation, provenance fields and a
-   reproducible seed snapshot.
-2. **The Richardson Maturity Model** (§2.2.4) provides the yardstick for the *interface*
-   side: the Open API is designed to, and verifiably does, operate at Level 3.
+The first is the FAIR data principles: data should be Findable, Accessible, Interoperable
+and Reusable (Wilkinson et al., 2016). FAIR is the yardstick for the data side of the
+platform specifically. Findability is served by one catalogue of 122 indicators with
+searchable metadata; accessibility by a free dashboard and a no-authentication API;
+interoperability by one tidy schema with ISO-8601 dates and stated units throughout;
+reusability by CSV export, citation generation, provenance fields and a reproducible seed
+snapshot.
 
-Together they frame the thesis of the project: fragmentation is not solved by another
-website but by making the data itself FAIR and its interface hypermedia-driven.
+The second is the Richardson Maturity Model from §2.2.4, which does the equivalent job for
+the interface side: the Open API was designed to reach Level 3, and Chapter Four verifies
+that it actually does rather than just claiming it.
+
+Between the two, the underlying thesis of the project is really quite simple: fragmentation
+isn't solved by building yet another website, it's solved by making the data itself FAIR
+and making its interface hypermedia-driven.
 
 ### 2.4 Review of Related Systems
-**FRED (Federal Reserve Economic Data, St. Louis Fed).** The reference point for what a
-national economic-data platform can be: hundreds of thousands of series, a documented API,
-charting, downloads and citations. Its relevance to Nigeria, however, is thin — Nigerian
-coverage is limited to coarse international aggregates. FRED demonstrates the *category*
-this project belongs to, while underlining that no Nigerian equivalent exists.
+**FRED (Federal Reserve Economic Data, St. Louis Fed).** This is the reference point for
+what a national economic-data platform can look like: hundreds of thousands of series, a
+documented API, charting, downloads, citations, all of it. Its relevance to Nigeria is thin
+though, since Nigerian coverage is limited to coarse international aggregates. What FRED
+really demonstrates is the category this project belongs to, while underlining that no
+Nigerian equivalent of it exists yet.
 
 **World Bank Open Data.** Genuinely open, with a long-standing public API and standardised
-indicator codes — this project both reviews it and *consumes* it (nominal GDP). Its
-limitation is granularity: mostly annual, country-level aggregates, published with a lag.
-It cannot answer intra-year questions (monthly inflation dynamics, daily FX behaviour)
-that domestic sources cover.
+indicator codes, and this project both reviews it and consumes it directly for nominal GDP.
+Its limitation is granularity — mostly annual, country-level aggregates, published with a
+lag — so it simply cannot answer intra-year questions like monthly inflation dynamics or
+daily FX behaviour, which is exactly where the domestic sources have to take over.
 
 **IMF Data.** Authoritative macroeconomic and financial statistics with programmatic
-access, but like the World Bank it is oriented to cross-country aggregates rather than the
-granular domestic series (NFEM daily fixings, CBN balance-sheet lines) this project carries.
+access, but like the World Bank it's oriented toward cross-country aggregates rather than
+the granular domestic series (NFEM daily fixings, individual CBN balance-sheet lines) this
+project carries.
 
-**Our World in Data.** Not an API platform but the strongest available model of
-*explanatory* data publication: every chart embedded in plain-language narrative, with
-sources and methods disclosed. Its influence on this project is visible in the
-storytelling pattern (what happened / why it matters / how to read it) attached to every
-indicator page. Nigerian macroeconomic coverage is, again, limited to international
-aggregates.
+**Our World in Data.** Not an API platform, but probably the strongest model available of
+explanatory data publication: every chart sits inside plain-language narrative, with
+sources and methods disclosed alongside it. I borrowed its storytelling pattern — what
+happened, why it matters, how to read it — for every indicator page on this platform.
+Nigerian macroeconomic coverage there is, again, limited to international aggregates.
 
-**Trading Economics and Statista.** Broad commercial aggregators with polished interfaces.
-Both are largely paywalled, and their Nigerian series ultimately derive from the same CBN
-and NBS publications. They demonstrate commercial demand for exactly the aggregation this
-project performs — while their pricing model is itself part of the access problem for the
-Nigerian students and journalists this project targets.
+**Trading Economics and Statista.** Broad commercial aggregators with polished interfaces,
+both largely paywalled, and both ultimately re-selling the same CBN and NBS publications
+underneath. If anything they're proof that commercial demand exists for exactly the kind of
+aggregation this project performs — it's just that their pricing model becomes part of the
+access problem for the students and journalists this project is actually aimed at.
 
 **Central Bank of Nigeria (CBN) publications.** The authoritative source for monetary and
-financial data — and the clearest illustration of the machine-readability gap: statistics
-are published across web pages, PDF bulletins and per-topic Excel files, with layouts and
-units that vary between documents and no public API (§3.3 details the workflow this forces
-on users).
+financial data, and honestly the clearest illustration of the machine-readability gap this
+whole project responds to: statistics spread across web pages, PDF bulletins and per-topic
+Excel files, with layouts and units that vary between documents and no public API in sight
+(§3.3 walks through the workflow this forces on anyone trying to use it).
 
 **National Bureau of Statistics (NBS).** The authoritative source for CPI and GDP.
-Publications are report-oriented (PDF with accompanying tables); series are periodically
-rebased; and there is no unified programmatic interface for the indicators this project
-covers.
+Publications are report-oriented — PDF with accompanying tables — series get rebased
+periodically, and there's no unified programmatic interface for any of the indicators this
+project covers.
 
-**data.gov.ng and Nigerian open-data initiatives.** Nigeria has an official open-data
-portal and has participated in international open-government initiatives; civic-technology
-organisations (notably BudgIT, which visualises public budgets) demonstrate a domestic
-ecosystem hungry for usable public data. These efforts, however, centre on budgets,
-spending and static dataset publication rather than continuously usable, API-accessible
-*economic time series* — the specific niche this project occupies.
+**data.gov.ng and Nigerian open-data initiatives.** Nigeria does have an official open-data
+portal and has taken part in international open-government initiatives, and civic-tech
+organisations — BudgIT in particular, which visualises public budgets — show there's a real
+domestic appetite for usable public data. But these efforts centre on budgets, spending and
+static dataset publication rather than continuously usable, API-accessible economic time
+series, which is the specific niche this project sits in.
 
 ### 2.5 Gap Analysis
 **Table 2.2 — Feature-level gap analysis**
@@ -432,117 +454,137 @@ spending and static dataset publication rather than continuously usable, API-acc
 | Public validation-as-a-service | No | No | No | — | — | **Yes** |
 | Citable exports (CSV/PNG/APA) | Yes | Yes | Partial | No | No | **Yes** |
 
-The pattern is consistent: the systems with excellent access lack granular Nigerian data;
-the systems with the Nigerian data lack machine access; and **no reviewed system, at any
-scale, combines statistical honesty aids (significance, spurious-correlation detection)
-with plain-language interpretation**. That combination — not any single feature — is the
-gap NPEDATA fills.
+A pattern falls out of this fairly clearly once it's laid out in a table: the systems with
+excellent access lack granular Nigerian data, and the systems that actually have the
+Nigerian data lack machine access. More specifically, none of the systems I reviewed, at
+any scale, combine statistical honesty features — significance testing, spurious-
+correlation detection — with plain-language interpretation for a non-expert reader. It's
+that combination, not any one feature on its own, that this project is really filling.
 
 ### 2.6 Review of Enabling Technologies
-- **API framework — FastAPI** (chosen) over Flask and Django REST Framework: automatic
-  OpenAPI/Swagger documentation, Pydantic request validation (the ingestion layer's type
-  checks come largely free), and async support, at a fraction of Django's footprint. An
-  auto-documented API is not a convenience here but part of the product, since the API *is*
-  a deliverable.
-- **Database — PostgreSQL via Supabase** (chosen) over MySQL, MongoDB and Firebase: the
-  data is inherently relational (sources → indicators → observations) with integrity
-  constraints doing real work, which argues against document stores; Supabase adds a
-  managed free tier, an auto-generated REST layer with row-level security (letting the
-  dashboard read the database directly and safely), and standard PostgreSQL underneath —
-  no lock-in.
-- **Visualisation — Chart.js v4** (chosen) over D3.js and commercial libraries: D3 offers
-  unlimited control at a steep cost in code volume for standard chart types; commercial
-  options conflict with the open ethos. Chart.js's plugin system proved sufficient for the
-  project's honesty-driven customisations (annotations, crosshairs, end-labels).
-- **Frontend approach — static HTML/CSS/vanilla JavaScript** (chosen) over React/Vue:
-  no build step, free static hosting, full view-source auditability, and a deliberate
-  mitigation (a single shared library) for the approach's known drift weakness — assessed
-  quantitatively in §4.9.
-- **Hosting — GitHub Pages + Render + Supabase**: an entirely free, reproducible deployment
-  whose trade-offs (cold starts) are measured and mitigated rather than hidden (§4.9).
-- **Machine-consumer interfaces — MCP and llms.txt**: the Model Context Protocol allows AI
-  assistants to call the API as tools, and llms.txt provides machine-readable platform
-  discovery — extending "open" beyond human developers to automated consumers.
+Choosing the stack meant weighing a few real alternatives rather than defaulting to
+whatever was familiar, so I'll set out what I picked and what I passed over for each layer.
+
+For the **API framework**, I went with FastAPI over Flask and Django REST Framework. It
+gives automatic OpenAPI/Swagger documentation and Pydantic request validation almost for
+free — which matters more than it might sound, since the ingestion layer's type checks ride
+on the same validation — plus async support, all at a fraction of Django's footprint. An
+auto-documented API isn't just a nice-to-have here; the API is itself one of the two
+deliverables, so documenting it well is part of the product, not an add-on.
+
+For the **database**, PostgreSQL via Supabase, over MySQL, MongoDB and Firebase. The data
+is inherently relational — sources feed indicators feed observations — and integrity
+constraints are doing real work in that chain, which argues against a document store from
+the start. Supabase adds a managed free tier and an auto-generated REST layer with
+row-level security on top, which is what lets the dashboard read the database directly and
+safely without a hand-rolled API in between, while still just being standard PostgreSQL
+underneath if I ever needed to move off it.
+
+For **visualisation**, Chart.js v4 over D3.js and the commercial options. D3 gives
+unlimited control but at a steep cost in code volume for what are, mostly, standard chart
+types here; the commercial libraries conflict with the project's open ethos on principle.
+Chart.js's plugin system turned out to be enough for the honesty-driven customisations the
+project actually needed — annotations, crosshairs, end-of-line labels.
+
+For the **frontend**, static HTML, CSS and vanilla JavaScript over React or Vue. No build
+step, free static hosting, and full view-source auditability — anyone can open the page
+source and see exactly what's running, which fits an "open" project better than a bundled
+framework output would. The known weakness of this approach, code drifting apart across
+pages, gets a deliberate mitigation (one shared library) that I assess quantitatively later,
+in §4.9.
+
+For **hosting**, GitHub Pages, Render and Supabase together, which is an entirely free and
+reproducible deployment. It does have a real trade-off — the free-tier API has cold starts —
+and rather than hide that, §4.9 measures it and shows what was done about it.
+
+Finally, for **machine-consumer interfaces**, I added support for MCP and llms.txt. The
+Model Context Protocol lets AI assistants call the API as tools, and llms.txt gives
+machine-readable platform discovery — which extends "open" a step further than just human
+developers, to automated consumers too.
 
 ### 2.7 Summary
-The review establishes four propositions that carry into the design chapter: (1) open,
-machine-processable economic data is valuable and under-supplied in Nigeria, where the
-authoritative sources publish for reading rather than computation; (2) mature conceptual
-machinery exists to fix this — tidy data for standardisation, FAIR for openness, REST
-Level 3 for the interface — and simply needs disciplined application; (3) the visualisation
-and statistics literature supplies concrete honesty rules (no dual axes, significance
-separated from strength, detrending checks) that can be engineered into a product rather
-than left as caveats; and (4) no existing system, international or Nigerian, combines
-granular Nigerian coverage, open machine access and built-in statistical honesty. Chapter
-Three designs the system that does.
+Pulling this chapter together, four things carry forward into the design in Chapter Three.
+First, open, machine-processable economic data is genuinely under-supplied in Nigeria,
+because the authoritative sources publish for reading rather than for computation. Second,
+the conceptual tools to fix that already exist and are mature — tidy data for
+standardisation, FAIR for openness, REST Level 3 for the interface — so the task was
+disciplined application rather than invention. Third, the visualisation and statistics
+literature gives concrete honesty rules (no dual axes, significance kept separate from
+strength, a detrending check on correlations) that can be built directly into a product
+instead of left as caveats in a footnote. And fourth, nothing I reviewed, Nigerian or
+international, combines granular Nigerian coverage, open machine access and built-in
+statistical honesty in one place. Chapter Three sets out to design the system that does.
 
 ---
 
 ## CHAPTER THREE — SYSTEM ANALYSIS AND DESIGN
 
 ### 3.1 Introduction
-This chapter presents the methodology adopted for the project and justifies it against the
-alternatives; analyses how Nigerian public economic data is obtained today (the existing
-system) using a concrete, realistic scenario; specifies the proposed system and its
-requirements; and then develops the design in detail — architecture, use cases, data flow,
-database design and data dictionary, API design, core algorithms, input/output design,
-security and integrity design, and user-interface design. Throughout, design decisions are
-tied back to the specific realities of the Nigerian data landscape identified in Chapters
-One and Two, rather than treated as abstract choices.
+This chapter is where the problem stated in Chapter One and the review in Chapter Two turn
+into an actual design. It sets out the methodology I followed and why I picked it over the
+alternatives, works through how Nigerian public economic data is obtained today using a
+concrete scenario rather than an abstract description, specifies what the proposed system
+and its requirements actually are, and then develops the design in detail — architecture,
+use cases, data flow, database design and data dictionary, API design, core algorithms,
+input/output design, security, and the user interface. I've tried throughout to tie each
+decision back to a specific reality of the Nigerian data landscape rather than presenting it
+as a choice made in the abstract, because very few of them were.
 
 ### 3.2 Research and Development Methodology
-An **iterative and incremental prototyping** methodology was adopted. The system was built
-in successive increments — first the data model and ingestion scripts, then the Open API,
-then the dashboard pages, then the analytics engine, and finally the refinement passes
-(visualisation honesty, accessibility, stakeholder views) — with each increment reviewed,
-validated against the stored data, and corrected before the next began.
+I built this system iteratively and incrementally rather than planning it all up front. The
+data model and ingestion scripts came first, then the Open API, then the dashboard pages,
+then the analytics engine, and finally a set of refinement passes on visualisation honesty,
+accessibility and the different stakeholder views. Each increment was reviewed and checked
+against the stored data before I let myself move to the next one.
 
-**Justification against the alternatives.** Three candidate methodologies were considered:
+**Why not something else.** I did weigh two other candidate approaches before settling on
+this one.
 
 **Table 3.0 — Methodology comparison**
 
 | Methodology | Strength | Why it was unsuitable here |
 |---|---|---|
-| Waterfall | Strong documentation discipline; predictable phases | Assumes requirements are fully known up-front. The structure, units and quirks of CBN/NBS publications only became clear *during* ingestion (e.g. the CBN balance sheet is published in ₦'000 but its annual statement in ₦ millions) — a frozen upfront specification would have been wrong. |
-| Scrum/agile (team-oriented) | Responsive to change; strong feedback cadence | Designed around a multi-person team with roles (product owner, scrum master); ceremony overhead is wasted on a single-developer academic project. |
-| **Iterative prototyping (chosen)** | Working software early; each cycle absorbs what the previous one taught | Fits a solo developer, evolving data sources, and a supervisor-feedback loop; every iteration ended with a *data-truthfulness check* — re-verifying that what the screens claimed matched what the database contained. |
+| Waterfall | Strong documentation discipline; predictable phases | Assumes requirements are fully known up front, and mine weren't — the structure, units and quirks of CBN/NBS publications only became clear once I was actually ingesting them (the CBN balance sheet, for instance, is published in ₦'000 while its annual statement uses ₦ millions). A frozen upfront specification would simply have been wrong by the second week. |
+| Scrum/agile (team-oriented) | Responsive to change; strong feedback cadence | Built around a multi-person team with defined roles — product owner, scrum master, and so on. Running that ceremony solo would have been overhead for its own sake. |
+| **Iterative prototyping (chosen)** | Working software early; each cycle absorbs what the previous one taught | Fit a solo developer, data sources that kept revealing new quirks, and a supervisor-feedback loop naturally. Every iteration ended with what I came to think of as a data-truthfulness check — going back and re-verifying that what the screens claimed actually matched what the database held. |
 
-The distinctive feature of the process was that **verification was part of every iteration,
-not a final phase**: after each increment, the figures displayed by the frontend were
-cross-checked against the database, and discrepancies (documented in Chapter Four) were
-fixed before new work began. This is why the methodology chapter and the testing chapter of
-this report are tightly connected.
+The one habit I kept through the whole process was treating verification as part of every
+iteration rather than something saved for the end: after each increment, I cross-checked
+the figures the frontend displayed against the database itself, and fixed whatever
+discrepancies turned up (Chapter Four documents several of these) before starting the next
+piece of work. That's really why this chapter and the testing chapter end up so closely
+tied together.
 
 ### 3.3 Analysis of the Existing System
-"The existing system" is not a single piece of software — it is the *manual workflow* a
-Nigerian data user must follow today, across the publishing practices of the three
-institutions concerned:
+By "the existing system" I don't mean a piece of software — there isn't one. I mean the
+manual workflow anyone using Nigerian public economic data has to follow today, shaped by
+how three institutions each publish their numbers:
 
-- **The Central Bank of Nigeria (CBN)** publishes its exchange rates, money and credit
-  statistics and its Statistical Bulletin through its website, largely as **PDF documents
-  and per-topic Excel downloads**. Different datasets live on different pages, with
-  different layouts, different date formats, and units that change between publications
-  (thousands of naira in one table, millions in another). There is no public API.
+- **The Central Bank of Nigeria (CBN)** publishes exchange rates, money and credit
+  statistics and its Statistical Bulletin through its website, mostly as PDF documents and
+  per-topic Excel downloads. Different datasets sit on different pages, with different
+  layouts, different date formats, and units that change between publications — thousands
+  of naira in one table, millions in the next. There is no public API.
 - **The National Bureau of Statistics (NBS)** publishes the monthly Consumer Price Index
-  and quarterly GDP reports as **PDF reports with accompanying spreadsheet tables**. Sector
-  GDP tables run to dozens of columns, are periodically rebased, and are formatted for
-  reading rather than for computation. There is likewise no public API for these series.
-- **The World Bank** offers a proper API for its indicators, but its Nigerian coverage is
-  coarse (mostly annual national aggregates), so it cannot substitute for the domestic
-  sources.
+  and quarterly GDP reports as PDF reports with spreadsheet tables attached. The sector-GDP
+  tables alone run to dozens of columns, get rebased periodically, and are laid out for
+  reading rather than for computation. Again, no public API.
+- **The World Bank** does offer a proper API for its indicators, but its Nigerian coverage
+  is coarse — mostly annual, national-level aggregates — so it can't stand in for the
+  domestic sources on anything that needs monthly or daily granularity.
 
-**A concrete scenario (the contextual test case used throughout this report).** Consider a
-final-year economics student in Lagos who wants to answer a genuinely topical question:
-*"How did the June 2023 foreign-exchange unification reform relate to the 2023–2024
-inflation surge?"* Under the existing system she must: (1) locate the CBN's exchange-rate
-statistics page and download the monthly rates; (2) separately locate the NBS CPI report
-archive and extract headline inflation month by month; (3) reconcile the two by hand —
-different date formats, different file layouts; (4) align them in a spreadsheet and compute
-a correlation herself, with no guidance on whether the result is statistically meaningful;
-and (5) repeat all of it whenever a new month is published. In practice this is **hours to
-days of work before analysis can even begin**, it is error-prone at every manual step, and
-it is completely out of reach of a journalist on deadline, a secondary-school teacher, or a
-software developer who simply wants the numbers in a program.
+**A concrete scenario, the one I kept coming back to while designing this.** Picture a
+final-year economics student in Lagos trying to answer a question that's genuinely being
+argued about: how did the June 2023 foreign-exchange unification relate to the inflation
+surge that followed it? Under the existing system, she has to find the CBN's exchange-rate
+page and download the monthly rates, separately find the NBS CPI report archive and pull out
+headline inflation month by month, reconcile the two by hand across different date formats
+and file layouts, align them in a spreadsheet and compute a correlation herself with no real
+guidance on whether the result even means anything statistically, and then repeat the whole
+exercise every time a new month is published. In practice that's hours, sometimes days, of
+preparation before the actual analysis can start, every manual step is a chance to introduce
+an error, and the whole exercise is simply out of reach for a journalist on a deadline, a
+secondary-school teacher, or a developer who just wants the numbers inside a program.
 
 **Table 3.0b — Weaknesses of the existing workflow**
 
@@ -556,24 +598,25 @@ software developer who simply wants the numbers in a program.
 | 6 | Work is repeated by every user, every month | Nationally duplicated effort; no shared cleaned dataset |
 
 ### 3.4 Analysis of the Proposed System
-The proposed system, NPEDATA, replaces that manual workflow with a maintained pipeline and
-two access paths — an interactive dashboard for people and a free Open API for programs.
+NPEDATA replaces that manual workflow with a maintained pipeline behind two access paths —
+an interactive dashboard for people, and a free Open API for programs.
 
-**The same scenario, replayed on NPEDATA.** The same student opens the *Compare Indicators*
-page, selects *Headline Inflation* and *Exchange Rate NGN/USD*, and presses Compare. In
-under a minute she has: both series date-aligned automatically; a single honest chart
-(z-score standardised, not a misleading dual axis); the Pearson correlation **with its R²
-and statistical-significance p-value**; a warning if the relationship is likely a shared
-trend rather than a real association; the full paired data table; and a citable CSV export.
-If she wants a document, the *Briefing Studio* composes a cited, print-ready brief of the
-same indicators. Better still, since this exact question — how the reform relates to what
-followed — is one people genuinely argue about, the dedicated *Reform Impact* page answers it
-directly: every headline indicator is split into a before-June-2023 and an after-June-2023
-average, computed live from the same database, with no side favoured. A critic of the reform
-and a supporter of it can both point to real numbers on that one page (§4.6, Figure 4.15).
-What previously took days of error-prone preparation now takes minutes, with the statistical
-caveats supplied rather than left to chance, and the platform itself taking no side in the
-debate the numbers are used to have.
+**The same scenario, replayed on NPEDATA.** The same student now opens the Compare
+Indicators page, picks Headline Inflation and Exchange Rate NGN/USD, and clicks Compare. In
+under a minute she has both series date-aligned automatically, a single honest chart
+(z-score standardised rather than a misleading dual axis), the Pearson correlation together
+with its R² and statistical-significance p-value, a warning if the relationship looks like a
+shared trend rather than a real association, the full paired data table, and a citable CSV
+export. If she wants a document out of it, Briefing Studio composes a cited, print-ready
+brief of the same indicators. And because this specific question — how the reform relates
+to what followed — is one people genuinely argue about rather than just study, the dedicated
+Reform Impact page answers it directly: every headline indicator is split into a
+before-June-2023 average and an after-June-2023 average, computed live from the same
+database, with neither side of the argument favoured in how it's presented. A critic of the
+reform and a supporter of it can both point to real numbers on that one page (§4.6, Figure
+4.15). What used to take days of error-prone preparation now takes minutes, the statistical
+caveats are supplied rather than left to chance, and the platform itself doesn't take a side
+in the argument its numbers get used for.
 
 **Table 3.0c — Existing vs proposed system**
 
@@ -929,36 +972,43 @@ captions; statistic tiles; sortable data tables; CSV downloads; attributed PNG c
 exports; APA citations; the print-ready briefing document; and machine outputs (JSON with
 `_links`, the llms.txt discovery file).
 
-**3.7.7 Security and data-integrity design.** The system is public-read by design, so the
-security question is *integrity*, not secrecy: (1) the browser-side database credential is
-a **public anonymous key gated by PostgreSQL row-level security** — read-only; it cannot
-modify data, so shipping it client-side is safe and intentional; (2) **all write paths are
-demo-safe by default** (`ALLOW_DATA_WRITES=false`), and the public validation endpoint is
-*incapable* of writing; (3) a **uniqueness constraint** on (indicator_id, obs_date)
-prevents duplicate ingestion at the database level; (4) user-supplied content echoed by the
-frontend (e.g. Playground verdicts) is HTML-escaped, and adversarial inputs — script tags,
-NaN/Infinity, 5,000-row floods — are part of the test suite; (5) real secrets (service
-keys) exist only as server-side environment variables, never in the repository.
+**3.7.7 Security and data-integrity design.** Because the system is public-read by design,
+the interesting security question here isn't secrecy, it's integrity — making sure nothing
+gets corrupted or duplicated, not keeping anything hidden. The browser-side database
+credential is a public anonymous key gated by PostgreSQL row-level security, so it's
+read-only by construction; it simply cannot modify data, which is what makes shipping it
+client-side safe rather than reckless. Every write path is demo-safe by default
+(`ALLOW_DATA_WRITES=false`), and the public validation endpoint is structurally incapable of
+writing at all, not merely configured not to. A uniqueness constraint on `(indicator_id,
+obs_date)` stops duplicate ingestion at the database level regardless of what the
+application code does. Anything user-supplied that gets echoed back by the frontend, such as
+Playground verdicts, is HTML-escaped, and I added adversarial inputs — script tags,
+NaN/Infinity, a 5,000-row flood — to the test suite specifically to make sure those paths
+hold up. Real secrets, the service keys, only ever exist as server-side environment
+variables and never touch the repository.
 
-**3.7.8 User-interface design.** The dashboard uses a dark "Lagos Noir" visual theme with a
-consistent per-indicator storytelling pattern — a headline statistic, three short
-explanatory blocks (*what happened / why it matters / how to read it*), the chart(s), and a
-data table — plus a "markets-terminal" chart treatment (range selectors, hover crosshair,
-end-of-line value tags, event markers). Two design policies are treated as requirements
-rather than aesthetics: **honest encoding** (no dual y-axes — different scales are shown as
-aligned panels or z-scores; no data-censoring transforms; units always stated) and
-**layered depth** — the Reader/Analyst dial serves the general public and researchers from
-the same pages instead of forking the interface per audience. Accessibility (WCAG 2.1 AA
-contrast, keyboard focus, aria labelling, reduced-motion support) is a design constraint
-throughout.
+**3.7.8 User-interface design.** The dashboard uses a dark "Lagos Noir" theme with the same
+storytelling pattern repeated on every indicator page — a headline statistic, three short
+blocks covering what happened, why it matters and how to read the chart, the chart itself,
+and a data table underneath — plus a "markets-terminal" treatment on the charts themselves:
+range selectors, a hover crosshair, end-of-line value tags, event markers. Two things here
+are treated as requirements rather than aesthetic preference. One is honest encoding: no
+dual y-axes anywhere (different scales become aligned panels or z-scores instead), no
+data-censoring transforms, units always stated plainly. The other is what I've been calling
+layered depth — the Reader/Analyst dial lets the general public and a researcher use the
+same page rather than forking the interface into two separate products for two separate
+audiences. Accessibility (WCAG 2.1 AA contrast, keyboard focus, aria labelling, reduced-
+motion support) was a constraint I held to throughout, not a pass I did at the end.
 
 ---
 
 ## CHAPTER FOUR — SYSTEM IMPLEMENTATION AND TESTING
 
 ### 4.1 Introduction
-This chapter describes how the design was implemented, the tools used, and how the system
-was tested and evaluated.
+Chapter Three set out what I intended to build. This chapter is the account of actually
+building it — the tools I used, how the seven-stage pipeline came together in practice, the
+places where implementation forced a decision the design hadn't anticipated, and how I
+tested and evaluated what came out the other end.
 
 ### 4.2 Development Tools and Technologies
 - **Backend:** Python 3, FastAPI, Uvicorn (ASGI server), `supabase-py`.
@@ -993,20 +1043,27 @@ was tested and evaluated.
    patterns.
 
 ### 4.4 Key Implementation Highlights
-- A **single canonical `main.py`** consolidates the API; credentials are read from the
-  environment with safe fallbacks.
-- **Unit correctness** was treated as a first-class concern: raw balance-sheet values
-  (stored in naira thousands) and financial-statement values (naira millions) are converted
-  and clearly labelled (e.g. naira trillions) in the UI, avoiding misleading axes.
-- **Reusable charting utilities** (`shared.js`) provide the takeaway stat, range selector,
-  crosshair and end-of-line label components used consistently across pages.
+A few decisions from the build are worth calling out on their own, since they weren't
+obvious until I ran into the problem they solve.
+
+The whole API consolidates into one canonical `main.py` rather than being scattered across
+files that drift apart, with credentials read from the environment and safe fallbacks if
+they're missing. Unit correctness turned into a first-class concern rather than a detail,
+because raw balance-sheet values are stored in naira thousands while financial-statement
+values are stored in naira millions — mixing those up anywhere in the UI would silently
+misstate a figure by orders of magnitude, so both get converted and clearly labelled (naira
+trillions, for instance) before they ever reach a chart. And the charting logic itself
+(`shared.js`) is one shared, reusable set of utilities — the takeaway stat, the range
+selector, the crosshair, the end-of-line labels — used the same way on every page, rather
+than each page reinventing its own version.
 
 ### 4.5 Analytical Methods and Their Limitations
-The analytics are computed transparently in the browser, directly from the aggregated
-data, and cover the full catalogue of indicators. The methods are deliberately classical
-and explainable — no black-box models — so any result can be reproduced and checked. This
-reflects a guiding principle of the project: to be **correct and honest over impressive**,
-and to state plainly when a result is unreliable.
+Every analytic on the platform is computed transparently in the browser, straight from the
+aggregated data, across the full catalogue of indicators. I kept the methods deliberately
+classical and explainable rather than reaching for anything resembling a black box, so that
+any result a user sees can be reproduced and checked by hand if they want to. That's really
+a guiding principle of the whole project: correct and honest matters more than impressive,
+and where a result is unreliable, the platform says so rather than hiding it.
 
 **Methods implemented:**
 1. **Descriptive statistics** — latest value, period and year-on-year change, minimum and
@@ -1081,8 +1138,9 @@ The figures below are actual captures of the deployed system.
 ![Figure 4.15 — Reform Impact: before/after June 2023 averages for five headline indicators, with neutral critic/supporter readings generated from the same numbers](figures/fig4_15_reform_impact.png)
 
 ### 4.7 Testing and Validation
-The platform was validated through several complementary strands, combining automated tests,
-independent statistical validation, and systematic data auditing.
+I validated the platform through several complementary strands rather than relying on any
+one of them alone — automated tests, independent statistical validation, and a systematic
+audit of the data itself.
 
 **1. Automated unit testing (Pytest).** The Open API is covered by a suite of **16 unit
 tests** in `tests/test_main.py`, exercising the read endpoints, the demo-safe ingestion path,
@@ -1104,14 +1162,17 @@ underlying mathematics was validated independently of the user interface:
   four-point series (AED rates), a count series, and a series whose coverage ends early
   (services GDP) — confirming correct output and no crashes on these edge cases.
 
-**3. Data-truthfulness auditing.** Every chart's stated figures, ranges and units were
-cross-checked against the stored data. This systematic audit found and corrected genuine
-defects, including: a data-censoring routine that silently capped some balance-sheet series
-(hiding the gold revaluation and understating bankers' deposits); unit mislabels that
-mis-scaled monetary values by a factor of a thousand; a chart titled an "inverse
-relationship" that the data showed to be a weak *positive* one (r ≈ 0.33); and a sector
-comparison that inadvertently placed figures from different years side by side. Each defect
-was verified against the original source figures and corrected.
+**3. Data-truthfulness auditing.** I went through every chart's stated figures, ranges and
+units and cross-checked them against the stored data, and this is the strand that actually
+turned up real problems rather than confirming things were already fine. I found a
+data-censoring routine that had been silently capping some balance-sheet series, hiding the
+gold revaluation and understating bankers' deposits. I found unit mislabels that mis-scaled
+monetary values by a factor of a thousand. I found a chart confidently titled an "inverse
+relationship" that the data actually showed to be a weak positive one (r ≈ 0.33) — the exact
+opposite of its own caption. And I found a sector comparison that had, without anyone
+intending it, placed figures from two different years side by side as if they were
+comparable. Each of these I traced back to the original source figures and corrected, and I've chosen to
+document the process honestly here rather than pretend the first version was already right.
 
 **4. Functional and visual verification.** Every dashboard page was loaded against the live
 database and inspected — including through automated screenshots — to confirm that charts,
@@ -1142,19 +1203,22 @@ with the RFC 8288 `Link` header, and the demo-safe behaviour of the ingestion en
 | 10 | Accessibility contrast | ≥ 4.5:1 (WCAG 2.1 AA) | Pass |
 
 ### 4.8 Results and Discussion
-The implemented platform successfully aggregates 122 indicators and ~12,100 observations
-into one queryable store, serves them through a documented open API with hypermedia
-controls, and presents them through an accessible analytical dashboard. Testing confirmed
-that the API behaves as specified and that the visualisations are both correct and
-clearly explained. The unit-correctness work in particular removed a class of misleading
-displays, aligning the presentation with the objective of truthful analytics.
+What came out of this is a platform that aggregates 122 indicators and roughly 12,100
+observations into one queryable store, serves them through a documented open API with
+hypermedia controls, and presents them through a dashboard I'd call genuinely accessible
+rather than accessible-on-paper. Testing backed that up: the API behaves as specified, and
+the visualisations turned out to be both correct and clearly explained once the
+unit-correctness audit had done its work. That audit is, if I'm honest, the part of Chapter
+Four I'd point to first — it's the difference between a platform that merely looks
+trustworthy and one that actually is.
 
 ---
 
 ### 4.9 Technology-Stack Assessment
-The stack was re-evaluated at the end of implementation against the question: *is any
-technology choice limiting the platform?* The assessment was evidence-based, using the
-measurements gathered during stress testing rather than opinion.
+Once the build was largely done, I went back and re-evaluated the stack against a single
+question: is any of these technology choices actually limiting the platform? I wanted this
+to be evidence-based rather than a matter of taste, so the assessment below leans on the
+measurements gathered during stress testing rather than on opinion.
 
 **Choices that proved themselves (kept deliberately):**
 - **Static HTML/CSS/vanilla JavaScript frontend (no framework, no build step).** At this
@@ -1197,13 +1261,15 @@ engineered around within the stack, and the upgrade path for each layer is docum
 ## CHAPTER FIVE — SUMMARY, CONCLUSION AND RECOMMENDATIONS
 
 ### 5.1 Summary
-This project set out to solve the fragmentation and inaccessibility of public Nigerian
-economic data. It designed and implemented NPEDATA, a seven-stage platform that collects,
-validates, standardises, stores, analyses, and publishes economic indicators through both a
-dashboard and a free open API. All stated objectives were met: the data was aggregated into
-a unified model; analytics were implemented; a HATEOAS-compliant API and an accessible,
-explanatory dashboard were delivered; and the system was tested for correctness and
-accessibility.
+I set out to do something about the fragmentation and inaccessibility of public Nigerian
+economic data, and what came out of it is NPEDATA — a seven-stage platform that collects,
+validates, standardises, stores, analyses and publishes economic indicators through both a
+dashboard and a free open API. Looking back at the objectives in Chapter One, I'd say all
+six were genuinely met rather than nominally ticked off: the data is aggregated into one
+unified model, the analytics are implemented and working, the API is HATEOAS-compliant and
+documented, the dashboard is accessible and explanatory rather than just decorative, and the
+whole system has been tested for both correctness and accessibility, not just built and
+assumed to be fine.
 
 **Table 5.1 — Achievement of objectives**
 
@@ -1217,28 +1283,40 @@ accessibility.
 | 6 | Test and evaluate | 24-test suite, statistical validation, adversarial stress test, live sweeps (§4.7) |
 
 ### 5.2 Conclusion
-The work demonstrates that Nigeria's scattered, non-machine-readable public economic data
-can be consolidated into a single, correct, and programmatically consumable resource using
-only free and open-source tools. In doing so it lowers the barrier to using this data for
-students, researchers, developers and the public, and provides a reproducible reference for
-open-data practice in the Nigerian context.
+If there's one thing this project demonstrates, it's that Nigeria's scattered,
+non-machine-readable public economic data doesn't have to stay that way — it can be
+consolidated into something correct and programmatically usable using nothing but free and
+open-source tools, without needing a government contract or a commercial budget behind it.
+Doing that lowers the barrier to using this data for students, researchers, developers and
+the public, and I hope it stands as a reasonably honest reference for what open-data
+practice could look like in a Nigerian context, warts and all — including the ones I've
+documented rather than smoothed over in Chapter Four.
 
 ### 5.3 Recommendations and Future Work
-1. **Automate collection** with scheduled scrapers/connectors to the source portals to
-   reduce manual effort and improve freshness.
-2. **Expand coverage** to more indicators, sub-national (state-level) data, and longer
-   historical series.
-3. **Add authentication tiers and rate limiting** for heavier API consumers.
-4. **Introduce richer analytics** (seasonality, more forecasting methods) while retaining
-   transparency.
-5. **Provide client SDKs** (e.g. Python/JavaScript) to further ease API adoption.
-6. **Formalise data-quality workflows** (automated validation dashboards, provenance).
+None of this is finished, and I don't think an FYP of this scope should pretend otherwise.
+If I were continuing the project, or if someone else picked it up, here is where I would
+point them first:
+1. **Automate collection**, with scheduled scrapers or connectors to the source portals, so
+   freshness stops depending on me manually re-ingesting data.
+2. **Expand coverage** — more indicators, state-level rather than only national data, and
+   longer historical series where the sources allow it.
+3. **Add authentication tiers and rate limiting** once there are API consumers heavy enough
+   to need them.
+4. **Introduce richer analytics**, such as seasonal adjustment or additional forecasting
+   methods, without giving up the transparency the current classical approach has.
+5. **Provide client SDKs** — a Python or JavaScript package would lower the remaining
+   friction in adopting the API.
+6. **Formalise the data-quality workflow** itself, with automated validation dashboards and
+   clearer provenance tracking, rather than relying on the kind of manual audit described in
+   §4.7.
 
 ### 5.4 Contribution to Knowledge
-The project contributes a working, reproducible, open reference implementation of a unified
-Nigerian public-economic-data platform with a HATEOAS-level open API — an artefact that did
-not previously exist in freely accessible form — and a demonstration that such a platform is
-achievable with free tooling.
+What this project contributes, concretely, is a working, reproducible, openly licensed
+reference implementation of a unified Nigerian public-economic-data platform with a
+genuinely HATEOAS-level open API — something that, as far as I could establish in Chapter
+Two's review, did not already exist in freely accessible form — along with a demonstration
+that a platform like this is achievable with entirely free tooling, by one student, inside
+one academic year.
 
 ---
 
