@@ -457,6 +457,28 @@ domestic appetite for usable public data. But these efforts centre on budgets, s
 static dataset publication rather than continuously usable, API-accessible economic time
 series, which is the specific niche this project sits in.
 
+**Why hasn't the Federal Government already built this?** It's a fair question, and I don't
+think the honest answer is a technical one. Nigeria has had an official e-Government
+Interoperability Framework since 2018, setting out exactly how ministries, departments and
+agencies are supposed to exchange data with each other (National Information Technology
+Development Agency [NITDA], 2018), and adoption has still lagged badly enough that, as of
+2026, government databases as fundamental as the National Identity Management Commission's
+NIN registry and the CBN's own BVN system still don't talk to each other (Eleanya, 2026).
+The reasons people who actually work on this problem give are institutional, not
+technological: agencies tend to see the data they hold as a source of value and influence,
+and sharing it can feel like giving that up, while different agencies also classify and
+manage the same kind of information differently, which makes harmonising it harder than it
+needs to be (Eleanya, 2026). BudgIT's own analysis is blunter still, arguing that Nigeria's
+fragmented systems persist "not because of an engineering failure" but because fragmentation
+is useful to whoever benefits from the resulting opacity, and that fixing it is a governance
+choice before it is a technical one (Anintah, n.d.). I can't resolve that governance problem
+with a final-year project, and I'm not going to pretend otherwise. What a project like this
+*can* do is remove the technical excuse: it shows that one student, with no budget and no
+institutional authority, can stand up a working, standardised, publicly queryable version of
+this data using entirely free tools inside an academic year. If that's achievable at this
+scale, the claim that unifying Nigeria's economic data is somehow infeasible doesn't really
+hold up — what's missing is the will to do it, not the means.
+
 ### 2.5 Gap Analysis
 **Table 2.2 — Feature-level gap analysis**
 
@@ -1328,6 +1350,15 @@ point them first:
    clearer provenance tracking, rather than relying on the kind of manual audit described in
    §4.7.
 
+None of those six items touch the deeper barrier discussed in §2.4 — the institutional
+reluctance to share data that has kept CBN, NBS and other agencies from doing this
+themselves. A student project cannot legislate that away, and I want to be honest that
+nothing in this report fixes it. But if a reference implementation like this one gets used,
+cited, or even just noticed, it becomes one small piece of evidence for the argument BudgIT
+and others are already making: that unifying this data was always a governance choice, not
+an engineering problem (Anintah, n.d.). That is, more than any single feature, the change
+I would actually want this project to contribute to.
+
 ### 5.4 Contribution to Knowledge
 What this project contributes, concretely, is a working, reproducible, openly licensed
 reference implementation of a unified Nigerian public-economic-data platform with a
@@ -1340,15 +1371,18 @@ one academic year.
 
 ## REFERENCES
 
+- Anintah, C. (n.d.). *Interoperability is the anti-corruption reform Nigeria continues to overlook*. BudgIT Foundation. https://budgit.org/interoperability-is-the-anti-corruption-reform-nigeria-continues-to-overlook/
 - Anscombe, F. J. (1973). Graphs in statistical analysis. *The American Statistician, 27*(1), 17–21.
 - BudgIT. (n.d.). *BudgIT — making public data meaningful*. https://www.budgit.org
 - Codd, E. F. (1970). A relational model of data for large shared data banks. *Communications of the ACM, 13*(6), 377–387.
+- Eleanya, F. (2026, June 17). *Why Nigeria's AI future depends on breaking government data silos*. TechCabal. https://techcabal.com/2026/06/17/why-nigerias-ai-future-depends-on-breaking-government-data-silos/
 - Federal Reserve Bank of St. Louis. (n.d.). *FRED — Federal Reserve Economic Data*. https://fred.stlouisfed.org
 - Fielding, R. T. (2000). *Architectural Styles and the Design of Network-based Software Architectures* (Doctoral dissertation). University of California, Irvine.
 - Richardson, L., & Ruby, S. (2007). *RESTful Web Services*. O'Reilly Media.
 - Fowler, M. (2010). *Richardson Maturity Model*. martinfowler.com.
 - Central Bank of Nigeria. (n.d.). *Statistics Database*. https://www.cbn.gov.ng
 - National Bureau of Statistics. (n.d.). *NBS Data Portal*. https://www.nigerianstat.gov.ng
+- National Information Technology Development Agency. (2018). *Nigeria e-Government Interoperability Framework (Ne-GIF), Release V1.2*. https://nitda.gov.ng/wp-content/uploads/2020/11/Ne-GIFFinal1.pdf
 - World Bank. (n.d.). *World Bank Open Data*. https://data.worldbank.org
 - FastAPI. (n.d.). *FastAPI Documentation*. https://fastapi.tiangolo.com
 - PostgreSQL Global Development Group. (n.d.). *PostgreSQL Documentation*. https://www.postgresql.org/docs
