@@ -566,6 +566,9 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   .pipe-step.lit .pipe-node, .pipe-step.is-output.lit .pipe-node { animation: none !important; }
   .h-tl-item.visible .h-tl-dot::after { content: none !important; }
   .h-timeline-track.pre::before { transform: scaleX(1); transition: none; }
+  .logo-pulse, .hero-glow, .hero-glow-2 { animation: none !important; }
+  .reveal { transition: none !important; opacity: 1 !important; transform: none !important; }
+  .explore-card { animation: none !important; opacity: 1 !important; }
 }
 
 /* ─── Reader / Analyst detail dial ─── */
