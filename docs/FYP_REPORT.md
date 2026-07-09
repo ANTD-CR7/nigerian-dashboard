@@ -152,25 +152,41 @@ FastAPI, data visualisation.
 ## CHAPTER ONE — INTRODUCTION
 
 ### 1.1 Background to the Study
-The idea for this project did not start in a classroom. During an internship at Fidelity
-Bank, I found myself needing to look at Nigeria's inflation rate and the naira–dollar
-exchange rate for the same stretch of months, and getting the two to sit side by side took
-far longer than it should have. Both figures are published by credible institutions —
-mainly the Central Bank of Nigeria (CBN) and the National Bureau of Statistics (NBS), with
-the World Bank filling gaps the domestic sources leave open — but nothing about the data is
-built for that kind of use. It comes as PDF statistical bulletins, individual Excel
-downloads, and web tables that change structure from one indicator to the next, which is
-fine for reading a single number but painful for comparing two.
+The honest starting point for this project was ambition rather than convenience. I wanted to
+build something closer to a Nigerian Bloomberg — or, closer still in spirit to how Palantir
+approaches the same underlying problem, one place that integrates what different government
+agencies already know instead of leaving it locked inside each of them separately. The
+frustration behind that was real and kept recurring: every time I wanted to look at more
+than one piece of Nigeria's public data at once, I ended up dealing with a different federal
+agency, a different website, a different format, as if the country's own economic story were
+being told in disconnected fragments by institutions that had never spoken to each other.
+That fragmentation isn't unique to economic data either — the same pattern shows up across
+Nigerian government institutions generally — but economic indicators were where I could
+actually do something about it as a student.
 
-That friction is really the whole starting point for this project. Anyone who wants to ask
-a genuinely interesting question about the Nigerian economy — how the 2023 foreign-exchange
-unification, say, relates to the inflation surge that followed — ends up spending more time
-reconciling spreadsheets than actually answering the question. A developer is in a worse
-position still, since there is no single documented interface to call; every project that
-wants this data has to scrape or re-key it from scratch. This project tries to remove that
-friction by pulling the data into one place, standardising it, and publishing it back out
-twice over — once as a dashboard a person can read, and once as an open Application
-Programming Interface (API) a program can call.
+When I looked for something that already solved this, the closest examples were Bloomberg
+Terminal and platforms like it — genuinely excellent, and built for people who can afford a
+monthly subscription most Nigerian students, developers and analysts simply cannot. There
+was no free, open equivalent for someone in my position: a student with no corporate budget,
+wanting to work with the country's own public data the way an analyst at a bank could.
+
+That gap is what this project set out to close, though I should be upfront that the version
+I originally envisioned was larger than what follows in this report. Given how long a
+Bloomberg-scale platform would realistically take to build properly, my supervisor scaled
+the project down to a defined, achievable case study, and Chapter Three's design reflects
+that narrower scope rather than the full ambition I started with (§1.4 states the resulting
+scope precisely). What survives from the original idea is the underlying principle: one
+standardised store and one honest interface, built to be extended later rather than treated
+as a finished national system. The data already exists inside these institutions; what's
+missing, as far as I can tell, is the will to publish it in a form the public can actually
+use without paying for it or fighting the format it arrived in.
+
+My internships at Fidelity Bank and the Lagos State Ministry of Science and Technology are
+where I actually learned to think about this properly — not the specific economic figures,
+but how real systems are put together: why a documented API matters, why redundancy and
+backups aren't optional extras, why networking has to be designed rather than bolted on
+afterward. This project is where I tried to apply that thinking to a problem I'd wanted to
+solve for a while before I had the tools to attempt it.
 
 ### 1.2 Statement of the Problem
 Narrowed down, the problems with how this data currently reaches the public are:
@@ -207,7 +223,9 @@ interactive analytics dashboard and a free open API.
 6. Test and evaluate the finished platform for correctness, usability and accessibility.
 
 ### 1.4 Scope of the Study
-The project covers collection, standardisation, storage, analysis, API exposure and
+As §1.1 explains, this is a deliberately scaled-down version of a larger original ambition,
+agreed with my supervisor given the time available to complete it properly. What it
+actually covers is collection, standardisation, storage, analysis, API exposure and
 visualisation for a defined set of Nigerian public economic indicators — currently 122
 indicators and roughly 12,100 observations, spread across the domains listed in Table 1.1.
 This is deliberately a controlled case study rather than a claim to cover everything Nigeria
