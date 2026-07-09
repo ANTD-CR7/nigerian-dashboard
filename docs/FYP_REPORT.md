@@ -479,6 +479,26 @@ this data using entirely free tools inside an academic year. If that's achievabl
 scale, the claim that unifying Nigeria's economic data is somehow infeasible doesn't really
 hold up — what's missing is the will to do it, not the means.
 
+**Is this a legislative problem, then, or an institutional one?** Genuinely both, and the
+honest answer doesn't simplify neatly. There is a real legislative gap: Nigeria's Freedom of
+Information Act has legally mandated proactive publication of exactly this kind of public
+data since 2011, yet a six-organisation civil-society audit — including BudgIT and the
+International Centre for Investigative Reporting — found that of 250 federal MDAs surveyed,
+153 still scored below a basic compliance benchmark in 2022 alone (Ogunyale & Osho, 2023).
+That is not a case of no rule existing; it is a case of a rule existing and being routinely
+ignored, which points to enforcement rather than legislation as the deeper gap. Nigeria has
+closed an analogous gap before, though. The 2019 data-protection framework (the NDPR) relied
+on NITDA — a technology-development agency with no actual legal power to penalise anyone —
+to police compliance, and when the Nigeria Data Protection Act replaced it in 2023, it
+created an independent regulator, the Nigeria Data Protection Commission, with real
+investigative and fining powers (Falore & Jidda, 2026). No equivalent body exists yet for
+government-data interoperability specifically: Ne-GIF is guidance, not law, and ignoring it
+carries no consequence, the same way ignoring the FOI Act mostly hasn't. If there is a
+legislative fix available here, on this evidence it probably isn't another framework
+document — Nigeria already has one of those — but a body with the same enforcement teeth the
+NDPC was given, empowered specifically to make interoperability mandatory rather than merely
+recommended.
+
 ### 2.5 Gap Analysis
 **Table 2.2 — Feature-level gap analysis**
 
@@ -1373,6 +1393,7 @@ one academic year.
 
 - Anintah, C. (n.d.). *Interoperability is the anti-corruption reform Nigeria continues to overlook*. BudgIT Foundation. https://budgit.org/interoperability-is-the-anti-corruption-reform-nigeria-continues-to-overlook/
 - Anscombe, F. J. (1973). Graphs in statistical analysis. *The American Statistician, 27*(1), 17–21.
+- Falore, O., & Jidda, S. (2026, April 27). *Written policy, broken practice: The data protection gap*. Syntegral Legal Practice, via Mondaq. https://www.mondaq.com/nigeria/data-protection/1778574/written-policy-broken-practice-the-data-protection-gap
 - BudgIT. (n.d.). *BudgIT — making public data meaningful*. https://www.budgit.org
 - Codd, E. F. (1970). A relational model of data for large shared data banks. *Communications of the ACM, 13*(6), 377–387.
 - Eleanya, F. (2026, June 17). *Why Nigeria's AI future depends on breaking government data silos*. TechCabal. https://techcabal.com/2026/06/17/why-nigerias-ai-future-depends-on-breaking-government-data-silos/
@@ -1390,6 +1411,7 @@ one academic year.
 - Granger, C. W. J., & Newbold, P. (1974). Spurious regressions in econometrics. *Journal of Econometrics, 2*(2), 111–120.
 - International Monetary Fund. (n.d.). *IMF Data*. https://data.imf.org
 - Nottingham, M. (2017). *Web Linking* (RFC 8288). Internet Engineering Task Force.
+- Ogunyale, K., & Osho, G. (2023, September 24). *Over 150 MDAs flout Freedom of Information Act*. The International Centre for Investigative Reporting (ICIR). https://www.icirnigeria.org/over-150-mdas-flout-freedom-of-information-act/
 - Open Government Working Group. (2007). *Eight principles of open government data*. https://opengovdata.org
 - Open Knowledge Foundation. (n.d.). *The Open Definition*. https://opendefinition.org
 - Our World in Data. (n.d.). *Our World in Data*. https://ourworldindata.org

@@ -196,6 +196,28 @@ the platform's job is to make that data checkable, not to settle the argument. T
 either side of the debate can verify a specific claim against primary CBN/NBS numbers instead
 of a partisan summary.
 
+**Q: "Why hasn't the Federal Government already built something like this? Is it a legislative problem or an institutional one?"**
+A: Genuinely both, and I don't think the honest answer simplifies neatly. There's a real
+legislative gap: the Freedom of Information Act has legally mandated proactive publication of
+this kind of public data since 2011, yet a six-organisation civil-society audit — BudgIT and
+the ICIR among them — found 153 of 250 federal MDAs surveyed still scored below a basic
+compliance benchmark in 2022 alone (Ogunyale & Osho, 2023). That's not an absence of law,
+it's a law being routinely ignored, which points at enforcement rather than legislation as
+the deeper problem. But Nigeria has closed an analogous gap before: the old data-protection
+framework (NDPR, 2019) relied on NITDA — a technology agency with no legal power to penalise
+anyone — to police it, and when the Nigeria Data Protection Act replaced it in 2023, it
+created an independent regulator, the NDPC, with real fining and investigative powers (Falore
+& Jidda, 2026). Nothing equivalent exists yet for government-data interoperability
+specifically — the e-Government Interoperability Framework (Ne-GIF) is guidance, not law, and
+ignoring it carries no consequence, same as the FOI Act mostly hasn't. So if there's a
+legislative fix, it's probably not another framework document — Nigeria already has one — but
+a body with the same enforcement teeth the NDPC got, applied specifically to interoperability.
+Underneath the legislative angle, the deeper cause people who work on this describe is still
+institutional: agencies treat the data they hold as leverage, and sharing it feels like giving
+that up (Eleanya, 2026; Anintah, n.d.). A final-year project can't fix governance — what it
+can do is remove the technical excuse, by showing the data-side problem was solvable all along
+by one unfunded student in an academic year.
+
 **Q: "Isn't your tech stack limiting? Why no React / bigger stack?"**
 A: I re-evaluated the stack at the end of the build with measurements, not opinions
 (report §4.9). At this scale it isn't the limit: the no-framework frontend scores 100/100
