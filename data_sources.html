@@ -36,6 +36,14 @@
 </div></section>
 <main class="page-content"><div class="container">
 
+  <div class="chart-card reveal" id="hm-card">
+    <div class="chart-card-title">The Aggregation at a Glance — every indicator, every year</div>
+    <p class="chart-context">One picture of the whole platform: each row is one of the <strong>122 indicators</strong>, each column a year from 1960 to 2026, and each cell glows brighter the more observations were aggregated for that indicator in that year. The dense modern block on the right is the 2020–2026 case-study core; the long thin rows reaching back left are the deep historical series (GDP sectors to 1981, CBN financials to 1960). Hover any cell for the detail.</p>
+    <div class="hm-wrap"><canvas id="hm-canvas" aria-label="Coverage heatmap: 122 indicators by year, brightness showing observation count" role="img"></canvas><div class="chart-loading" id="hm-loading" style="position:static;height:80px;">Aggregating 12,100 observations…</div></div>
+    <div class="hm-legend"><span>Observations per year:</span><span><span class="sw" style="background:rgba(0,135,81,0.18)"></span>1</span><span><span class="sw" style="background:rgba(0,163,98,0.45)"></span>4</span><span><span class="sw" style="background:rgba(0,200,150,0.75)"></span>12 (monthly)</span><span><span class="sw" style="background:#00C896"></span>250+ (daily)</span><span style="margin-left:auto">Rows grouped by category · computed live from the database</span></div>
+    <div class="hm-tip" id="hm-tip"></div>
+  </div>
+
   <div class="chart-card reveal" id="cbn">
     <div class="chart-card-title">Central Bank of Nigeria (CBN)</div>
     <p style="font-family:var(--font-body);font-size:0.88rem;color:var(--slate);line-height:1.7;margin-bottom:18px;">Nigeria's central monetary authority. Publishes official exchange rates, the Monetary Policy Rate, foreign reserves, the NFEM daily market report, currency-in-circulation figures and its own balance sheet.</p>
@@ -115,14 +123,6 @@
       </table>
     </div>
     <p style="font-family:var(--font-body);font-size:0.78rem;color:var(--slate);margin-top:14px;line-height:1.6;"><strong style="color:var(--slate);">Data quality note:</strong> USD-denominated GDP can fall even when local real GDP grows, since it is also a function of the Naira exchange rate — see the GDP page for the side-by-side comparison. Source: <a href="https://data.worldbank.org" target="_blank" rel="noopener" style="color:var(--green-text);">data.worldbank.org</a></p>
-  </div>
-
-  <div class="chart-card reveal" id="hm-card">
-    <div class="chart-card-title">The Aggregation at a Glance — every indicator, every year</div>
-    <p class="chart-context">One picture of the whole platform: each row is one of the <strong>122 indicators</strong>, each column a year from 1960 to 2026, and each cell glows brighter the more observations were aggregated for that indicator in that year. The dense modern block on the right is the 2020–2026 case-study core; the long thin rows reaching back left are the deep historical series (GDP sectors to 1981, CBN financials to 1960). Hover any cell for the detail.</p>
-    <div class="hm-wrap"><canvas id="hm-canvas" aria-label="Coverage heatmap: 122 indicators by year, brightness showing observation count" role="img"></canvas><div class="chart-loading" id="hm-loading" style="position:static;height:80px;">Aggregating 12,100 observations…</div></div>
-    <div class="hm-legend"><span>Observations per year:</span><span><span class="sw" style="background:rgba(0,135,81,0.18)"></span>1</span><span><span class="sw" style="background:rgba(0,163,98,0.45)"></span>4</span><span><span class="sw" style="background:rgba(0,200,150,0.75)"></span>12 (monthly)</span><span><span class="sw" style="background:#00C896"></span>250+ (daily)</span><span style="margin-left:auto">Rows grouped by category · computed live from the database</span></div>
-    <div class="hm-tip" id="hm-tip"></div>
   </div>
 
   <div class="chart-card reveal">
