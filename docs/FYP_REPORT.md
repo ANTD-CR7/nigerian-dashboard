@@ -741,18 +741,6 @@ The system is organised as a seven-stage pipeline (Figure 3.1).
 
 ![Figure 3.1 — Seven-stage system architecture](figures/fig3_1_architecture.png)
 
-```mermaid
-flowchart LR
-  A[Collection\nCBN / NBS / World Bank\nCSV + Excel] --> B[Validation\ntype & date checks]
-  B --> C[Standardisation\nunified indicator/\nobservation model]
-  C --> D[(Storage\nSupabase / PostgreSQL)]
-  D --> E[Analytics\ncorrelation, trend, forecast]
-  E --> F[API\nFastAPI REST + HATEOAS]
-  D --> F
-  F --> G[Presentation\nDashboard + Chart.js]
-  D --> G
-```
-
 **What each stage does in this specific project:**
 1. **Collect** — source files are obtained from the three institutions' published outputs
    (CBN statistical pages, NBS CPI/GDP report tables, World Bank indicators) as CSV/Excel.
@@ -777,27 +765,6 @@ flowchart LR
 
 ![Figure 3.1b — Deployment view](figures/fig3_1b_deployment.png)
 
-```mermaid
-flowchart LR
-  subgraph User
-    B[Browser]
-    P[Programs / AI agents]
-  end
-  subgraph GitHub Pages
-    FE[Static dashboard\nHTML/CSS/JS]
-  end
-  subgraph Render
-    API[FastAPI Open API\n+ TTL cache]
-  end
-  subgraph Supabase
-    DB[(PostgreSQL\nRLS: public read-only)]
-  end
-  B --> FE
-  FE -->|REST reads| DB
-  B -->|Explorer / Playground| API
-  P -->|JSON + _links| API
-  API --> DB
-```
 The two data paths are intentional: the dashboard's independence from the API host is an
 availability decision (assessed further in §4.9).
 
@@ -806,39 +773,6 @@ availability decision (assessed further in §4.9).
 **3.7.1 Use-case design (Figure 3.2)**
 
 ![Figure 3.2 — Use-case diagram](figures/fig3_2_usecases.png)
-
-```mermaid
-flowchart LR
-  Pub([Public / Student])
-  Res([Researcher / Analyst])
-  Dev([Developer])
-  AI([AI agent])
-  Adm([Maintainer])
-  subgraph NPEDATA
-    U1[View & interpret indicators\nReader / Analyst depth]
-    U2[Filter, range presets,\nevent context]
-    U3[Compare any two indicators\nr, R², p-value + warnings]
-    U4[Profile any of 122 indicators]
-    U5[Export CSV / PNG / citation]
-    U6[Compose cited briefing\nprint / share link]
-    U7[Call Open API / follow _links]
-    U8[Validate own CSV\nper-row verdicts, never writes]
-    U9[Embed live chart widget]
-    U10[Query via MCP tools / llms.txt]
-    U11[Ingest & update snapshots]
-  end
-  Pub --- U1
-  Pub --- U2
-  Res --- U3
-  Res --- U4
-  Res --- U5
-  Res --- U6
-  Dev --- U7
-  Dev --- U8
-  Dev --- U9
-  AI --- U10
-  Adm --- U11
-```
 
 **Table 3.1c — Use-case descriptions (three representative cases in full)**
 
@@ -880,61 +814,13 @@ Analyse → Serve*. Two representative interactions are shown as sequence diagra
 
 ![Figure 3.5 — Sequence diagram: loading an indicator page](figures/fig3_5_seq_pageload.png)
 
-```mermaid
-sequenceDiagram
-  actor U as User
-  participant D as Dashboard (browser)
-  participant S as Supabase (PostgREST)
-  U->>D: open inflation.html
-  D->>S: GET observations?indicator_id=eq.inflation
-  S-->>D: JSON rows (date, value)
-  D->>D: npeStats(): latest, YoY, σ, OLS trend + p-value
-  D->>D: render takeaway, chart, event markers, analyst panel
-  D-->>U: story + chart + (Analyst) statistics
-```
-
 **Figure 3.6 — Sequence: validating a CSV through the Open API**
 
 ![Figure 3.6 — Sequence diagram: validating a CSV through the Open API](figures/fig3_6_seq_validate.png)
 
-```mermaid
-sequenceDiagram
-  actor Dev as Developer / Playground
-  participant A as FastAPI (/api/v1/validate/csv)
-  Dev->>A: POST indicator_id + CSV file
-  A->>A: check UTF-8, header columns
-  loop every row
-    A->>A: ISO date? numeric & finite? duplicate? future?
-  end
-  A-->>Dev: per-row verdicts + reasons + written_to_database:false
-  Note over A: never writes — validation-only by design
-```
-
 **3.7.3 Database design (Figure 3.4 — ERD)**
 
 ![Figure 3.4 — Entity-relationship diagram](figures/fig3_4_erd.png)
-
-```mermaid
-erDiagram
-  DATA_SOURCES ||--o{ INDICATORS : publishes
-  INDICATORS  ||--o{ OBSERVATIONS : has
-  DATA_SOURCES {
-    string code PK
-    string name
-  }
-  INDICATORS {
-    string id PK
-    string name
-    string unit
-    string description
-    string source FK
-  }
-  OBSERVATIONS {
-    string indicator_id FK
-    date   obs_date
-    float  value
-  }
-```
 
 **Table 3.2 — Database schema (core tables)**
 

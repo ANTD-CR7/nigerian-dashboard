@@ -70,6 +70,7 @@ def add_image(doc, alt, rel_path):
     width = min(width, max(native_in * 1.6, 3.0))
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.keep_with_next = True  # never split the image from its own caption
     p.add_run().add_picture(str(img), width=Inches(width))
     cap = doc.add_paragraph()
     cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -138,6 +139,8 @@ def main():
             r.font.name = "Times New Roman"
             r.font.color.rgb = RGBColor(0, 0, 0)
             r.bold = True
+        # never orphan a heading alone at the bottom of a page
+        h.paragraph_format.keep_with_next = True
         return h
 
     def body_format(par, center=False):
@@ -248,6 +251,13 @@ def main():
             if on_title:
                 for r in p.runs:
                     r.bold = True
+            # a bold "Figure X.Y — ..." caption line right before an image:
+            # keep it glued to that image so the pair never splits across pages
+            look = i + 1
+            while look < len(md) and not md[look].strip():
+                look += 1
+            if look < len(md) and re.match(r"^!\[", md[look].strip()) and block[0].startswith("**"):
+                p.paragraph_format.keep_with_next = True
         i += 1
 
     doc.save(DST)
