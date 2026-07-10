@@ -131,6 +131,8 @@ FastAPI, data visualisation.
 - Figures 4.1–4.13 System screenshots (deployed system)
 - Figure 4.14 Correlation Matrix — 12 headline indicators, computed live
 - Figure 4.15 Reform Impact — before/after June 2023 averages
+- Figure 4.16 Reform Impact — purchasing-power erosion, chained live
+- Figure 4.17 Reform Impact — real GDP growth by sector, before/after
 
 ### List of Tables
 - Table 1.1 Data coverage summary
@@ -1196,6 +1198,16 @@ The figures below are actual captures of the deployed system.
 ![Figure 4.14 — Correlation Matrix: 12 headline indicators cross-correlated on annual averages, computed live](figures/fig4_14_correlation_matrix.png)
 
 ![Figure 4.15 — Reform Impact: before/after June 2023 averages for five headline indicators, with neutral critic/supporter readings generated from the same numbers](figures/fig4_15_reform_impact.png)
+
+![Figure 4.16 — Reform Impact: purchasing-power erosion since January 2020 and since the reform, chained live from the same year-on-year inflation series used by the Inflation page's calculator](figures/fig4_16_purchasing_power.png)
+
+![Figure 4.17 — Reform Impact: real GDP growth by sector, before/after June 2023, computed live and windowed to 2020–2026 to avoid diluting the comparison with unrelated history](figures/fig4_17_sector_impact.png)
+
+The Reform Impact page also carries a "Who this affects, and why" section covering global
+and institutional investors, entrepreneurs and MSMEs, domestic Nigerian investors, and why
+foreign direct investment might follow the reform — explicitly labelled as economic
+reasoning applied to the numbers above rather than a further live computation, so the
+distinction between what the platform computed and what it is arguing stays honest.
 
 ### 4.7 Testing and Validation
 I validated the platform through several complementary strands rather than relying on any
