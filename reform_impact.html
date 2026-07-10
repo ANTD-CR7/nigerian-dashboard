@@ -69,6 +69,48 @@
     <div class="source-note" style="margin-top:14px;">Both paragraphs are generated from the same table above — nothing here is asserted independently of the data.</div>
   </div>
 
+  <div class="chart-card reveal" id="ri-pp-card">
+    <div class="chart-card-title">What it means for purchasing power</div>
+    <p class="chart-context">Chained from the same year-on-year inflation series as the calculator on the <a href="inflation.html" style="color:var(--green-text);">Inflation page</a> — each step compounds the actual reported rate, not an estimate.</p>
+    <div class="profile-stats" id="ri-pp-stats"><div class="prof-tile"><div class="pt-label">Computing…</div></div></div>
+    <div class="source-note" id="ri-pp-note">Source: NBS Consumer Price Index, headline year-on-year.</div>
+  </div>
+
+  <div class="chart-card reveal" id="ri-sector-card">
+    <div class="chart-card-title">By Sector — Real GDP Growth (constant 2010 prices)</div>
+    <p class="chart-context">Same before/after split, restricted to 2020–2023 vs 2023–now so the comparison isn't diluted by decades of unrelated history. This is real output volume, not naira value — a sector can grow here while the naira earned from it buys less (see purchasing power above). Sectors with no recent data are omitted.</p>
+    <div class="data-table-wrap">
+      <table class="data-table" id="ri-sector-table">
+        <thead><tr><th>Sector</th><th>Before (2020–May 2023)</th><th>After (Jun 2023–)</th><th>Change</th></tr></thead>
+        <tbody id="ri-sector-tbody"><tr><td colspan="4" style="text-align:center;color:var(--slate);">Computing from live data…</td></tr></tbody>
+      </table>
+    </div>
+    <div class="source-note">Source: NBS Real GDP by Sector. Import-dependent sectors (oil/mining equipment, manufacturing inputs) tend to show the input-cost pain of devaluation; domestic-demand and import-substitution sectors (ICT, trade, agriculture) tend to show relative resilience or growth.</div>
+  </div>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">Who this affects, and why</div>
+    <p class="chart-context">The reform didn't hit everyone the same way. This is general economic reasoning applied to the numbers above, not a live computation — read it as context, not a verdict.</p>
+    <div style="display:flex;flex-direction:column;gap:16px;margin-top:8px;">
+      <div style="padding:14px 16px;border:1px solid rgba(245,240,232,0.08);border-radius:8px;">
+        <div style="font-family:var(--font-display);color:var(--white);font-size:0.95rem;margin-bottom:6px;">Global and institutional investors</div>
+        <p style="font-family:var(--font-body);font-size:0.83rem;color:var(--slate);line-height:1.7;">Before unification, Nigeria ran several exchange rates at once, which made FX risk almost impossible for a fund to model or hedge. One market-determined rate is easier to invest around, even a much weaker one. The Monetary Policy Rate shown above is now high enough to interest carry-trade investors, and the FX reserve recovery is the concrete evidence a skeptical institutional investor would want before trusting that repatriation is actually possible.</p>
+      </div>
+      <div style="padding:14px 16px;border:1px solid rgba(245,240,232,0.08);border-radius:8px;">
+        <div style="font-family:var(--font-display);color:var(--white);font-size:0.95rem;margin-bottom:6px;">Entrepreneurs and MSMEs</div>
+        <p style="font-family:var(--font-body);font-size:0.83rem;color:var(--slate);line-height:1.7;">Hit hardest of any group, structurally. Most small businesses have no FX hedge, so a currency move lands on their import costs immediately; at the same time, higher interest rates made borrowing to absorb that shock more expensive, not less. The exception is the same pattern as the sector table above — MSMEs that substitute for imports or earn in dollars were relatively insulated.</p>
+      </div>
+      <div style="padding:14px 16px;border:1px solid rgba(245,240,232,0.08);border-radius:8px;">
+        <div style="font-family:var(--font-display);color:var(--white);font-size:0.95rem;margin-bottom:6px;">Domestic Nigerian investors</div>
+        <p style="font-family:var(--font-body);font-size:0.83rem;color:var(--slate);line-height:1.7;">This split on what people held, not who they were. Naira cash and naira fixed-income lost real value at the rate shown in the purchasing-power figures above. Real assets — equities, property, dollar-denominated instruments, or a business with genuine pricing power — held up considerably better, since those tend to re-price with inflation instead of sitting fixed like cash.</p>
+      </div>
+      <div style="padding:14px 16px;border:1px solid rgba(245,240,232,0.08);border-radius:8px;">
+        <div style="font-family:var(--font-display);color:var(--white);font-size:0.95rem;margin-bottom:6px;">Why foreign direct investment might come now</div>
+        <p style="font-family:var(--font-body);font-size:0.83rem;color:var(--slate);line-height:1.7;">Counterintuitive but standard emerging-market logic: the reform removed the single biggest structural objection investors had, which was unpredictability, not the exchange rate's level. On top of that, Nigerian assets, wages and production are now roughly two-thirds cheaper in dollar terms than before the reform — a real discount for anyone investing in dollars. The honest counter-side is that inflation volatility, security concerns and policy unpredictability elsewhere in government are risks this specific reform didn't touch.</p>
+      </div>
+    </div>
+  </div>
+
   <div class="chart-card reveal">
     <div class="chart-card-title">See it charted</div>
     <p class="chart-context">Open a full briefing with all five indicators charted across the whole period, the reform date marked, and citations — generated live, ready to print or share.</p>
@@ -133,8 +175,70 @@
     if(mpr&&mpr.mBefore!=null) suppParts.push('the Monetary Policy Rate rose from an average of '+mpr.F(mpr.mBefore)+' to '+mpr.F(mpr.mAfter)+', consistent with a central bank actively fighting inflation rather than masking it with a fixed, unfunded exchange rate');
     if(gdp&&gdp.mBefore!=null) suppParts.push('GDP growth averaged '+gdp.F(gdp.mAfter)+' after versus '+gdp.F(gdp.mBefore)+' before (n='+gdp.nAfter+' vs n='+gdp.nBefore+' — treat this one cautiously, GDP growth is reported infrequently)');
     document.getElementById('ri-supporter').textContent=suppParts.length?('On the numbers above, '+suppParts.join('; and ')+'. This is the basis for the argument that the reform removed a distortion the economy could no longer sustain, at a real but bounded near-term cost.'):'Not enough data to state this side yet.';
+
+    /* ─── Purchasing power: chain the same inflation series used above ─── */
+    var infData=all[SET.map(function(x){return x.id;}).indexOf('inflation')];
+    if(infData&&infData.length>1){
+      function ppFactor(data,i,j){
+        var cur=j,factor=1;
+        while(cur-i>=12){factor*=1+data[cur].value/100;cur-=12;}
+        var rem=cur-i;
+        if(rem>0)factor*=Math.pow(1+data[cur].value/100,rem/12);
+        return factor;
+      }
+      var iStart=0,jLatest=infData.length-1;
+      var iReform=infData.findIndex(function(d){return d.obs_date>=SPLIT;});
+      var money=function(v){return '₦'+Math.round(v).toLocaleString('en-US');};
+      var tiles=[];
+      var f1=ppFactor(infData,iStart,jLatest);
+      tiles.push(['Since '+infData[iStart].obs_date.slice(0,7),(f1).toFixed(2)+'×','₦100,000 then → '+money(100000*f1)+' needed now','₦100,000 kept as cash is now worth only '+money(100000/f1)]);
+      if(iReform>0&&iReform<jLatest){
+        var f2=ppFactor(infData,iReform,jLatest);
+        tiles.push(['Since the reform ('+infData[iReform].obs_date.slice(0,7)+')',(f2).toFixed(2)+'×','₦100,000 then → '+money(100000*f2)+' needed now','₦100,000 kept as cash is now worth only '+money(100000/f2)]);
+      }
+      document.getElementById('ri-pp-stats').innerHTML=tiles.map(function(t){
+        return '<div class="prof-tile"><div class="pt-label">'+t[0]+'</div><div class="pt-value">'+t[1]+'</div><div class="pt-sub">'+t[2]+'</div><div class="pt-sub" style="margin-top:4px;">'+t[3]+'</div></div>';
+      }).join('');
+    } else {
+      document.getElementById('ri-pp-stats').innerHTML='<div class="prof-tile"><div class="pt-label">No data</div></div>';
+    }
   }).catch(function(e){
     document.getElementById('ri-tbody').innerHTML='<tr><td colspan="4" style="color:var(--slate);">Could not load live data — try refreshing.</td></tr>';
+    console.error(e);
+  });
+
+  /* ─── By-sector table: 2020-2023 vs 2023-now, real GDP by sector ─── */
+  var SECTOR_START='2020-01-01';
+  var SECTOR_SET=[
+    {id:'gdp_agriculture',label:'Agriculture'},
+    {id:'gdp_industry',label:'Industry (broad)'},
+    {id:'gdp_manufacturing',label:'Manufacturing'},
+    {id:'gdp_miningAndQuarrying',label:'Mining & Quarrying (incl. oil)'},
+    {id:'gdp_trade',label:'Trade'},
+    {id:'gdp_informationAndCommunication',label:'Information & Communication'}
+  ];
+  Promise.all(SECTOR_SET.map(function(x){return series(x.id);})).then(function(all){
+    var rows=SECTOR_SET.map(function(x,i){
+      var data=all[i];
+      var before=data.filter(function(d){return d.obs_date>=SECTOR_START&&d.obs_date<SPLIT;}).map(function(d){return d.value;});
+      var after=data.filter(function(d){return d.obs_date>=SPLIT;}).map(function(d){return d.value;});
+      if(!before.length||!after.length) return {label:x.label,skip:true};
+      var mBefore=avg(before), mAfter=avg(after);
+      var delta=mAfter-mBefore, pct=(delta/Math.abs(mBefore))*100;
+      return {label:x.label,mBefore:mBefore,mAfter:mAfter,nBefore:before.length,nAfter:after.length,pct:pct};
+    });
+    var tbody=document.getElementById('ri-sector-tbody');
+    var shown=rows.filter(function(r){return !r.skip;});
+    if(!shown.length){tbody.innerHTML='<tr><td colspan="4" style="color:var(--slate);">Not enough recent sector data.</td></tr>';return;}
+    tbody.innerHTML=shown.map(function(r){
+      var dir=r.pct>0?'▲':(r.pct<0?'▼':'→');
+      return '<tr><td>'+r.label+'</td>'+
+        '<td>₦'+r.mBefore.toLocaleString('en-US',{maximumFractionDigits:0})+'B <span class="pt-sub">(n='+r.nBefore+')</span></td>'+
+        '<td>₦'+r.mAfter.toLocaleString('en-US',{maximumFractionDigits:0})+'B <span class="pt-sub">(n='+r.nAfter+')</span></td>'+
+        '<td>'+dir+' '+Math.abs(r.pct).toFixed(1)+'%</td></tr>';
+    }).join('');
+  }).catch(function(e){
+    document.getElementById('ri-sector-tbody').innerHTML='<tr><td colspan="4" style="color:var(--slate);">Could not load live data — try refreshing.</td></tr>';
     console.error(e);
   });
 })();
