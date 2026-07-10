@@ -99,7 +99,7 @@ without over-claiming. Fill the `[ ]` placeholders.
 
 ---
 
-## PART B — Live demo script (~3–4 minutes, rehearse this exact path)
+## PART B — Live demo script (~4–5 minutes, rehearse this exact path)
 
 1. **Homepage** → point at the KPI row (live values), scroll to **"When the Naira fell,
    inflation followed"** — the two aligned panels. *Say:* "same timeline, honest separate
@@ -113,11 +113,24 @@ without over-claiming. Fill the `[ ]` placeholders.
    pages."
 3. **Analytics → "Analyze Any Indicator"** → pick a GDP sector or a CBN item. *Say:* "any of
    122 indicators, full profile computed live, correct units."
-4. **Analytics → Compare** → set two obviously-trending series (CBN Total Assets vs Currency
+4. **Analytics → scroll to the Correlation Matrix** (12 headline indicators, computed live on
+   annual averages). *Say:* "every pair of the platform's core series, cross-correlated at
+   once — one picture of how the whole aggregation relates to itself, not just two series at
+   a time."
+5. **Analytics → Compare** → set two obviously-trending series (CBN Total Assets vs Currency
    in Circulation) → **the spurious-correlation warning fires** (r=0.81 → detrended 0.03).
    *Say:* "this is the integrity feature — it stops you drawing a false conclusion."
-5. **API** → open `https://npedata-api.onrender.com/docs`, run `GET /api/v1/summary`, show the
+6. **Analytics → Reform Impact** → show the before/after June 2023 table and the two
+   critic/supporter paragraphs generated from the same numbers. *Say:* "people are split on
+   whether Nigeria is better off since the 2023 reforms. The platform doesn't argue either
+   side — it splits every headline indicator into before and after, computed live, and both
+   a critic and a supporter can point to real numbers on this one page. That neutrality is
+   the point."
+7. **API** → open `https://npedata-api.onrender.com/docs`, run `GET /api/v1/summary`, show the
    `_links` block. *Say:* "free, documented, and navigable — Level 3 HATEOAS."
+
+*If time is tight, cut step 4 (Correlation Matrix) first — step 6 (Reform Impact) is the
+stronger, more memorable moment and should stay in no matter what.*
 
 *Backup if Wi-Fi fails:* have screenshots of each step ready (see Part D).
 
@@ -263,6 +276,9 @@ Capture at a clean, wide browser window; hide personal bookmarks.
 - [ ] **Fig 4.7** — A `GET /api/v1/summary` response showing the `_links` (HATEOAS) block.
 - [ ] **Extra** — "Analyze Any Indicator" profile (stat tiles + chart).
 - [ ] **Extra** — Compare tool showing the **spurious-correlation warning** (great demo moment).
+- [ ] **Extra** — Correlation Matrix on the Analytics page (12-indicator grid).
+- [ ] **Extra** — Reform Impact page: the before/after table and the critic/supporter paragraphs
+      (arguably the strongest, most memorable screenshot to lead the demo backup with).
 - [ ] **Extra** — About page: Methodology & Limitations + Quality Assurance sections.
 
 ---
@@ -291,6 +307,14 @@ loud as you show the feature.
    from 1960, all in one tidy observations table, all analysable by the same engine.
 4. **The purchasing-power calculator** — aggregation made personally meaningful: "what
    ₦100,000 in 2020 buys today," chained from the real series with the method stated.
+5. **The Reform Impact page** — the aggregation used to settle nothing and reveal everything:
+   every headline indicator split into a before/after-June-2023 average, computed live, with
+   a critic's reading and a supporter's reading generated from the same numbers, no side
+   favoured. *Say: "this is what aggregation is actually for — not just displaying data, but
+   letting two people who disagree check the same facts against each other."*
+6. **The Correlation Matrix** — 12 headline indicators cross-correlated against each other in
+   one grid, not just pairwise. *Say: "the Compare tool answers one relationship at a time;
+   this answers all of them at once."*
 
 **Innovation in HOW THE API IS USED — three consumers, live:**
 1. **Humans without docs — the HATEOAS Explorer** (API page): navigate the entire API from
