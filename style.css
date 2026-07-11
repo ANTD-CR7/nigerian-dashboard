@@ -291,6 +291,72 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   letter-spacing: -0.03em;
 }
 
+/* ─── Liquid glass (homepage hero accent) — NPEDATA palette ───
+   Near-invisible fill + backdrop blur, with a gradient-stroke border
+   drawn on ::before via the padding+mask technique. Uses brand green
+   and gold at the edges, cream in the middle, instead of plain white.
+   The unprefixed `mask` is included so the border also renders in
+   Firefox (webkit-only masks are invisible there). */
+.liquid-glass {
+  position: relative;
+  background: rgba(245,240,232,0.02);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: inset 0 1px 1px rgba(245,240,232,0.10);
+  overflow: hidden;
+}
+.liquid-glass::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  padding: 1.2px;
+  background: linear-gradient(180deg,
+     rgba(0,163,98,0.55) 0%,
+     rgba(245,240,232,0.18) 22%,
+     rgba(245,240,232,0) 42%,
+     rgba(245,240,232,0) 58%,
+     rgba(244,160,23,0.20) 78%,
+     rgba(0,163,98,0.55) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+/* the eyebrow rendered as a glass pill */
+.hero-eyebrow.glass-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 18px; border-radius: 999px;
+  margin-bottom: 24px;
+}
+.hero-eyebrow.glass-pill .gp-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green-text);
+  box-shadow: 0 0 0 0 rgba(0,163,98,0.6);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+/* stat-bar picks up the gradient-stroke edge but keeps a readable dark glass
+   fill (the generic .liquid-glass fill is near-transparent — too weak here) */
+.stat-bar.liquid-glass {
+  border-radius: var(--radius);
+  background: rgba(13,15,24,0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.stat-bar.liquid-glass::before { border-radius: var(--radius); }
+
+/* ─── Word-by-word blur-in for the hero headline ───
+   Progressive enhancement: words are fully visible by default. JS adds
+   .bw-pre (blurred/offset) only when it is about to animate, then removes
+   it with a per-word staggered transition-delay. Skipped under
+   prefers-reduced-motion, so the text simply appears. */
+.hero-h1 .blur-word { display: inline-block; }
+.hero-h1 .blur-word.bw-pre {
+  filter: blur(10px); opacity: 0; transform: translateY(24px);
+}
+.hero-h1 .blur-word {
+  transition: filter 0.7s ease, opacity 0.7s ease, transform 0.7s ease;
+}
+
 /* ─── Sections ─── */
 .section { padding: 88px clamp(20px,5vw,64px); }
 .section-label {
@@ -566,9 +632,11 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   .pipe-step.lit .pipe-node, .pipe-step.is-output.lit .pipe-node { animation: none !important; }
   .h-tl-item.visible .h-tl-dot::after { content: none !important; }
   .h-timeline-track.pre::before { transform: scaleX(1); transition: none; }
-  .logo-pulse, .hero-glow, .hero-glow-2 { animation: none !important; }
+  .logo-pulse, .hero-glow, .hero-glow-2, .hero-eyebrow.glass-pill .gp-dot { animation: none !important; }
   .reveal { transition: none !important; opacity: 1 !important; transform: none !important; }
   .explore-card { animation: none !important; opacity: 1 !important; }
+  .hero-h1 .blur-word { transition: none !important; }
+  .hero-h1 .blur-word.bw-pre { filter: none !important; opacity: 1 !important; transform: none !important; }
 }
 
 /* ─── Reader / Analyst detail dial ─── */
