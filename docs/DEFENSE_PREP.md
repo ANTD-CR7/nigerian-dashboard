@@ -180,6 +180,22 @@ Model. Every JSON response embeds a `_links` block pointing to related resources
 can navigate the whole API from the root without hard-coding URLs. It makes the API
 self-describing and is a recognised marker of a well-designed REST API.
 
+**Q: "How do you know the API is actually usable — that the green '200 OK' on the API page isn't just cosmetic?"**
+A: Three things make it real, not decorative. First, the status pill is read straight from
+the HTTP status of a live `fetch()` — it shows green 200 *because the server returned 200*.
+Point it at a path that doesn't exist and it renders a red 404 (I can show that live);
+`/api/v1/does-not-exist` really does return 404. It reflects reality, not paint. Second, it
+can't be frontend fakery: the API is on a **different origin** (`onrender.com`) from the site
+(`github.io`), so the data genuinely came back over the network from a separate server — the
+browser's CORS rules would block a spoof, and the frontend has no local copy to fake. The
+"open raw" link proves it on the spot by opening the same endpoint straight from the server.
+Third, "usable" is demonstrated by real independent consumers, not just that panel: the
+16-test Pytest suite, the HATEOAS Explorer that navigates the live API by following `_links`,
+the MCP server an AI agent uses, the embed iframes, plain `curl`, and the Swagger UI at
+`/docs`. Different clients, same correct cross-checkable data (inflation 15.38%, matching the
+dashboard and NBS) — that is what usable means. Demo move: Try it → open raw → curl the same
+URL in a terminal; identical JSON from three independent clients.
+
 **Q: "Explain your spurious-correlation warning."**
 A: Two series that both trend upward will show a high correlation that means nothing. I
 compute the **detrended** correlation — the correlation of their month-to-month *changes* —
