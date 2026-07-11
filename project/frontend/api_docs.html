@@ -73,7 +73,8 @@
     </div>
   </div>
 
-  <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin-bottom:24px;" class="reveal">Endpoints</h2>
+  <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin-bottom:8px;" class="reveal">Endpoints</h2>
+  <p class="reveal" style="font-family:var(--font-body);font-size:0.82rem;color:var(--slate);margin-bottom:24px;line-height:1.6;">Press <strong style="color:var(--green-text);">Try it</strong> on any endpoint to run it live from your browser — the real response, status code and timing appear right here on the page. <span style="color:rgba(245,240,232,0.5);">(First call may take up to ~30s while the free-tier server wakes.)</span></p>
   <div class="endpoints-grid">
     <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/summary</div><p class="ep-desc">Latest single value for all five headline indicators — GDP, Inflation, Exchange Rate, MPR, FX Reserves. Ideal for KPI dashboards.</p><a href="https://npedata-api.onrender.com/api/v1/summary" target="_blank" class="btn-try">Try it →</a></div>
     <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/gdp</div><p class="ep-desc">Quarterly real GDP growth rate (%) and annual nominal GDP in USD billions. Optional start and end date params.</p><a href="https://npedata-api.onrender.com/api/v1/gdp" target="_blank" class="btn-try">Try it →</a></div>
@@ -186,6 +187,65 @@
   }
   document.getElementById('hx-home').addEventListener('click',function(){hist=[];go(BASE+'/');});
   go(BASE+'/');
+})();
+
+/* ─── Inline "Try it": run each endpoint live and show a visual result ───
+   Buttons keep their href (progressive-enhancement fallback: without JS they
+   still open the raw JSON in a new tab). With JS, the request runs on this
+   page and renders a status pill + timing + formatted body — so you can see
+   it works without leaving for a raw code dump. */
+(function(){
+  var btns = document.querySelectorAll('a.btn-try[href]');
+  if(!btns.length) return;
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  btns.forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      var url = btn.getAttribute('href');
+      var card = btn.closest('.endpoint-card');
+      if(!card){ window.open(url,'_blank'); return; }
+      var panel = card.querySelector('.ep-result');
+      if(!panel){ panel = document.createElement('div'); panel.className = 'ep-result'; card.appendChild(panel); }
+      var orig = btn.textContent;
+      btn.classList.add('running'); btn.textContent = 'Running…';
+      panel.innerHTML = '<div class="ep-result-bar"><span class="ep-status wait">contacting…</span></div>';
+      var t0 = performance.now();
+      var waking = setTimeout(function(){
+        var st = panel.querySelector('.ep-status');
+        if(st){ st.textContent = 'waking server (up to ~30s)…'; }
+      }, 3500);
+      fetch(url).then(function(r){
+        clearTimeout(waking);
+        var ms = Math.round(performance.now() - t0);
+        var ct = r.headers.get('content-type') || '';
+        return r.text().then(function(body){ return { r:r, body:body, ms:ms, ct:ct }; });
+      }).then(function(res){
+        var ok = res.r.ok;
+        var pretty = res.body;
+        if(/json/.test(res.ct)){ try{ pretty = JSON.stringify(JSON.parse(res.body), null, 2); }catch(err){} }
+        var truncated = false;
+        if(pretty.length > 4000){ pretty = pretty.slice(0, 4000); truncated = true; }
+        var kind = /json/.test(res.ct) ? 'json' : (/csv/.test(res.ct) ? 'csv' : ((res.ct.split(';')[0]) || 'text'));
+        panel.innerHTML =
+          '<div class="ep-result-bar">' +
+            '<span class="ep-status ' + (ok?'ok':'err') + '">' + res.r.status + ' ' + (ok?'OK':(res.r.statusText||'Error')) + '</span>' +
+            '<span class="ep-time">' + res.ms + ' ms · ' + kind + '</span>' +
+            '<a class="ep-raw" href="' + url + '" target="_blank" rel="noopener">open raw ↗</a>' +
+          '</div>' +
+          '<pre class="ep-body">' + esc(pretty) + (truncated ? '\n\n… truncated — use “open raw” for the full payload.' : '') + '</pre>';
+        btn.classList.remove('running'); btn.textContent = orig;
+      }).catch(function(){
+        clearTimeout(waking);
+        panel.innerHTML =
+          '<div class="ep-result-bar">' +
+            '<span class="ep-status err">request failed</span>' +
+            '<span class="ep-time">the free-tier server may still be waking — try again</span>' +
+            '<a class="ep-raw" href="' + url + '" target="_blank" rel="noopener">open raw ↗</a>' +
+          '</div>';
+        btn.classList.remove('running'); btn.textContent = orig;
+      });
+    });
+  });
 })();
 </script>
 <script src="shared.js"></script>

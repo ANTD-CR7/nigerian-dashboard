@@ -1272,6 +1272,38 @@ body:not(.analyst) .analyst-only { display: none !important; }
   transition: all 0.2s; text-decoration: none;
 }
 .btn-try:hover { background: rgba(0,135,81,0.1); }
+.btn-try.running { opacity: 0.55; pointer-events: none; }
+
+/* ─── Inline "Try it" live result panel ─── */
+.ep-result {
+  margin-top: 12px; border: 1px solid rgba(245,240,232,0.08);
+  border-radius: 8px; background: var(--black); overflow: hidden;
+  animation: apIn 0.25s ease;
+}
+.ep-result-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 12px; border-bottom: 1px solid rgba(245,240,232,0.06);
+  font-family: var(--font-mono); font-size: 0.64rem;
+}
+.ep-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 10px; border-radius: 999px; font-weight: 500;
+}
+.ep-status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; }
+.ep-status.ok   { background: rgba(0,135,81,0.16);  color: #00c07a; }
+.ep-status.ok::before   { background: #00c07a; }
+.ep-status.err  { background: rgba(224,82,82,0.16); color: #ff8a8a; }
+.ep-status.err::before  { background: #ff8a8a; }
+.ep-status.wait { background: rgba(244,160,23,0.16); color: var(--gold); }
+.ep-status.wait::before { background: var(--gold); animation: pulse-dot 1.2s infinite; }
+.ep-time { color: var(--slate); }
+.ep-raw  { margin-left: auto; color: var(--green-text); text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
+.ep-raw:hover { color: var(--gold); }
+.ep-body {
+  margin: 0; padding: 12px; max-height: 260px; overflow: auto;
+  font-family: var(--font-mono); font-size: 0.68rem; line-height: 1.5;
+  color: rgba(245,240,232,0.82); white-space: pre-wrap; word-break: break-word;
+}
 
 /* Use cases */
 .use-cases-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
