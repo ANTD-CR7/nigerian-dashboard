@@ -124,10 +124,9 @@ FastAPI, data visualisation.
 - Figure 3.1 Seven-stage system architecture
 - Figure 3.1b Deployment view
 - Figure 3.2 Use-case diagram
-- Figure 3.3 Data-flow diagram (Level 0 / Level 1)
-- Figure 3.4 Entity-relationship diagram
-- Figure 3.5 Sequence diagram — loading an indicator page
-- Figure 3.6 Sequence diagram — validating a CSV through the Open API
+- Figure 3.3 Sequence diagram — loading an indicator page
+- Figure 3.4 Sequence diagram — validating a CSV through the Open API
+- Figure 3.5 Entity-relationship diagram
 - Figures 4.1–4.13 System screenshots (deployed system)
 - Figure 4.14 Correlation Matrix — 12 headline indicators, computed live
 - Figure 4.15 Reform Impact — before/after June 2023 averages
@@ -136,8 +135,7 @@ FastAPI, data visualisation.
 
 ### List of Tables
 - Table 1.1 Data coverage summary
-- Table 2.1 Comparison of related systems
-- Table 2.2 Feature-level gap analysis
+- Table 2.1 Feature-level gap analysis
 - Table 3.0 Methodology comparison
 - Table 3.0b Weaknesses of the existing workflow
 - Table 3.0c Existing vs proposed system
@@ -502,7 +500,7 @@ NDPC was given, empowered specifically to make interoperability mandatory rather
 recommended.
 
 ### 2.5 Gap Analysis
-**Table 2.2 — Feature-level gap analysis**
+**Table 2.1 — Feature-level gap analysis**
 
 | Capability | FRED | World Bank | Trading Econ. | CBN | NBS | **NPEDATA** |
 |---|---|---|---|---|---|---|
@@ -810,17 +808,17 @@ the NPEDATA process, which stores standardised observations and returns charts, 
 CSV to users. At Level 1 the process decomposes into *Ingest → Validate → Store → Query →
 Analyse → Serve*. Two representative interactions are shown as sequence diagrams.
 
-**Figure 3.5 — Sequence: loading an indicator page**
+**Figure 3.3 — Sequence: loading an indicator page**
 
-![Figure 3.5 — Sequence diagram: loading an indicator page](figures/fig3_5_seq_pageload.png)
+![Figure 3.3 — Sequence diagram: loading an indicator page](figures/fig3_5_seq_pageload.png)
 
-**Figure 3.6 — Sequence: validating a CSV through the Open API**
+**Figure 3.4 — Sequence: validating a CSV through the Open API**
 
-![Figure 3.6 — Sequence diagram: validating a CSV through the Open API](figures/fig3_6_seq_validate.png)
+![Figure 3.4 — Sequence diagram: validating a CSV through the Open API](figures/fig3_6_seq_validate.png)
 
-**3.7.3 Database design (Figure 3.4 — ERD)**
+**3.7.3 Database design (Figure 3.5 — ERD)**
 
-![Figure 3.4 — Entity-relationship diagram](figures/fig3_4_erd.png)
+![Figure 3.5 — Entity-relationship diagram](figures/fig3_4_erd.png)
 
 **Table 3.2 — Database schema (core tables)**
 
