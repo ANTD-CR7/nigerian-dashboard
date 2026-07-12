@@ -60,24 +60,28 @@ def add_image(doc, alt, rel_path):
         r.italic = True
         return
     w_px, h_px = Image.open(img).size
-    # fit within 6.2" wide and 7.5" tall (portrait A4 with margins)
-    width = min(6.2, 6.2 * (w_px / max(w_px, 1)))
+    # Chapter-4 screenshots are a figures gallery: cap their height so two
+    # pack onto one page instead of stranding half-empty pages. Chapter-3
+    # diagrams (ERD, use-case, sequence) stay full-size — their detail matters.
+    max_h = 3.7 if "fig4_" in str(rel_path) else 7.5
+    width = 6.2
     height_at_width = h_px / w_px * width
-    if height_at_width > 7.5:
-        width = width * 7.5 / height_at_width
+    if height_at_width > max_h:
+        width = width * max_h / height_at_width
     # small diagrams shouldn't be blown up past ~2x native (96dpi assumption)
     native_in = w_px / 96
     width = min(width, max(native_in * 1.6, 3.0))
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p.paragraph_format.keep_with_next = True  # never split the image from its own caption
+    p.paragraph_format.space_before = Pt(6)
     p.add_run().add_picture(str(img), width=Inches(width))
     cap = doc.add_paragraph()
     cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
     r = cap.add_run(alt)
     r.italic = True
     r.font.size = Pt(9)
-    cap.paragraph_format.space_after = Pt(14)
+    cap.paragraph_format.space_after = Pt(8)
 
 
 def add_toc_field(doc):
