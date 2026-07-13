@@ -43,7 +43,7 @@ Student's Name — Signature & Date
 ### Certification
 I certify that this project is ready for departmental and college presentation:
 
-DR. ODUROYE _______________________
+DR. AYORINDE ODUROYE _______________________
 
 Head of Department's Name — Signature & Date
 
@@ -54,7 +54,7 @@ Supervisor's Name — Signature & Date
 ### Dedication
 I dedicate this project first to Almighty Allah, for His blessing and grace over its
 completion and over every part of the process. I also dedicate it to my supervisor, Miss
-Ilori Deborah; to my Head of Department, Dr. Oduroye, for his calmness and advice; and to Dr.
+Ilori Deborah; to my Head of Department, Dr. Ayorinde Oduroye, for his calmness and advice; and to Dr.
 Pappy Jae, for the time and correction he committed to guiding me. Finally, I dedicate this
 project to my father, Lamidi Taoheed Ayankojo, and my mother, Lamidi Wakilat Idowu; to my
 sisters, Taoheed Naheemat and Taoheed Zainab; and to my brothers, Taoheed Abdulrasheed, Lasisi
