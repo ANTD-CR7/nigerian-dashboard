@@ -1098,10 +1098,11 @@ I validated the platform through several complementary strands rather than relyi
 one of them alone — automated tests, independent statistical validation, and a systematic
 audit of the data itself.
 
-**1. Automated unit testing (Pytest).** The Open API is covered by a suite of **16 unit
+**1. Automated unit testing (Pytest).** The Open API is covered by a suite of **24 unit
 tests** in `tests/test_main.py`, exercising the read endpoints, the demo-safe ingestion path,
-and — importantly — asserting the presence and correctness of the HATEOAS `_links` blocks
-that make the API Level 3. All 16 tests pass.
+the TTL cache (round-trip, expiry and size-cap eviction), and — importantly — asserting the
+presence and correctness of the HATEOAS `_links` blocks that make the API Level 3. All 24
+tests pass.
 
 **2. Statistical validation.** Because the analytics report inferential statistics, the
 underlying mathematics was validated independently of the user interface:
@@ -1151,7 +1152,7 @@ with the RFC 8288 `Link` header, and the demo-safe behaviour of the ingestion en
 | 2 | `GET /api/v1/analytics/inflation` | latest, change, trend, forecast | Pass |
 | 3 | `GET /api/v1/export/exchange_rate` | CSV + RFC 8288 `Link` header | Pass |
 | 4 | `POST /api/v1/ingest/csv` (demo mode) | validated, not written to DB | Pass |
-| 5 | Full Pytest suite | 16 / 16 tests pass | Pass |
+| 5 | Full Pytest suite | 24 / 24 tests pass | Pass |
 | 6 | Correlation p-value vs known cases | matches reference values | Pass |
 | 7 | Value formatter across all unit types | correct scale and symbol | Pass |
 | 8 | Analytics engine on edge-case series | no crash, correct output | Pass |
