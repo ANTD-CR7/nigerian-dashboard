@@ -135,6 +135,7 @@ FastAPI, data visualisation.
 
 ### List of Tables
 - Table 1.1 Data coverage summary
+- Table 1.2 Definition of terms
 - Table 2.1 Feature-level gap analysis
 - Table 3.0 Methodology comparison
 - Table 3.0b Weaknesses of the existing workflow
@@ -152,89 +153,84 @@ FastAPI, data visualisation.
 ## CHAPTER ONE — INTRODUCTION
 
 ### 1.1 Background to the Study
-The honest starting point for this project was ambition rather than convenience. I wanted to
-build something closer to a Nigerian Bloomberg — or, closer still in spirit to how Palantir
-approaches the same underlying problem, one place that integrates what different government
-agencies already know instead of leaving it locked inside each of them separately. The
-frustration behind that was real and kept recurring: every time I wanted to look at more
-than one piece of Nigeria's public data at once, I ended up dealing with a different federal
-agency, a different website, a different format, as if the country's own economic story were
-being told in disconnected fragments by institutions that had never spoken to each other.
-That fragmentation isn't unique to economic data either — the same pattern shows up across
-Nigerian government institutions generally — but economic indicators were where I could
-actually do something about it as a student.
+Reliable economic data underpins decision-making by government, businesses, researchers and
+the general public, and its usefulness depends substantially on how accessible and
+machine-processable it is. Open data — data that anyone may access, use, modify and share —
+is widely regarded as a public good that converts the cost of publication into broad public
+value, because each downstream user is spared the effort of repeating the same collection and
+cleaning work (Open Knowledge Foundation, n.d.; Open Government Working Group, 2007). In
+Nigeria, the principal producers of official economic statistics are the Central Bank of
+Nigeria (CBN) and the National Bureau of Statistics (NBS), supplemented by international
+bodies such as the World Bank. These figures are, however, published across several
+institutional websites in formats designed for human reading rather than computation —
+Portable Document Format (PDF) bulletins, individual spreadsheets and web tables whose
+structure differs from one indicator to the next.
 
-When I looked for something that already solved this, the closest examples were Bloomberg
-Terminal and platforms like it — genuinely excellent, and built for people who can afford a
-monthly subscription most Nigerian students, developers and analysts simply cannot. There
-was no free, open equivalent for someone in my position: a student with no corporate budget,
-wanting to work with the country's own public data the way an analyst at a bank could.
+This fragmentation is not merely incidental. Analyses of Nigeria's public-sector information
+systems attribute the persistence of siloed, non-interoperable data to institutional rather
+than technical factors, observing that agencies frequently treat the data they hold as a
+source of value and are consequently reluctant to share it (Eleanya, 2026). Although the
+Freedom of Information Act has, since 2011, mandated the proactive publication of public
+information, compliance across federal ministries, departments and agencies remains low
+(Ogunyale & Osho, 2023). The result is a considerable cost to any user who wishes to combine
+indicators, since each dataset must be located separately, its date formats and units
+reconciled by hand, and the series aligned manually before analysis can begin.
 
-That gap is what this project set out to close, though I should be upfront that the version
-I originally envisioned was larger than what follows in this report. Given how long a
-Bloomberg-scale platform would realistically take to build properly, my supervisor scaled
-the project down to a defined, achievable case study, and Chapter Three's design reflects
-that narrower scope rather than the full ambition I started with (§1.4 states the resulting
-scope precisely). What survives from the original idea is the underlying principle: one
-standardised store and one honest interface, built to be extended later rather than treated
-as a finished national system. The data already exists inside these institutions; what's
-missing, as far as I can tell, is the will to publish it in a form the public can actually
-use without paying for it or fighting the format it arrived in.
-
-My internships at Fidelity Bank and the Lagos State Ministry of Science and Technology are
-where I actually learned to think about this properly — not the specific economic figures,
-but how real systems are put together: why a documented API matters, why redundancy and
-backups aren't optional extras, why networking has to be designed rather than bolted on
-afterward. This project is where I tried to apply that thinking to a problem I'd wanted to
-solve for a while before I had the tools to attempt it.
+The difficulty is compounded by the absence of a programmatic interface. Neither the CBN nor
+the NBS exposes a public Application Programming Interface (API) for the indicators
+considered in this study, so that developers and researchers are unable to retrieve the data
+automatically and must instead re-extract it from published documents. The principle of tidy
+data — one observation per row, with descriptive metadata held separately — provides a
+well-established basis for consolidating series of differing frequency and unit into a single
+analysable structure (Wickham, 2014), yet no freely accessible platform applies it to
+Nigerian public economic data. It is against this background that the present study designs
+and develops a web-based platform which aggregates Nigeria's public economic data into a
+single standardised repository and republishes it through an interactive analytical dashboard
+for human users and a free, open API for programmatic consumers.
 
 ### 1.2 Statement of the Problem
-Narrowed down, the problems with how this data currently reaches the public are:
-1. It is fragmented — spread across multiple institutional sites and documents with no
-   common access point.
-2. It is not machine-readable — much of it is locked inside PDFs and inconsistently laid
-   out spreadsheets, so every reuse starts with manual extraction.
-3. Its structure and units are inconsistent from one indicator to the next: some series are
-   daily, others monthly, quarterly or annual, and units range across naira thousands,
-   naira millions, plain percentages and USD billions with no unified schema tying them
-   together.
-4. There is no open API — nothing free, documented and authentication-free that a
-   developer or researcher can query programmatically.
-5. Presentation is minimal. Where a chart exists at all, it rarely goes beyond a single
-   static figure, with little of the comparison or plain-language explanation a
-   non-specialist reader would need.
+Public Nigerian economic data is fragmented across several institutional websites and
+documents, with no common point of access. A substantial proportion of it is published in
+formats that are not machine-readable, such as PDF bulletins and inconsistently structured
+spreadsheets, so that every reuse begins with manual extraction. The data is further
+characterised by inconsistent structure and units: individual series are reported at daily,
+monthly, quarterly or annual frequencies and are expressed in differing units, including
+naira thousands, naira millions, percentages and United States dollars, with no unified
+schema relating them to one another. There is, in addition, no free, documented and
+authentication-free API through which the data may be queried programmatically, and the
+existing presentation of the data seldom extends beyond isolated static figures, offering
+little of the comparison or plain-language interpretation required by non-specialist users.
+Taken together, these shortcomings place the effective use of Nigeria's public economic data
+beyond the convenient reach of students, researchers, journalists and independent developers,
+and give rise to duplicated effort as each user repeats the same collection and cleaning
+tasks.
 
 ### 1.3 Aim and Objectives
-**Aim:** To design and develop a web-based platform that aggregates Nigeria's public
-economic data into a single standardised store and makes it accessible through both an
-interactive analytics dashboard and a free open API.
+The aim of this study is to design and develop a web-based platform that aggregates Nigeria's
+public economic data into a single, standardised data store and makes it accessible through
+an interactive analytical dashboard and a free, open Application Programming Interface (API).
 
-**Objectives:** Specifically, to:
-1. Collect public economic indicators from the CBN, NBS and World Bank and ingest them into
-   one repository.
-2. Design a unified relational data model that standardises indicators, sources and
-   observations regardless of frequency or unit.
-3. Implement server-side analytics — period change, year-on-year comparison, trend and
-   correlation — over the stored data.
-4. Build a free, documented REST API with hypermedia controls (HATEOAS) that requires no
-   authentication.
-5. Build an interactive web dashboard that presents the indicators through clear, honest,
-   explanatory charts.
-6. Test and evaluate the finished platform for correctness, usability and accessibility.
+In order to achieve this aim, the specific objectives of the study are:
+1. To collect public economic indicators from the Central Bank of Nigeria, the National
+   Bureau of Statistics and the World Bank, and to ingest them into a single repository.
+2. To design a unified relational data model that standardises indicators, sources and
+   observations irrespective of their frequency or unit.
+3. To implement server-side analytical functions — including period change, year-on-year
+   comparison, trend estimation and correlation — over the stored data.
+4. To develop a free, documented REST API incorporating hypermedia controls (HATEOAS) and
+   requiring no authentication.
+5. To develop an interactive web dashboard that presents the indicators through clear and
+   accurate visualisations.
+6. To test and evaluate the platform for correctness, usability and accessibility.
 
-### 1.4 Scope of the Study
-As §1.1 explains, this is a deliberately scaled-down version of a larger original ambition,
-agreed with my supervisor given the time available to complete it properly. What it
-actually covers is collection, standardisation, storage, analysis, API exposure and
-visualisation for a defined set of Nigerian public economic indicators — currently 122
-indicators and roughly 12,100 observations, spread across the domains listed in Table 1.1.
-This is deliberately a controlled case study rather than a claim to cover everything Nigeria
-publishes; the architecture is built to keep accepting more data through CSV or API
-ingestion as it becomes available. It is also worth being upfront about what the project is
-not: it does not attempt automated real-time collection, it does not use artificial
-intelligence or machine learning anywhere in its analytics, and it is not positioned as
-official government or national infrastructure — it is a student-built reference
-implementation, and I have tried not to oversell it as more than that.
+### 1.4 Scope and Limitations of the Study
+The scope of this study encompasses the collection, standardisation, storage, analysis,
+exposure through an API and visualisation of a defined set of Nigerian public economic
+indicators. At present the platform holds 122 indicators and approximately 12,100
+observations across the domains summarised in Table 1.1. The dataset constitutes a controlled
+case study rather than an exhaustive representation of all data published in Nigeria; the
+architecture is nevertheless designed to accommodate additional data through
+comma-separated-value (CSV) or API ingestion as it becomes available.
 
 **Table 1.1 — Data coverage summary**
 
@@ -253,42 +249,48 @@ implementation, and I have tried not to oversell it as more than that.
 | Real GDP by sector (47 sectors) | Quarterly/Annual | 1981–2024 | NBS |
 | Nominal GDP (USD) | Annual | 2020–2024 | World Bank |
 
+The study is subject to a number of limitations. Data collection is performed manually, by
+downloading and ingesting published source files, rather than through an automated real-time
+feed; consequently, the figures presented reflect the most recently ingested snapshot rather
+than live values. Coverage is bounded by what the source institutions publish — the CBN
+annual financial statement series, for example, ends in 2012 — and cannot be extended by the
+platform itself. The analytical component employs classical statistical methods, namely
+correlation, ordinary-least-squares trend estimation and linear forecasting, and does not
+apply machine-learning techniques; the rationale for this decision is discussed in Section
+2.3. Finally, the platform does not attempt automated data collection, does not employ
+artificial intelligence, and is not presented as official government or national
+infrastructure; it is a reference implementation developed within the constraints of an
+academic project.
+
 ### 1.5 Significance of the Study
-Four groups benefit from this, each in a different way. Students and researchers get one
-comparable, downloadable dataset instead of five disconnected ones. Developers get a free
-API they can build on without having to ask anyone's permission first. Journalists and the
-general public get charts that try to explain what a number means rather than just stating
-it. And more broadly, I'd like to think that a working, reproducible platform built entirely
-from free and open-source tools is itself a small argument for what open Nigerian data could
-look like, if the institutions that hold it chose to publish it this way themselves.
+The study is of value to several categories of user. For students and researchers, it
+provides a single, comparable and downloadable dataset in place of numerous disconnected
+sources, thereby reducing the time and effort required before analysis can begin. For
+software developers, it offers a free and openly documented API upon which third-party
+applications may be built without authentication or cost. For journalists and members of the
+public, it presents the data through accessible visualisations accompanied by plain-language
+interpretation. More broadly, by demonstrating that a standardised and reproducible platform
+for Nigerian public economic data can be constructed entirely from free and open-source
+tools, the study provides a practical reference for the wider adoption of open-data practices
+among the institutions that produce such data.
 
-### 1.6 Limitations of the Study
-None of this is presented as a finished, production-grade national system, and it would be
-dishonest to pretend otherwise:
-1. Data collection is manual — I download and ingest the published source files myself;
-   there is no live automated feed yet.
-2. Figures are therefore only as current as the most recent snapshot I ingested, not
-   real-time.
-3. Coverage stops wherever the sources stop — the CBN's annual financial statement series,
-   for instance, ends in 2012, and no amount of engineering on my part extends it.
-4. The analytics are classical statistics — correlation, OLS trend and forecast — not
-   machine learning, and that was a deliberate choice rather than an oversight (§2.3
-   explains why).
-5. This was built and maintained by one student inside an academic timeframe, which
-   realistically bounds how much of the roadmap in Chapter Five could be attempted here.
+### 1.6 Definition of Terms
+The principal technical terms used throughout this report are defined in Table 1.2.
 
-### 1.7 Definition of Terms
-- **Aggregation:** collecting data from multiple sources into one place.
-- **API (Application Programming Interface):** a defined way for programs to request and
-  exchange data.
-- **REST:** an architectural style for web APIs using standard HTTP methods and resources.
-- **HATEOAS:** *Hypermedia as the Engine of Application State* — REST responses that embed
-  links guiding the client to related resources.
-- **CBN / NBS:** Central Bank of Nigeria / National Bureau of Statistics.
-- **NFEM:** Nigerian Foreign Exchange Market.
-- **MPR:** Monetary Policy Rate — the CBN's benchmark interest rate.
-- **Indicator / Observation:** an indicator is a measured series (e.g. inflation); an
-  observation is a single value of that series on a date.
+**Table 1.2 — Definition of terms**
+
+| Term | Definition |
+|---|---|
+| Aggregation | The collection of data from multiple sources into a single store. |
+| API (Application Programming Interface) | A defined means by which software programs request and exchange data. |
+| REST | An architectural style for web APIs based on standard HTTP methods and resources. |
+| HATEOAS | Hypermedia as the Engine of Application State; the embedding, within REST responses, of links that direct a client to related resources. |
+| CBN | Central Bank of Nigeria. |
+| NBS | National Bureau of Statistics. |
+| NFEM | Nigerian Foreign Exchange Market. |
+| MPR | Monetary Policy Rate; the benchmark interest rate set by the CBN. |
+| Indicator | A measured economic series, for example inflation. |
+| Observation | A single value of an indicator on a specified date. |
 
 ---
 

@@ -236,8 +236,14 @@ def main():
                 add_runs(p, text)
                 body_format(p)
         elif re.match(r"^\s*\d+\. ", line):
+            item = [re.sub(r"^\s*\d+\. ", "", line).strip()]
+            while (i + 1 < len(md) and md[i + 1].strip()
+                   and re.match(r"^\s+\S", md[i + 1])
+                   and not re.match(r"^\s*\d+\. ", md[i + 1])):
+                i += 1
+                item.append(md[i].strip())
             p = doc.add_paragraph(style="List Number")
-            add_runs(p, re.sub(r"^\s*\d+\. ", "", line))
+            add_runs(p, " ".join(item))
             body_format(p)
         elif line.strip() in ("---", "***"):
             pass
