@@ -341,20 +341,24 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   background: rgba(13,15,24,0.72);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  /* let the gradient stroke (::before) be the edge; keep only the green top accent */
+  border-color: transparent; border-top-color: var(--green);
 }
 .stat-bar.liquid-glass::before { border-radius: var(--radius); }
 
 /* ─── Word-by-word blur-in for the hero headline ───
-   Progressive enhancement: words are fully visible by default. JS adds
-   .bw-pre (blurred/offset) only when it is about to animate, then removes
-   it with a per-word staggered transition-delay. Skipped under
-   prefers-reduced-motion, so the text simply appears. */
+   Flash-free progressive enhancement: words are fully visible by default.
+   A synchronous inline script adds `.blur-anim` to the <h1> before first
+   paint ONLY when JS is on and motion is allowed — so the pre-blur state
+   never flashes, and with no JS (or prefers-reduced-motion) the words just
+   render normally. JS then adds `.bw-in` per word on a staggered delay. */
 .hero-h1 .blur-word { display: inline-block; }
-.hero-h1 .blur-word.bw-pre {
+.hero-h1.blur-anim .blur-word {
   filter: blur(10px); opacity: 0; transform: translateY(24px);
-}
-.hero-h1 .blur-word {
   transition: filter 0.7s ease, opacity 0.7s ease, transform 0.7s ease;
+}
+.hero-h1.blur-anim .blur-word.bw-in {
+  filter: blur(0); opacity: 1; transform: none;
 }
 
 /* ─── Sections ─── */
@@ -635,8 +639,7 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   .logo-pulse, .hero-glow, .hero-glow-2, .hero-eyebrow.glass-pill .gp-dot { animation: none !important; }
   .reveal { transition: none !important; opacity: 1 !important; transform: none !important; }
   .explore-card { animation: none !important; opacity: 1 !important; }
-  .hero-h1 .blur-word { transition: none !important; }
-  .hero-h1 .blur-word.bw-pre { filter: none !important; opacity: 1 !important; transform: none !important; }
+  .hero-h1.blur-anim .blur-word { filter: none !important; opacity: 1 !important; transform: none !important; transition: none !important; }
 }
 
 /* ─── Reader / Analyst detail dial ─── */

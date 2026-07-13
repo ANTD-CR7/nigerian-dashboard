@@ -100,7 +100,8 @@
   <svg class="hero-dataline" viewBox="0 0 1000 300" preserveAspectRatio="none" aria-hidden="true"><path id="hero-line" d="" vector-effect="non-scaling-stroke"/><circle id="hero-line-dot" r="4" cx="-10" cy="-10"/></svg>
   <div class="hero-content">
     <div class="hero-eyebrow glass-pill liquid-glass"><span class="gp-dot"></span>Open Data Platform · CBN · NBS · World Bank</div>
-    <h1 class="hero-h1">Nigeria's Economy,<br><em>Told Through Data.</em></h1>
+    <h1 class="hero-h1"><span class="blur-word">Nigeria's</span> <span class="blur-word">Economy,</span><br><em><span class="blur-word">Told</span> <span class="blur-word">Through</span> <span class="blur-word">Data.</span></em></h1>
+    <script>/* no-flash guard: pre-blur the headline only when JS is on and motion is allowed */(function(){var h=document.currentScript.previousElementSibling;if(h&&h.classList.contains('hero-h1')&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){h.classList.add('blur-anim');}})();</script>
     <p class="hero-lede">A free, open platform that gathers Nigeria's official economic data — <strong>GDP, inflation, exchange rates, reserves and more</strong> — into one place: clear charts, full history, and a free public API. Built for <a href="about.html">students</a>, <a href="analytics.html">researchers</a>, <a href="api_docs.html">developers</a>, <a href="compare.html">analysts</a> and the public.</p>
     <div class="hero-ctas">
       <a href="#kpi-section" class="btn-primary">Explore the Data →</a>
@@ -893,40 +894,21 @@ document.addEventListener('DOMContentLoaded', initAnalyticsPanel);
 })();
 </script>
 <script>
-/* ─── Hero headline: word-by-word blur-in (progressive enhancement) ───
-   Words are visible by default; JS adds .bw-pre then removes it with a
-   staggered per-word delay. Preserves the <br> and the gold <em>. Skipped
-   under prefers-reduced-motion so the text simply appears. */
+/* ─── Hero headline: word-by-word blur-in reveal ───
+   The .blur-word spans are in the HTML (visible by default = works with no
+   JS). A synchronous guard right after the <h1> adds .blur-anim before first
+   paint only when JS is on and motion is allowed (so the pre-blur never
+   flashes and reduced-motion is respected). Here we just reveal each word on
+   a staggered delay. If .blur-anim was never added, the words are already
+   visible and this no-ops harmlessly. */
 (function(){
-  var h1 = document.querySelector('.hero-h1');
+  var h1 = document.querySelector('.hero-h1.blur-anim');
   if(!h1) return;
-  var reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var words = [];
-  function wrapText(node, parent){
-    var frag = document.createDocumentFragment();
-    node.textContent.split(/(\s+)/).forEach(function(p){
-      if(p === '') return;
-      if(/^\s+$/.test(p)){ frag.appendChild(document.createTextNode(p)); return; }
-      var span = document.createElement('span');
-      span.className = 'blur-word'; span.textContent = p;
-      frag.appendChild(span); words.push(span);
-    });
-    parent.replaceChild(frag, node);
-  }
-  function walk(el){
-    Array.prototype.slice.call(el.childNodes).forEach(function(node){
-      if(node.nodeType === 3){ if(node.textContent.trim() !== '') wrapText(node, el); }
-      else if(node.nodeType === 1 && node.tagName !== 'BR'){ walk(node); }
-    });
-  }
-  walk(h1);
-  if(reduced || !words.length) return;         // leave text visible
-  words.forEach(function(w){ w.classList.add('bw-pre'); });
-  void h1.offsetWidth;                          // flush the pre-state
+  var words = h1.querySelectorAll('.blur-word');
   requestAnimationFrame(function(){
-    words.forEach(function(w, i){
+    Array.prototype.forEach.call(words, function(w, i){
       w.style.transitionDelay = (i * 90) + 'ms';
-      w.classList.remove('bw-pre');
+      w.classList.add('bw-in');
     });
   });
 })();
