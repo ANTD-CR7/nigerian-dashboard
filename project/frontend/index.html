@@ -620,11 +620,21 @@ function drawHeroLine(fx) {
   var p = document.getElementById('hero-line'), dot = document.getElementById('hero-line-dot');
   if (!p) return;
   window.__heroDrawn = true;
-  var vals = fx.map(d => d.value);
+  var raw = fx.map(d => d.value);
+  // Moving-average the series first: the real 2023 devaluation overshot then
+  // pulled back (a spike-dip-spike), which even a spline renders as an awkward
+  // bump. A wide window flattens that short-term wiggle into one clean rise so
+  // the decorative line reads as a smooth trend, not a jagged blip.
+  var win = Math.max(5, Math.round(raw.length / 7)), half = Math.floor(win / 2);
+  var vals = raw.map(function (_, i) {
+    var s = 0, c = 0;
+    for (var j = i - half; j <= i + half; j++) { if (j >= 0 && j < raw.length) { s += raw[j]; c++; } }
+    return s / c;
+  });
   var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals), rng = (max - min) || 1;
-  // compress the vertical amplitude a little (0.82) so the devaluation step is
-  // a gentle swoop, not a wall; keep a small bottom margin so it isn't clipped.
-  var pts = vals.map(function (v, i) { return [(i / (vals.length - 1)) * 1000, 280 - ((v - min) / rng) * 240 * 0.92]; });
+  // Keep the curve in the lower band of the hero (amplitude ~150 of the 300
+  // viewBox, baseline near the bottom) so it never climbs into the CTA area.
+  var pts = vals.map(function (v, i) { return [(i / (vals.length - 1)) * 1000, 284 - ((v - min) / rng) * 150]; });
   p.setAttribute('d', smoothPath(pts));
   var end = pts[pts.length - 1];
   dot.setAttribute('cx', end[0].toFixed(1)); dot.setAttribute('cy', end[1].toFixed(1));
