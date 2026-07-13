@@ -210,18 +210,17 @@ The aim of this study is to design and develop a web-based platform that aggrega
 public economic data into a single, standardised data store and makes it accessible through
 an interactive analytical dashboard and a free, open Application Programming Interface (API).
 
-In order to achieve this aim, the specific objectives of the study are:
-1. To collect public economic indicators from the Central Bank of Nigeria, the National
-   Bureau of Statistics and the World Bank, and to ingest them into a single repository.
-2. To design a unified relational data model that standardises indicators, sources and
-   observations irrespective of their frequency or unit.
-3. To implement server-side analytical functions — including period change, year-on-year
-   comparison, trend estimation and correlation — over the stored data.
-4. To develop a free, documented REST API incorporating hypermedia controls (HATEOAS) and
-   requiring no authentication.
-5. To develop an interactive web dashboard that presents the indicators through clear and
-   accurate visualisations.
-6. To test and evaluate the platform for correctness, usability and accessibility.
+In pursuit of this aim, the study has six specific objectives. The first is to collect public
+economic indicators from the Central Bank of Nigeria, the National Bureau of Statistics and
+the World Bank, and to ingest them into a single repository. The second is to design a
+unified relational data model that standardises indicators, sources and observations
+irrespective of their frequency or unit. The third is to implement server-side analytical
+functions — including period change, year-on-year comparison, trend estimation and
+correlation — over the stored data. The fourth is to develop a free, documented REST API
+incorporating hypermedia controls (HATEOAS) and requiring no authentication. The fifth is to
+develop an interactive web dashboard that presents the indicators through clear and accurate
+visualisations. The sixth is to test and evaluate the platform for correctness, usability and
+accessibility.
 
 ### 1.4 Scope and Limitations of the Study
 The scope of this study encompasses the collection, standardisation, storage, analysis,
@@ -624,18 +623,17 @@ The term "existing system" here refers not to a single piece of software — non
 to the manual workflow that any user of Nigerian public economic data must follow today,
 shaped by how three institutions each publish their figures:
 
-- **The Central Bank of Nigeria (CBN)** publishes exchange rates, money and credit
-  statistics and its Statistical Bulletin through its website, mostly as PDF documents and
-  per-topic Excel downloads. Different datasets sit on different pages, with different
-  layouts, different date formats, and units that change between publications — thousands
-  of naira in one table, millions in the next. There is no public API.
-- **The National Bureau of Statistics (NBS)** publishes the monthly Consumer Price Index
-  and quarterly GDP reports as PDF reports with spreadsheet tables attached. The sector-GDP
-  tables alone run to dozens of columns, get rebased periodically, and are laid out for
-  reading rather than for computation. Again, no public API.
-- **The World Bank** does offer a proper API for its indicators, but its Nigerian coverage
-  is coarse — mostly annual, national-level aggregates — so it can't stand in for the
-  domestic sources on anything that needs monthly or daily granularity.
+The Central Bank of Nigeria (CBN) publishes exchange rates, money and credit statistics and
+its Statistical Bulletin through its website, mostly as PDF documents and per-topic Excel
+downloads; different datasets sit on different pages, with different layouts, date formats and
+units that change between publications — thousands of naira in one table, millions in the next
+— and there is no public API. The National Bureau of Statistics (NBS) publishes the monthly
+Consumer Price Index and quarterly GDP reports as PDF documents with spreadsheet tables
+attached; the sector-GDP tables alone run to dozens of columns, are rebased periodically, and
+are laid out for reading rather than for computation, and again expose no public API. The
+World Bank does offer a proper API for its indicators, but its Nigerian coverage is coarse —
+mostly annual, national-level aggregates — so it cannot substitute for the domestic sources
+where monthly or daily granularity is required.
 
 **A concrete scenario.** Consider a final-year economics student in Lagos attempting to
 answer a question that is actively debated: how did the June 2023 foreign-exchange
@@ -743,25 +741,24 @@ The system is organised as a seven-stage pipeline (Figure 3.1).
 
 ![Figure 3.1 — Seven-stage system architecture](figures/fig3_1_architecture.png)
 
-**What each stage does in this specific project:**
-1. **Collect** — source files are obtained from the three institutions' published outputs
-   (CBN statistical pages, NBS CPI/GDP report tables, World Bank indicators) as CSV/Excel.
-2. **Validate** — loader scripts type-check every row, normalise dates to ISO 8601, and
-   reject malformed records; during the build this stage caught and removed **1,435
-   duplicate records** introduced by repeated ETL runs, reducing 13,535 raw rows to the
-   12,100 clean observations in production — evidence that the stage does real work.
-3. **Standardise** — every series, whether daily NFEM rates or the 1960–2012 annual
-   financial statement, is reduced to the same `(indicator_id, obs_date, value)` shape,
-   with unit and source held as metadata.
-4. **Store** — Supabase-hosted PostgreSQL with a uniqueness constraint preventing
-   re-duplication; public read access is gated by row-level security.
-5. **Analyse** — classical statistics (descriptives, OLS trend, Pearson correlation with a
-   Student-t significance test) computed in the API and, for interactive pages, in the
-   browser from the same data.
-6. **API** — FastAPI service exposing the catalogue as versioned REST with hypermedia
-   controls; ingestion endpoints are demo-safe by default.
-7. **Present** — the static dashboard, which deliberately reads the database's REST layer
-   directly so the primary user experience does not depend on the API host being awake.
+Each stage performs a distinct function within this project. In the **collect** stage, source
+files are obtained from the three institutions' published outputs — CBN statistical pages, NBS
+CPI and GDP report tables, and World Bank indicators — as CSV or Excel. In the **validate**
+stage, loader scripts type-check every row, normalise dates to ISO 8601, and reject malformed
+records; during the build this stage caught and removed 1,435 duplicate records introduced by
+repeated ETL runs, reducing 13,535 raw rows to the 12,100 clean observations in production,
+which is evidence that the stage performs real work. In the **standardise** stage, every
+series — whether daily NFEM rates or the 1960–2012 annual financial statement — is reduced to
+the same `(indicator_id, obs_date, value)` shape, with unit and source held as metadata. In
+the **store** stage, the data resides in Supabase-hosted PostgreSQL with a uniqueness
+constraint preventing re-duplication, and public read access is gated by row-level security.
+In the **analyse** stage, classical statistics (descriptives, OLS trend, and Pearson
+correlation with a Student-t significance test) are computed in the API and, for interactive
+pages, in the browser from the same data. In the **API** stage, a FastAPI service exposes the
+catalogue as versioned REST with hypermedia controls, its ingestion endpoints demo-safe by
+default. Finally, in the **present** stage, the static dashboard deliberately reads the
+database's REST layer directly, so that the primary user experience does not depend on the
+API host being awake.
 
 **Figure 3.1b — Deployment view**
 
@@ -961,36 +958,34 @@ implementation forced a decision the design had not anticipated, and how the res
 tested and evaluated.
 
 ### 4.2 Development Tools and Technologies
-- **Backend:** Python 3, FastAPI, Uvicorn (ASGI server), `supabase-py`.
-- **Database:** Supabase (managed PostgreSQL), accessed with row-level security.
-- **Frontend:** HTML5, CSS3, vanilla JavaScript, Chart.js v4 (with annotation and zoom
-  plugins).
-- **Hosting/DevOps:** GitHub (version control), GitHub Actions (CI/deploy), GitHub Pages
-  (dashboard), Render (API).
-- **Testing:** Pytest, browser-based functional testing, Lighthouse accessibility audits.
+The backend was implemented in Python 3 using the FastAPI framework, served by the Uvicorn
+ASGI server, with `supabase-py` for database access. Data resides in Supabase (managed
+PostgreSQL), accessed under row-level security. The frontend was built with HTML5, CSS3 and
+vanilla JavaScript, using Chart.js v4 together with its annotation and zoom plugins for
+visualisation. Version control, continuous integration and deployment were handled through
+GitHub and GitHub Actions, with the dashboard hosted on GitHub Pages and the API on Render.
+Testing employed Pytest, browser-based functional testing, and Lighthouse accessibility
+audits.
 
 ### 4.3 Implementation of the Pipeline
-1. **Collection.** Source data was obtained from CBN, NBS and World Bank publications and
-   arranged into CSV/Excel inputs; loader scripts (`project/etl/`, `project/database/seed/`)
-   read these into the database. A reproducible seed snapshot (`observations.csv`, ~12,100
-   rows) allows the whole dataset to be recreated.
-2. **Validation.** Ingestion validates each row's types and dates and normalises fields
-   before any write; invalid rows are rejected with clear errors.
-3. **Standardisation.** All series are reduced to the common `(indicator_id, obs_date,
-   value)` observation form with indicator metadata (unit, source, frequency) held
-   separately.
-4. **Storage.** Data resides in three PostgreSQL tables on Supabase; the anon key is public
-   and read-only via row-level security.
-5. **Analytics.** The API computes latest value, period and year-on-year change, trend
-   direction, a simple ordinary-least-squares forecast, and Pearson correlation (e.g.
-   inflation vs exchange rate). The compare/analytics pages replicate correlation
-   client-side in JavaScript.
-6. **API.** FastAPI exposes the versioned endpoints, auto-generates OpenAPI/Swagger docs at
-   `/docs`, and adds HATEOAS `_links` to every response. The server runs with proxy headers
-   in production so hypermedia links honour HTTPS.
-7. **Presentation.** The static dashboard fetches data (directly from Supabase for the
-   charts) and renders it with Chart.js, applying the storytelling and terminal-chart
-   patterns.
+The pipeline was implemented stage by stage. Collection obtained source data from CBN, NBS and
+World Bank publications, arranged into CSV and Excel inputs that loader scripts
+(`project/etl/`, `project/database/seed/`) read into the database, with a reproducible seed
+snapshot (`observations.csv`, approximately 12,100 rows) allowing the whole dataset to be
+recreated. Validation checks each row's types and dates and normalises fields before any
+write, rejecting invalid rows with clear errors. Standardisation reduces all series to the
+common `(indicator_id, obs_date, value)` observation form, with indicator metadata (unit,
+source and frequency) held separately. Storage places the data in three PostgreSQL tables on
+Supabase, where the anonymous key is public and read-only under row-level security. The
+analytics layer computes the latest value, period and year-on-year change, trend direction, a
+simple ordinary-least-squares forecast, and Pearson correlation (for example, inflation
+against the exchange rate), with the compare and analytics pages replicating the correlation
+client-side in JavaScript. The API is provided by FastAPI, which exposes the versioned
+endpoints, auto-generates OpenAPI/Swagger documentation at `/docs`, and adds HATEOAS `_links`
+to every response, running with proxy headers in production so that hypermedia links honour
+HTTPS. Finally, presentation is handled by the static dashboard, which fetches data directly
+from Supabase for the charts and renders it with Chart.js, applying the storytelling and
+terminal-chart patterns.
 
 ### 4.4 Key Implementation Highlights
 A few decisions from the build warrant separate attention, since they became apparent only
@@ -1015,44 +1010,37 @@ can be reproduced and checked by hand. This reflects a guiding principle of the 
 correctness and honesty are valued above impressiveness, and where a result is unreliable,
 the platform states as much rather than concealing it.
 
-**Methods implemented:**
-1. **Descriptive statistics** — latest value, period and year-on-year change, minimum and
-   maximum with their dates, mean, standard deviation (as a volatility measure) and the
-   coefficient of variation.
-2. **Trend estimation** — Ordinary Least Squares (OLS) linear regression, reporting the
-   slope, the coefficient of determination (R²) and the correlation of the series with time.
-3. **Correlation analysis** — the Pearson product-moment correlation coefficient (r) on two
-   series' date-aligned observations, reported together with R² (the share of variance
-   explained) and a two-tailed statistical-significance p-value derived from the Student-t
-   distribution (via the regularised incomplete beta function).
-4. **Standardisation** — z-score normalisation (standard deviations from each series' own
-   mean), so two indicators measured in different units can be compared on a single, honest
-   axis rather than a misleading dual axis.
-5. **Trend-robustness (spurious-correlation) check** — the detrended, first-difference
-   correlation is compared with the level correlation to flag relationships that are driven
-   mainly by a shared trend rather than a direct association.
-6. **Forecasting** — linear extrapolation of the OLS trend a few periods ahead, presented
-   explicitly as illustrative only.
-7. **Reliability guards** — automatic warnings for correlations computed over very few
-   overlapping observations, or between series of different reporting frequency.
+Several analytical methods are implemented. Descriptive statistics cover the latest value,
+period and year-on-year change, the minimum and maximum with their dates, the mean, the
+standard deviation as a volatility measure, and the coefficient of variation. Trend estimation
+uses Ordinary Least Squares (OLS) linear regression, reporting the slope, the coefficient of
+determination (R²), and the correlation of the series with time. Correlation analysis computes
+the Pearson product-moment correlation coefficient on two series' date-aligned observations,
+reported together with R² (the share of variance explained) and a two-tailed
+statistical-significance p-value derived from the Student-t distribution via the regularised
+incomplete beta function. Standardisation applies z-score normalisation — standard deviations
+from each series' own mean — so that two indicators measured in different units can be
+compared on a single, honest axis rather than a misleading dual axis. A trend-robustness, or
+spurious-correlation, check compares the detrended first-difference correlation with the level
+correlation in order to flag relationships driven mainly by a shared trend rather than a
+direct association. Forecasting extrapolates the OLS trend linearly a few periods ahead and is
+presented explicitly as illustrative only. Finally, reliability guards issue automatic
+warnings for correlations computed over very few overlapping observations or between series of
+differing reporting frequency.
 
-**Acknowledged limitations of the analytical layer:**
-1. **Not real-time.** Figures are a manually-ingested snapshot; collection is manual, not an
-   automated live pipeline.
-2. **No seasonal adjustment.** Monthly and quarterly series are presented as reported.
-3. **Simple forecast.** The forecast is a straight-line OLS extrapolation without a
-   confidence/prediction interval; no ARIMA, exponential-smoothing or other time-series
-   model is used.
-4. **Association, not causation.** The platform measures correlation only; it performs no
-   causality testing (e.g. Granger causality) or lead/lag cross-correlation analysis.
-5. **Short or mixed-frequency comparisons are weaker.** These are flagged to the user but
-   remain available.
-6. **Coverage is bounded by the sources** — some series end earlier than others (for
-   example, the annual financial statement ends in 2012).
-
-These limitations are presented deliberately: a smaller, correct and trustworthy platform is
-preferred over a larger one that overstates its capabilities, and each item is a candidate
-for the future work discussed in Chapter Five.
+The analytical layer is subject to several acknowledged limitations. The figures are not
+real-time, since they represent a manually ingested snapshot rather than an automated live
+pipeline. No seasonal adjustment is applied; monthly and quarterly series are presented as
+reported. The forecast is a straight-line OLS extrapolation without a confidence or prediction
+interval, and no ARIMA, exponential-smoothing or other time-series model is used. The platform
+measures association rather than causation: it computes correlation only, and performs no
+causality testing (such as Granger causality) or lead/lag cross-correlation analysis. Short or
+mixed-frequency comparisons are weaker, and although flagged to the user they remain
+available. Coverage is bounded by the sources, so that some series end earlier than others —
+the annual financial statement, for example, ends in 2012. These limitations are presented
+deliberately, on the principle that a smaller, correct and trustworthy platform is preferable
+to a larger one that overstates its capabilities, and each is a candidate for the future work
+discussed in Chapter Five.
 
 ### 4.6 System Screenshots
 The figures below are actual captures of the deployed system.
@@ -1102,28 +1090,27 @@ I validated the platform through several complementary strands rather than relyi
 one of them alone — automated tests, independent statistical validation, and a systematic
 audit of the data itself.
 
-**1. Automated unit testing (Pytest).** The Open API is covered by a suite of **24 unit
+**Automated unit testing (Pytest).** The Open API is covered by a suite of **24 unit
 tests** in `tests/test_main.py`, exercising the read endpoints, the demo-safe ingestion path,
 the TTL cache (round-trip, expiry and size-cap eviction), and — importantly — asserting the
 presence and correctness of the HATEOAS `_links` blocks that make the API Level 3. All 24
 tests pass.
 
-**2. Statistical validation.** Because the analytics report inferential statistics, the
-underlying mathematics was validated independently of the user interface:
-- the correlation-significance function (a two-tailed Student-t p-value computed via the
-  regularised incomplete beta function) was checked against known reference cases — for
-  example, r = 0.70 over n = 75 yields p ≈ 4 × 10⁻¹², while r = 0.20 over n = 20 yields
-  p ≈ 0.40 (correctly *not* significant);
-- the scale-aware value formatter was unit-tested across every unit type in the catalogue
-  (percentages, exchange rates, USD billions, and the naira thousands/millions/billions
-  scales), confirming for instance that CBN total assets render as ₦81.04T rather than a raw
-  or mislabelled figure;
-- the analytics engine was exercised against deliberately awkward real series — a daily
-  series (NFEM), a series containing negative values (government deposits), a sparse
-  four-point series (AED rates), a count series, and a series whose coverage ends early
-  (services GDP) — confirming correct output and no crashes on these edge cases.
+**Statistical validation.** Because the analytics report inferential statistics, the
+underlying mathematics was validated independently of the user interface. The
+correlation-significance function — a two-tailed Student-t p-value computed via the
+regularised incomplete beta function — was checked against known reference cases; for example,
+r = 0.70 over n = 75 yields p ≈ 4 × 10⁻¹², while r = 0.20 over n = 20 yields p ≈ 0.40, which
+is correctly *not* significant. The scale-aware value formatter was unit-tested across every
+unit type in the catalogue (percentages, exchange rates, USD billions, and the naira
+thousands, millions and billions scales), confirming, for instance, that CBN total assets
+render as ₦81.04T rather than as a raw or mislabelled figure. The analytics engine was also
+exercised against deliberately awkward real series — a daily series (NFEM), a series
+containing negative values (government deposits), a sparse four-point series (AED rates), a
+count series, and a series whose coverage ends early (services GDP) — confirming correct
+output and no crashes on these edge cases.
 
-**3. Data-truthfulness auditing.** Every chart's stated figures, ranges and units were
+**Data-truthfulness auditing.** Every chart's stated figures, ranges and units were
 cross-checked against the stored data, and this is the strand that surfaced genuine problems
 rather than merely confirming that matters were already sound. The audit identified a
 data-censoring routine that had been silently capping some balance-sheet series, hiding the
@@ -1135,16 +1122,16 @@ as though they were comparable. Each defect was traced back to the original sour
 and corrected, and the process is documented here rather than presenting the first version as
 though it had been correct throughout.
 
-**4. Functional and visual verification.** Every dashboard page was loaded against the live
+**Functional and visual verification.** Every dashboard page was loaded against the live
 database and inspected — including through automated screenshots — to confirm that charts,
 date filters, indicator comparisons, table sorting and CSV downloads behave correctly, and
 that the responsive layout holds across screen widths.
 
-**5. Accessibility testing.** Colour contrast and related criteria were checked against the
+**Accessibility testing.** Colour contrast and related criteria were checked against the
 WCAG 2.1 AA standard (contrast ratio ≥ 4.5:1) using Lighthouse audits; contrast defects
 found during development were corrected.
 
-**6. API testing.** Endpoints were exercised manually through the browser, the
+**API testing.** Endpoints were exercised manually through the browser, the
 auto-generated Swagger UI at `/docs`, and `curl`, confirming correct payloads, CSV export
 with the RFC 8288 `Link` header, and the demo-safe behaviour of the ingestion endpoints.
 
@@ -1181,34 +1168,33 @@ is any of these technology choices limiting the platform? To keep the assessment
 evidence-based rather than a matter of taste, it draws on the measurements gathered during
 stress testing rather than on opinion.
 
-**Choices that proved themselves (kept deliberately):**
-- **Static HTML/CSS/vanilla JavaScript frontend (no framework, no build step).** At this
-  scale it delivered a 100/100 Lighthouse accessibility score, zero build/dependency
-  maintenance, free hosting, and complete auditability — any panelist can View-Source the
-  entire implementation. The known weakness of the approach (duplicated code drifting apart
-  across pages) was addressed architecturally with a single shared library (`shared.js`)
-  carrying all chart, analytics and UI logic, so a fix in one place applies everywhere.
-- **FastAPI + Supabase (PostgreSQL).** Handled every stress-test scenario (including a
-  5,000-row adversarial CSV) with 17/17 live endpoints passing; the relational
-  tidy-observations model absorbed daily, monthly, quarterly and annual series in one schema.
+Two choices proved themselves and were kept deliberately. The static HTML, CSS and vanilla
+JavaScript frontend — with no framework and no build step — delivered a 100/100 Lighthouse
+accessibility score at this scale, together with zero build or dependency maintenance, free
+hosting, and complete auditability, since the entire implementation can be read directly from
+source. The known weakness of the approach, namely duplicated code drifting apart across
+pages, was addressed architecturally with a single shared library (`shared.js`) carrying all
+chart, analytics and UI logic, so that a fix in one place applies everywhere. The FastAPI and
+Supabase (PostgreSQL) combination likewise handled every stress-test scenario, including a
+5,000-row adversarial CSV, with all 17 live endpoints passing, while the relational
+tidy-observations model absorbed daily, monthly, quarterly and annual series in a single
+schema.
 
-**Measured limitations, and what was done about each:**
-1. **Free-tier API cold starts (~30 s).** Render's free tier sleeps after idle. Mitigated
-   three ways: a scheduled keep-alive workflow pings the service every 10 minutes; every
-   API-dependent page shows an explicit "server waking" state instead of appearing broken;
-   and the dashboard itself is architecturally independent of the API (it reads the
-   database's REST layer directly), so the primary user experience cannot be taken down by
-   the API host.
-2. **Repeated-query latency.** The multi-currency endpoint (33 series) measured ~5.4 s per
-   request because every call repeated 33 database round-trips. A size-capped, 5-minute-TTL
-   in-process cache was added at the data-access layer — appropriate because the dataset
-   changes only at ingestion time — cutting repeat responses to well under a second and
-   reducing database load. This is the standard first scaling step (caching) applied inside
-   the existing stack rather than replacing it.
-3. **PostgREST row-window limits.** Bulk reads return at most ~1,000 rows per request; the
-   coverage heatmap therefore fetches the full 12,100-observation dataset with paged
-   parallel requests. Acceptable at this scale; a server-side aggregate endpoint is the
-   documented next step if the dataset grows.
+Three limitations were measured, and each was addressed. First, the free-tier API exhibits
+cold starts of around 30 seconds, because Render's free tier sleeps after idle; this was
+mitigated in three ways — a scheduled keep-alive workflow pings the service every ten minutes,
+every API-dependent page shows an explicit "server waking" state instead of appearing broken,
+and the dashboard is architecturally independent of the API (reading the database's REST layer
+directly), so that the primary user experience cannot be taken down by the API host. Second,
+repeated-query latency on the multi-currency endpoint (33 series) reached about 5.4 seconds per
+request, because every call repeated 33 database round-trips; a size-capped, five-minute-TTL
+in-process cache was added at the data-access layer — appropriate because the dataset changes
+only at ingestion time — cutting repeat responses to well under a second and reducing database
+load, which is the standard first scaling step of caching applied within the existing stack
+rather than replacing it. Third, PostgREST imposes row-window limits, returning at most around
+1,000 rows per request, so the coverage heatmap fetches the full 12,100-observation dataset
+through paged parallel requests; this is acceptable at the present scale, and a server-side
+aggregate endpoint is the documented next step should the dataset grow.
 
 **Scaling path (if requirements outgrow the stack):** the layers are decoupled, so each can
 be upgraded independently without a rewrite — the database is already PostgreSQL (scales to
@@ -1254,23 +1240,20 @@ limitations documented rather than concealed in Chapter Four.
 
 ### 5.3 Recommendations and Future Work
 The project is not finished, and an undertaking of this scope should not present itself as
-such. The following directions are recommended for future work, whether by the author or by
-others:
-1. **Automate collection**, with scheduled scrapers or connectors to the source portals, so
-   that freshness no longer depends on manual re-ingestion.
-2. **Expand coverage** — more indicators, state-level rather than only national data, and
-   longer historical series where the sources allow it.
-3. **Add authentication tiers and rate limiting** once there are API consumers heavy enough
-   to need them.
-4. **Introduce richer analytics**, such as seasonal adjustment or additional forecasting
-   methods, without giving up the transparency the current classical approach has.
-5. **Provide client SDKs** — a Python or JavaScript package would lower the remaining
-   friction in adopting the API.
-6. **Formalise the data-quality workflow** itself, with automated validation dashboards and
-   clearer provenance tracking, rather than relying on the kind of manual audit described in
-   Section 4.7.
+such. Several directions are recommended for future work, whether by the author or by others.
+The most immediate is to automate collection, using scheduled scrapers or connectors to the
+source portals, so that freshness no longer depends on manual re-ingestion. Coverage could
+then be expanded to include more indicators, state-level rather than only national data, and
+longer historical series where the sources allow. Authentication tiers and rate limiting
+could be introduced once there are API consumers heavy enough to require them. Richer
+analytics, such as seasonal adjustment or additional forecasting methods, could be added
+without sacrificing the transparency of the current classical approach. Client software
+development kits — a Python or JavaScript package — would lower the remaining friction in
+adopting the API. Finally, the data-quality workflow itself could be formalised, with
+automated validation dashboards and clearer provenance tracking, rather than relying on the
+kind of manual audit described in Section 4.7.
 
-None of these six items addresses the deeper barrier discussed in Section 2.4 — the
+None of these recommendations addresses the deeper barrier discussed in Section 2.4 — the
 institutional reluctance to share data that has kept the CBN, NBS and other agencies from
 undertaking this themselves. A student project cannot legislate that away, and nothing in
 this report resolves it. If, however, a reference implementation of this kind is used,
