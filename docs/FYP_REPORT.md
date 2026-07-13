@@ -320,7 +320,7 @@ data spread across fragmented portals carries a real cost to reach even when it 
 nominally free. The economic case for open data, in short, is that it turns publication
 from a cost centre into public value — every downstream user, researcher, journalist or
 start-up, stops repeating the same cleaning work someone before them already did. That is
-essentially the same argument the Nigerian scenario in §3.3 makes, just stated more
+essentially the same argument the Nigerian scenario in Section 3.3 makes, just stated more
 formally.
 
 **2.2.2 Data aggregation, standardisation and tidy data.** Gathering series from disparate
@@ -402,7 +402,7 @@ interoperability by one tidy schema with ISO-8601 dates and stated units through
 reusability by CSV export, citation generation, provenance fields and a reproducible seed
 snapshot.
 
-The second is the Richardson Maturity Model from §2.2.4, which does the equivalent job for
+The second is the Richardson Maturity Model from Section 2.2.4, which does the equivalent job for
 the interface side: the Open API was designed to reach Level 3, and Chapter Four verifies
 that it actually does rather than just claiming it.
 
@@ -445,7 +445,7 @@ access problem for the students and journalists this project is actually aimed a
 financial data, and honestly the clearest illustration of the machine-readability gap this
 whole project responds to: statistics spread across web pages, PDF bulletins and per-topic
 Excel files, with layouts and units that vary between documents and no public API in sight
-(§3.3 walks through the workflow this forces on anyone trying to use it).
+(Section 3.3 walks through the workflow this forces on anyone trying to use it).
 
 **National Bureau of Statistics (NBS).** The authoritative source for CPI and GDP.
 Publications are report-oriented — PDF with accompanying tables — series get rebased
@@ -553,11 +553,11 @@ step, free static hosting, and full view-source auditability — anyone can open
 source and see exactly what's running, which fits an "open" project better than a bundled
 framework output would. The known weakness of this approach, code drifting apart across
 pages, gets a deliberate mitigation (one shared library) that I assess quantitatively later,
-in §4.9.
+in Section 4.9.
 
 For **hosting**, GitHub Pages, Render and Supabase together, which is an entirely free and
 reproducible deployment. It does have a real trade-off — the free-tier API has cold starts —
-and rather than hide that, §4.9 measures it and shows what was done about it.
+and rather than hide that, Section 4.9 measures it and shows what was done about it.
 
 Finally, for **machine-consumer interfaces**, I added support for MCP and llms.txt. The
 Model Context Protocol lets AI assistants call the API as tools, and llms.txt gives
@@ -675,7 +675,7 @@ to what followed — is one people genuinely argue about rather than just study,
 Reform Impact page answers it directly: every headline indicator is split into a
 before-June-2023 average and an after-June-2023 average, computed live from the same
 database, with neither side of the argument favoured in how it's presented. A critic of the
-reform and a supporter of it can both point to real numbers on that one page (§4.6, Figure
+reform and a supporter of it can both point to real numbers on that one page (Section 4.6, Figure
 4.15). What used to take days of error-prone preparation now takes minutes, the statistical
 caveats are supplied rather than left to chance, and the platform itself doesn't take a side
 in the argument its numbers get used for.
@@ -693,7 +693,7 @@ in the argument its numbers get used for.
 | Cost & repetition | Every user repeats the work | Cleaned once, shared by all |
 
 ### 3.5 System Requirements
-Requirements were gathered from the scenario analysis in §3.3, the project objectives in
+Requirements were gathered from the scenario analysis in Section 3.3, the project objectives in
 Chapter One, and supervisor feedback across iterations. They are stated per stakeholder
 group where relevant.
 
@@ -766,7 +766,7 @@ The system is organised as a seven-stage pipeline (Figure 3.1).
 ![Figure 3.1b — Deployment view](figures/fig3_1b_deployment.png)
 
 The two data paths are intentional: the dashboard's independence from the API host is an
-availability decision (assessed further in §4.9).
+availability decision (assessed further in Section 4.9).
 
 ### 3.7 System Design
 
@@ -1235,11 +1235,11 @@ assumed to be fine.
 | # | Objective (Ch. 1) | Delivered evidence |
 |---|---|---|
 | 1 | Collect indicators from CBN, NBS, World Bank | 122 indicators, ~12,100 observations; reproducible seed snapshot |
-| 2 | Unified standardised data model | One tidy observations schema holding daily-to-annual series; data dictionary §3.7.3 |
+| 2 | Unified standardised data model | One tidy observations schema holding daily-to-annual series; data dictionary Section 3.7.3 |
 | 3 | Server-side analytics | Descriptives, YoY, OLS trend, correlation with R²/p-value; TTL-cached API |
 | 4 | Free documented HATEOAS API | Versioned endpoints, _links throughout, RFC 8288 on CSV; interactive Explorer |
 | 5 | Clear, truthful dashboard | Storytelling pattern, single-axis policy, Reader/Analyst dial, WCAG AA 100/100 |
-| 6 | Test and evaluate | 24-test suite, statistical validation, adversarial stress test, live sweeps (§4.7) |
+| 6 | Test and evaluate | 24-test suite, statistical validation, adversarial stress test, live sweeps (Section 4.7) |
 
 ### 5.2 Conclusion
 If there's one thing this project demonstrates, it's that Nigeria's scattered,
@@ -1267,9 +1267,9 @@ point them first:
    friction in adopting the API.
 6. **Formalise the data-quality workflow** itself, with automated validation dashboards and
    clearer provenance tracking, rather than relying on the kind of manual audit described in
-   §4.7.
+   Section 4.7.
 
-None of those six items touch the deeper barrier discussed in §2.4 — the institutional
+None of those six items touch the deeper barrier discussed in Section 2.4 — the institutional
 reluctance to share data that has kept CBN, NBS and other agencies from doing this
 themselves. A student project cannot legislate that away, and I want to be honest that
 nothing in this report fixes it. But if a reference implementation like this one gets used,
