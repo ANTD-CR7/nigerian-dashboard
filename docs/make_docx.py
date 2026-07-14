@@ -231,6 +231,13 @@ def main():
                 pf.line_spacing_rule = WD_LINE_SPACING.DOUBLE
                 pf.left_indent = Inches(0.5)
                 pf.first_line_indent = Inches(-0.5)
+            elif current_h2 in ("List of Figures", "List of Tables"):
+                # thesis convention: plain lines, no bullet markers
+                p = doc.add_paragraph()
+                add_runs(p, text)
+                pf = p.paragraph_format
+                pf.line_spacing_rule = WD_LINE_SPACING.DOUBLE
+                p.alignment = WD_ALIGN_PARAGRAPH.LEFT
             else:
                 p = doc.add_paragraph(style="List Bullet")
                 add_runs(p, text)
