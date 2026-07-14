@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="offline/snapshot.js"></script>
+<script src="offline/npe-offline.js"></script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Live correlation analytics on Nigerian economic data — inflation vs exchange rate, GDP sectoral comparison and FX reserves trends. Part of the Nigerian Public Economic Data Aggregation and Analytics Platform.">
+<title>Analytics — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/chart.umd.js"></script>
+<script src="vendor/chartjs-plugin-annotation.js"></script>
+<script src="vendor/hammer.min.js"></script>
+<script src="vendor/chartjs-plugin-zoom.min.js"></script>
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
+    <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="#" class="active">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html" class="active">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a></div></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
+  <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
+  <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html" class="active">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a>
+</div>
+<section class="page-hero"><div class="container">
+  <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / Analytics</div>
+  <h1>Analytics and Insights</h1><div class="page-hero-rule"></div>
+  <p>Cross-indicator analysis, correlation and trend — computed in pure JavaScript · 2020–2026</p>
+</div></section>
+<main class="page-content"><div class="container">
+  <div class="chart-card reveal" id="profile-card">
+    <div class="chart-card-title">Analyze Any Indicator</div>
+    <p class="chart-context">Pick any of the platform's <strong>122 indicators</strong> — every headline series, all 47 GDP sub-sectors, every currency and CBN balance-sheet item — to see its full analytical profile computed live: latest value, change, year-on-year, range, volatility, trend and a simple linear forecast.</p>
+    <select id="prof-select" class="sector-filter-input" style="max-width:460px;margin-bottom:18px;"><option>Loading catalogue…</option></select>
+    <div class="profile-stats" id="prof-stats"></div>
+    <div class="chart-wrap-lg"><div class="chart-loading" id="loading-prof">Loading…</div><canvas id="chart-prof" style="display:none"></canvas></div>
+    <div class="dual-legend"><span><span class="dot" id="prof-dot" style="background:#4a9eff"></span><span id="prof-series-label">Value</span></span><span><span class="dot" style="background:#F4A017;height:1px;border-radius:0;"></span>OLS trend + forecast</span></div>
+    <div class="source-note" id="prof-source">—</div>
+  </div>
+  <div class="chart-card reveal"><div class="chart-card-title">Inflation Trend with Linear Regression</div><p class="chart-context">The dashed line is an ordinary least squares (OLS) regression. It slopes upward across the whole window — but a single straight line can't capture the real shape: inflation climbed to a <strong>34.8% peak in December 2024</strong>, then eased to <strong>15.4%</strong> by early 2026. Read the line as a rough long-run summary, not the month-to-month path.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-inf">Loading…</div><canvas id="chart-inf" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#e05252"></span>Inflation</span><span><span class="dot" style="background:#F4A017;height:1px;border-radius:0;"></span>OLS Trend</span></div><button class="btn-chart-reset" id="reset-inf">↺ Reset Zoom</button><div class="source-note">Source: NBS · Trend line = Ordinary Least Squares linear regression</div></div>
+  <div class="ops-card reveal">
+    <h2>Pearson Correlation: Inflation vs Exchange Rate</h2>
+    <div class="ops-grid">
+      <section class="ops-panel">
+        <label for="pearson-start">From</label>
+        <input id="pearson-start" type="date" value="2020-01-01">
+      </section>
+      <section class="ops-panel">
+        <label for="pearson-end">To</label>
+        <input id="pearson-end" type="date" value="2026-12-31">
+      </section>
+      <section class="ops-panel ops-action">
+        <label>&nbsp;</label>
+        <button id="pearson-compute" type="button">Compute</button>
+      </section>
+    </div>
+    <div id="pearson-result" style="padding:24px 0;"><p style="font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Computing correlation…</p></div>
+    <div class="source-note">Pearson r calculated on paired monthly observations within the selected date range. NBS inflation vs CBN NGN/USD.</div>
+  </div>
+  <div class="chart-card reveal"><div class="chart-card-title">FX Reserves and the Exchange Rate — a weaker link than assumed</div><p class="chart-context">It's often assumed reserves and the exchange rate move inversely. Over 2020–2026 the data disagrees: as the Naira weakened, reserves dipped to a $32.5B low (April 2024) then recovered, so both actually trend upward. <span id="dual-r-note"></span> Both series are standardised (z-scores) to share one honest axis rather than a misleading dual axis.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-dual">Loading…</div><canvas id="chart-dual" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4a9eff"></span>Exchange Rate NGN/USD</span><span><span class="dot" style="background:#00C896"></span>FX Reserves USD Bn</span></div><button class="btn-chart-reset" id="reset-dual">↺ Reset Zoom</button></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Real GDP by Sector — largest to smallest</div><p class="chart-context">The size of each part of Nigeria's real economy in <strong><span id="sector-year">the latest common year</span></strong>, sorted largest first. Every sector is shown for the same year so the bars are directly comparable; sectors without a figure for that year are omitted.</p><input type="text" id="sector-filter" class="sector-filter-input" placeholder="Filter sectors (e.g. agri, trade)…"><div class="chart-wrap-lg"><div class="chart-loading" id="loading-sectors">Loading…</div><canvas id="chart-sectors" style="display:none"></canvas></div><div class="source-note">Source: NBS Real GDP by Sector · constant 2010 prices</div></div>
+  <div class="chart-card reveal" id="corr-card">
+    <div class="chart-card-title">Correlation Matrix — 12 Headline Indicators</div>
+    <p class="chart-context">Every pair of the platform's core macro series and GDP sectors, correlated on <strong>annual averages</strong> so monthly/daily series (inflation, exchange rate, reserves) line up fairly against annual GDP sectors. Green = positive, red = negative, brighter = stronger. Grey means too few overlapping years to compute a reliable r. Hover any cell for the exact value.</p>
+    <div class="hm-wrap"><canvas id="corr-canvas" aria-label="Correlation matrix of 12 headline indicators" role="img"></canvas><div class="chart-loading" id="corr-loading" style="position:static;height:80px;">Computing correlations…</div></div>
+    <div class="hm-legend"><span>r:</span><span><span class="sw" style="background:#e05252"></span>&minus;1</span><span><span class="sw" style="background:#0d0f18"></span>0</span><span><span class="sw" style="background:#00C896"></span>+1</span><span><span class="sw" style="background:rgba(245,240,232,0.06)"></span>insufficient data</span><span style="margin-left:auto">Computed live from annual-averaged series</span></div>
+    <div class="hm-tip" id="corr-tip"></div>
+  </div>
+</div></main>
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>An open platform for Nigeria's public economic data.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<script>
+const SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const H={apikey:KEY,Authorization:'Bearer '+KEY};
+async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
+function fmt(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
+const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true,usePointStyle:true,boxWidth:8,boxHeight:8};
+const ZOOM={zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'},pan:{enabled:true,mode:'x'},limits:{x:{min:'original',max:'original'}}};
+const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
+const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
+Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
+function linearRegression(vals){const n=vals.length;if(n<2)return vals.map((v,i)=>v);const xs=vals.map((_,i)=>i);const xm=xs.reduce((a,b)=>a+b,0)/n;const ym=vals.reduce((a,b)=>a+b,0)/n;let num=0,den=0;xs.forEach((x,i)=>{num+=(x-xm)*(vals[i]-ym);den+=(x-xm)**2;});const slope=den?num/den:0;const intercept=ym-slope*xm;return xs.map(x=>slope*x+intercept);}
+function computePearson(xArr, yArr) {
+  const n = xArr.length;
+  if (n < 2) return 0;
+  const mx = xArr.reduce((a,b)=>a+b)/n;
+  const my = yArr.reduce((a,b)=>a+b)/n;
+  const num = xArr.reduce((s,x,i)=>s+(x-mx)*(yArr[i]-my),0);
+  const den = Math.sqrt(xArr.reduce((s,x)=>s+(x-mx)**2,0)*yArr.reduce((s,y)=>s+(y-my)**2,0));
+  return den ? (num/den).toFixed(4) : 0;
+}
+function zscores(vals){
+  const n=vals.length; if(!n) return vals;
+  const m=vals.reduce((a,b)=>a+b,0)/n;
+  const sd=Math.sqrt(vals.reduce((a,b)=>a+(b-m)*(b-m),0)/n)||1;
+  return vals.map(v=>(v-m)/sd);
+}
+function renderPearson(inf, fx) {
+  const fxByDate={};fx.forEach(d=>{fxByDate[d.obs_date]=d.value;});
+  const paired=inf.filter(d=>fxByDate[d.obs_date]!=null);
+  const rStr=computePearson(paired.map(d=>d.value),paired.map(d=>fxByDate[d.obs_date]));
+  const r=Number(rStr),rAbs=Math.abs(r);
+  const strength=rAbs>0.8?'Strong':rAbs>0.5?'Moderate':'Weak';
+  const direction=r>0?'Positive':'Negative';
+  const rColor=rAbs>0.8?'#e05252':rAbs>0.5?'#F4A017':'#008751';
+  const move=r>0.3?'tended to rise and fall together':(r<-0.3?'tended to move in opposite directions':'showed little consistent co-movement');
+  const sig=npeSig(r,paired.length);
+  document.getElementById('pearson-result').innerHTML=`<div style="display:flex;align-items:flex-start;gap:2rem;flex-wrap:wrap;padding:16px 0"><div><div style="font-family:var(--font-mono);font-size:3rem;font-weight:800;color:${rColor};letter-spacing:-2px;line-height:1">${rStr}</div><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate);text-transform:uppercase;letter-spacing:.1em;margin-top:.3rem">Pearson r</div></div><div style="flex:1;min-width:220px"><div style="font-family:var(--font-display);font-size:1.1rem;color:var(--white);margin-bottom:.5rem">${strength} ${direction} Correlation</div><p style="font-family:var(--font-body);font-size:0.82rem;color:var(--slate);line-height:1.7">Based on <strong style="color:var(--white)">${paired.length}</strong> paired monthly observations, r = <strong style="color:${rColor}">${rStr}</strong> (R² = ${sig.r2.toFixed(3)}, ${(sig.r2*100).toFixed(0)}% of variance; ${sig.significant?'statistically significant':'<strong style="color:var(--gold)">not significant</strong>'} at ${sig.label}). Over this period inflation and the Naira/USD rate ${move}. The June 2023 FX unification reform is widely seen as a common driver of both — though correlation alone does not establish causation.</p></div></div>`;
+}
+const SECTOR_LABELS={agriculture:'Agriculture',industry:'Industry',services:'Services',manufacturing:'Manufacturing',miningAndQuarrying:'Mining & Quarrying',construction:'Construction',trade:'Trade',financeAndInsurance:'Finance & Insurance',informationAndCommunication:'ICT'};
+function annualMeans(series){
+  const byYear={};
+  series.forEach(d=>{const y=d.obs_date.slice(0,4);(byYear[y]=byYear[y]||[]).push(d.value);});
+  const out={};
+  Object.keys(byYear).forEach(y=>{const arr=byYear[y];out[y]=arr.reduce((a,b)=>a+b,0)/arr.length;});
+  return out;
+}
+function hex2rgb(h){h=h.replace('#','');return[parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}
+function mixColor(c1,c2,t){const a=hex2rgb(c1),b=hex2rgb(c2);return 'rgb('+Math.round(a[0]+(b[0]-a[0])*t)+','+Math.round(a[1]+(b[1]-a[1])*t)+','+Math.round(a[2]+(b[2]-a[2])*t)+')';}
+function corrColor(r){
+  if(r==null)return 'rgba(245,240,232,0.06)';
+  return r>=0?mixColor('#0d0f18','#00C896',r):mixColor('#0d0f18','#e05252',-r);
+}
+function renderCorrMatrix(){
+  const cv=document.getElementById('corr-canvas'); if(!cv)return;
+  const loading=document.getElementById('corr-loading'), tip=document.getElementById('corr-tip');
+  const inf=window.lastInf, fx=window.lastFx, res=window.lastRes, sectorsRaw=window.lastSectorsRaw||{};
+  const sectorOrder=['agriculture','industry','services','manufacturing','miningAndQuarrying','construction','trade','financeAndInsurance','informationAndCommunication'];
+  const items=[
+    {label:'Inflation',data:inf||[]},
+    {label:'Exchange Rate',data:fx||[]},
+    {label:'FX Reserves',data:res||[]}
+  ].concat(sectorOrder.map(s=>({label:SECTOR_LABELS[s],data:sectorsRaw[s]||[]})));
+  const yearMaps=items.map(x=>annualMeans(x.data));
+  const n=items.length;
+  const matrix=[], counts=[];
+  for(let i=0;i<n;i++){
+    matrix.push([]); counts.push([]);
+    for(let j=0;j<n;j++){
+      if(i===j){
+        const own=Object.keys(yearMaps[i]).length;
+        matrix[i].push(own?1:null); counts[i].push(own);
+        continue;
+      }
+      const years=Object.keys(yearMaps[i]).filter(y=>yearMaps[j][y]!=null);
+      if(years.length<4){matrix[i].push(null);counts[i].push(years.length);continue;}
+      const xs=years.map(y=>yearMaps[i][y]), ys=years.map(y=>yearMaps[j][y]);
+      matrix[i].push(Number(computePearson(xs,ys)));
+      counts[i].push(years.length);
+    }
+  }
+  const cell=34,labelW=118,padT=6,padR=6;
+  const W=labelW+n*cell+padR, H=padT+n*cell;
+  const dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.width=W+'px'; cv.style.height=H+'px';
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  ctx.font='10px "IBM Plex Mono",monospace';
+  for(let i=0;i<n;i++){
+    ctx.fillStyle='rgba(245,240,232,0.55)'; ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(items[i].label,labelW-8,padT+i*cell+cell/2);
+    for(let j=0;j<n;j++){
+      ctx.fillStyle=corrColor(matrix[i][j]);
+      ctx.fillRect(labelW+j*cell,padT+i*cell,cell-1,cell-1);
+    }
+  }
+  loading.style.display='none';
+  cv.addEventListener('mousemove',function(e){
+    const rect=cv.getBoundingClientRect();
+    const i=Math.floor((e.clientY-rect.top-padT)/cell), j=Math.floor((e.clientX-rect.left-labelW)/cell);
+    if(i<0||i>=n||j<0||j>=n){tip.style.display='none';return;}
+    const r=matrix[i][j];
+    tip.style.display='block';
+    tip.style.left=Math.min(e.clientX+14,window.innerWidth-310)+'px';
+    tip.style.top=(e.clientY+14)+'px';
+    tip.innerHTML='<strong style="color:#F5F0E8">'+items[i].label+' vs '+items[j].label+'</strong><br>'+
+      (r==null?'Too few overlapping years ('+counts[i][j]+') to compute r':'r = '+r.toFixed(3)+' over '+counts[i][j]+' years');
+  });
+  cv.addEventListener('mouseleave',function(){tip.style.display='none';});
+}
+async function load(){
+ try{
+  const _sectors=['agriculture','industry','services','manufacturing','miningAndQuarrying','construction','trade','financeAndInsurance','informationAndCommunication'];
+  const[inf,fx,res,...sectorArr]=await Promise.all([sb('inflation'),sb('exchange_rate'),sb('fx_reserves'),..._sectors.map(s=>sb('gdp_'+s))]);
+  const sectorsRaw={};_sectors.forEach((s,i)=>{sectorsRaw[s]=sectorArr[i];});
+  document.getElementById('loading-inf').style.display='none';
+  const c1=document.getElementById('chart-inf');c1.style.display='block';
+  const infVals=inf.map(d=>d.value);const trendVals=linearRegression(infVals);
+  window.chartInf=new Chart(c1,{data:{labels:inf.map(d=>fmt(d.obs_date)),datasets:[{type:'line',label:'Inflation (%)',data:infVals,borderColor:'#FF6B6B',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#FF6B6B',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},{type:'line',label:'Trend (OLS)',data:trendVals,borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2,pointRadius:0,borderDash:[8,4],tension:0}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top'},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`}},zoom:ZOOM},scales:{y:{...SY,title:{display:true,text:'Inflation (%)',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  document.getElementById('reset-inf').addEventListener('click',()=>window.chartInf.resetZoom());
+  window.lastInf=inf; window.lastFx=fx; window.lastRes=res; window.lastSectorsRaw=sectorsRaw;
+  renderPearson(inf, fx);
+  renderCorrMatrix();
+  document.getElementById('pearson-compute').addEventListener('click', async () => {
+    const start = document.getElementById('pearson-start').value;
+    const end   = document.getElementById('pearson-end').value;
+    document.getElementById('pearson-result').innerHTML = '<p style="font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Computing…</p>';
+    try {
+      const [newInf, newFx] = await Promise.all([
+        sb('inflation', `&obs_date=gte.${start}&obs_date=lte.${end}`),
+        sb('exchange_rate', `&obs_date=gte.${start}&obs_date=lte.${end}`)
+      ]);
+      renderPearson(newInf, newFx);
+    } catch (err) {
+      console.error('Recompute failed:', err);
+      document.getElementById('pearson-result').innerHTML = '<div class="error-state"><span>⚠</span><p>Could not recompute. <button onclick="location.reload()">Retry</button></p></div>';
+    }
+  });
+  const resMap={};res.forEach(d=>{resMap[d.obs_date]=d.value;});
+  document.getElementById('loading-dual').style.display='none';
+  const c3=document.getElementById('chart-dual');c3.style.display='block';
+  const dualCommon=fx.filter(d=>resMap[d.obs_date]!=null);
+  const fxV=dualCommon.map(d=>d.value), resV=dualCommon.map(d=>resMap[d.obs_date]);
+  const rFxRes=computePearson(fxV,resV);
+  const dnEl=document.getElementById('dual-r-note'); if(dnEl) dnEl.innerHTML=`Their correlation is only <strong style="color:var(--white)">r = ${rFxRes}</strong> — weak, and positive rather than inverse.`;
+  window.chartDual=new Chart(c3,{data:{labels:dualCommon.map(d=>fmt(d.obs_date)),datasets:[{type:'line',label:'Exchange Rate (NGN/USD)',data:zscores(fxV),borderColor:'#4a9eff',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#4a9eff',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},{type:'line',label:'FX Reserves (USD Bn)',data:zscores(resV),borderColor:'#00C896',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#00C896',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,displayColors:true,callbacks:{title:i=>i[0].label,label:ctx=>ctx.datasetIndex===0?`Rate: NGN ${Number(fxV[ctx.dataIndex]).toFixed(0)}`:`Reserves: $${Number(resV[ctx.dataIndex]).toFixed(1)}B`}},zoom:ZOOM},scales:{y:{...SY,title:{display:true,text:"Standardised (z-score) — σ from each series' mean",color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  document.getElementById('reset-dual').addEventListener('click',()=>window.chartDual.resetZoom());
+  const sectorOrder=['agriculture','industry','services','manufacturing','miningAndQuarrying','construction','trade','financeAndInsurance','informationAndCommunication'];
+  // Align every sector to the latest year they can be compared like-for-like, so we never
+  // put a 2014 figure next to a 2024 one. Use the most recent year the majority report.
+  const yearCounts={};
+  sectorOrder.forEach(s=>{const arr=sectorsRaw[s];if(arr)arr.forEach(d=>{const y=d.obs_date.slice(0,4);yearCounts[y]=(yearCounts[y]||0)+1;});});
+  const nSectors=sectorOrder.filter(s=>sectorsRaw[s]&&sectorsRaw[s].length).length;
+  const targetYear=Object.keys(yearCounts).filter(y=>yearCounts[y]>=Math.ceil(nSectors*0.6)).sort().slice(-1)[0];
+  const rows=[];
+  for(const s of sectorOrder){const arr=sectorsRaw[s];if(!arr||!arr.length)continue;const hit=arr.find(d=>d.obs_date.slice(0,4)===targetYear);if(!hit)continue;rows.push({label:SECTOR_LABELS[s]||s,value:Number(hit.value)/1000});}
+  rows.sort((a,b)=>b.value-a.value);
+  const sectorLabels=rows.map(r=>r.label),sectorValues=rows.map(r=>r.value),sectorColors=rows.map(()=>'#008751');
+  const syEl=document.getElementById('sector-year'); if(syEl) syEl.textContent=targetYear;
+  document.getElementById('loading-sectors').style.display='none';
+  const c4=document.getElementById('chart-sectors');c4.style.display='block';
+  window.chartSectors=new Chart(c4,{type:'bar',data:{labels:sectorLabels,datasets:[{label:'Real GDP (NGN T)',data:sectorValues,backgroundColor:sectorColors,borderRadius:4,borderWidth:0,barPercentage:0.72}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`Real GDP: ₦${Number(ctx.parsed.x).toFixed(2)}T`}}},scales:{x:{...SY,title:{display:true,text:'Real GDP (NGN Trillions, constant 2010 prices)',color:'rgba(245,240,232,0.4)',font:{size:11}},ticks:{...SY.ticks,callback:v=>'₦'+Number(v).toFixed(0)+'T'}},y:{...SX,ticks:{color:'rgba(245,240,232,0.7)',font:{size:11}}}}}});
+  window.sectorFullData={labels:sectorLabels,values:sectorValues,colors:sectorColors};
+  document.getElementById('sector-filter').addEventListener('input',e=>{
+    const q=e.target.value.trim().toLowerCase();
+    const full=window.sectorFullData;
+    const idxs=full.labels.map((l,i)=>i).filter(i=>full.labels[i].toLowerCase().includes(q));
+    window.chartSectors.data.labels=idxs.map(i=>full.labels[i]);
+    window.chartSectors.data.datasets[0].data=idxs.map(i=>full.values[i]);
+    window.chartSectors.data.datasets[0].backgroundColor=idxs.map(i=>full.colors[i]);
+    window.chartSectors.update();
+  });
+ }catch(err){showLoadError(err);}
+}
+load();
+
+/* ─── Analyze Any Indicator — universal per-indicator profile ─── */
+let profChart=null, CAT=[], CATMAP={};
+function addDaysISO(iso,days){var d=new Date(iso+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+Math.round(days));return d.toISOString().slice(0,10);}
+async function initProfile(){
+  try{
+    CAT=await npeCatalogue();
+    CAT.forEach(x=>{CATMAP[x.id]=x;});
+    const sel=document.getElementById('prof-select');
+    npeFillSelect(sel,CAT,'inflation');
+    sel.addEventListener('change',()=>renderProfile(sel.value));
+    renderProfile('inflation');
+  }catch(e){console.error('Catalogue load failed:',e);document.getElementById('loading-prof').textContent='Catalogue unavailable';}
+}
+async function renderProfile(id){
+  const meta=CATMAP[id]||{name:id,unit:'',source:''};
+  const loadEl=document.getElementById('loading-prof');
+  loadEl.style.display='flex';loadEl.textContent='Loading '+meta.name+'…';
+  document.getElementById('chart-prof').style.display='none';
+  document.getElementById('prof-series-label').textContent=meta.name;
+  let series;
+  try{series=await sb(id);}catch(e){loadEl.textContent='Could not load data';return;}
+  const st=npeStats(series);
+  if(!st){document.getElementById('prof-stats').innerHTML='';loadEl.textContent='No data for this indicator';return;}
+  const F=v=>npeFormat(v,id,meta.unit);
+  const gap=npeMedianGapDays(st.pts),freq=npeFreq(gap);
+  function sc(delta){if(delta==null)return{t:'—',c:'flat'};var flat=Math.abs(delta)<1e-9,up=delta>0;return{t:(flat?'→ ':(up?'▲ ':'▼ '))+F(Math.abs(delta)),c:flat?'flat':(up?'up':'down')};}
+  const pc=sc(st.prevChange);
+  const yc=st.yoy?sc(st.yoy.value):{t:'—',c:'flat'};
+  const yoyPct=st.yoy&&st.yoy.pct!=null?' ('+(st.yoy.pct>=0?'+':'')+st.yoy.pct.toFixed(1)+'%)':'';
+  const trendDir=st.slope>1e-9?'Rising':(st.slope<-1e-9?'Falling':'Flat');
+  const tc=Math.abs(st.trendCorr);const tStr=tc>0.9?'very strong':tc>0.7?'strong':tc>0.4?'moderate':'weak';
+  const cv=(st.mean&&st.min.value>=0)?Math.abs(st.std/st.mean)*100:null;
+  const yr=d=>d?d.slice(0,4):'';
+  const tiles=[
+    ['Latest',F(st.latest.value),'flat',fmt(st.latest.obs_date)],
+    ['Change vs prev',pc.t,pc.c,'previous reading'],
+    ['Year-on-year',yc.t+yoyPct,yc.c,st.yoy?'vs '+fmt(st.yoy.date):'no prior-year match'],
+    ['Range',F(st.min.value)+' – '+F(st.max.value),'flat','min '+yr(st.min.date)+' · max '+yr(st.max.date)],
+    ['Average',F(st.mean),'flat','over '+st.n+' obs'],
+    ['Volatility (σ)',F(st.std),'flat',cv!=null?cv.toFixed(0)+'% of mean':'standard deviation'],
+    ['Trend',trendDir,st.slope>1e-9?'up':(st.slope<-1e-9?'down':'flat'),tStr+' · R²='+(st.trendCorr*st.trendCorr).toFixed(2)+' ('+npeSig(st.trendCorr,st.n).label+')'],
+    ['Coverage',st.n+' · '+freq,'flat',fmt(st.pts[0].obs_date)+' → '+fmt(st.latest.obs_date)]
+  ];
+  document.getElementById('prof-stats').innerHTML=tiles.map(t=>`<div class="prof-tile"><div class="pt-label">${t[0]}</div><div class="pt-value ${t[2]}">${t[1]}</div><div class="pt-sub">${t[3]}</div></div>`).join('');
+  const fcMap={daily:20,monthly:6,quarterly:4,annual:3};const fc=fcMap[freq]||4;
+  const fcDates=[];for(let k=1;k<=fc;k++)fcDates.push(addDaysISO(st.latest.obs_date,gap*k));
+  const labels=st.pts.map(d=>fmt(d.obs_date)).concat(fcDates.map(fmt));
+  const valueData=st.vals.concat(fcDates.map(()=>null));
+  const trendData=st.trendLine.concat(fcDates.map((_,k)=>st.slope*(st.n-1+k+1)+st.intercept));
+  loadEl.style.display='none';
+  const cv2=document.getElementById('chart-prof');cv2.style.display='block';
+  if(profChart)profChart.destroy();
+  profChart=new Chart(cv2,{data:{labels,datasets:[
+    {type:'line',label:meta.name,data:valueData,borderColor:'#4a9eff',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.12)','rgba(74,158,255,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#4a9eff',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.3,spanGaps:false},
+    {type:'line',label:'Trend + forecast',data:trendData,borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2,borderDash:[7,4],pointRadius:0,tension:0}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>ctx.datasetIndex===0?(ctx.parsed.y==null?null:`${meta.name}: ${F(ctx.parsed.y)}`):`Trend: ${F(ctx.parsed.y)}`}},zoom:ZOOM},scales:{y:{...SY,ticks:{...SY.ticks,callback:v=>npeFormat(v,id,meta.unit)}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}}}}});
+  document.getElementById('prof-source').textContent=`Source: ${meta.source||'—'} · ${meta.unit||''} · ${st.n} observations · dashed line = OLS trend extrapolated ${fc} periods (illustrative, not a prediction)`;
+}
+document.addEventListener('DOMContentLoaded', initProfile);
+</script>
+<script src="shared.js"></script>
+</body></html>

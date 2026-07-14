@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="offline/snapshot.js"></script>
+<script src="offline/npe-offline.js"></script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="CBN buying, central and selling rates for 11 foreign currencies against the Naira. From the Nigerian Public Economic Data Aggregation and Analytics Platform.">
+<title>Multi-Currency Rates — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/chart.umd.js"></script>
+<script src="vendor/chartjs-plugin-annotation.js"></script>
+<script src="vendor/hammer.min.js"></script>
+<script src="vendor/chartjs-plugin-zoom.min.js"></script>
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#" class="active">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html" class="active">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
+    <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="#">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a></div></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
+  <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html" class="active">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
+  <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a>
+</div>
+<section class="page-hero"><div class="container">
+  <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / Currency / Multi-Currency</div>
+  <h1>Multi-Currency Exchange Rates</h1><div class="page-hero-rule"></div>
+  <p>CBN buying, central and selling rates for 11 currencies — 2020–2026</p>
+</div></section>
+<div class="last-updated" id="last-updated">Loading…</div>
+<main class="page-content"><div class="container">
+  <div class="insight-card reveal"><div class="insight-label">Key Insight — FX Reform</div><p>The June 2023 CBN foreign exchange unification reform caused simultaneous Naira depreciation against all major currencies. NGN/USD moved from ₦461 to over ₦1,600 within months. By April 2026 the Naira had partially stabilised at approximately ₦1,361 per Dollar, reflecting improved oil revenues and CBN FX management reforms.</p></div>
+  <div class="ops-card reveal">
+    <h2>Date Range Filter <span style="font-weight:400;text-transform:none;letter-spacing:0;">— applies to the charts below, not the current-rates table</span></h2>
+    <div class="ops-grid">
+      <section class="ops-panel"><label for="flt-start">From</label><input id="flt-start" type="date" value="2020-01-01"></section>
+      <section class="ops-panel"><label for="flt-end">To</label><input id="flt-end" type="date" value="2026-12-31"></section>
+      <section class="ops-panel ops-action"><label>&nbsp;</label><button id="apply-filter" type="button">Apply</button></section>
+      <section class="ops-panel"><label>Status</label><strong class="inline-status" id="filter-status">Full range loaded</strong></section>
+    </div>
+  </div>
+  <div class="chart-card reveal"><div class="chart-card-title">Current Rates — Latest Available (NGN per unit)</div><div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading CBN rates…</div><div class="data-table-wrap"><table class="data-table" id="rates-table" style="display:none"><thead><tr><th>Currency</th><th class="num">Buying Rate</th><th class="num">Central Rate</th><th class="num">Selling Rate</th></tr></thead><tbody id="rates-tbody"></tbody></table></div><div class="source-note">Source: CBN Official Exchange Rates · 2020–2026</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Historical Trend — NGN/USD, NGN/GBP, NGN/EUR (Central Rate)</div><p class="chart-context">CBN official buying, central, and selling rates for 11 currencies — all impacted simultaneously by the June 2023 FX reform.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-trend">Loading…</div><canvas id="chart-trend" style="display:none"></canvas></div><div class="dual-legend" id="trend-legend" style="cursor:pointer;"><span data-idx="0"><span class="dot" style="background:#00C896"></span>NGN/USD</span><span data-idx="1"><span class="dot" style="background:#F4A017"></span>NGN/GBP</span><span data-idx="2"><span class="dot" style="background:#4a9eff"></span>NGN/EUR</span></div><button class="btn-chart-reset" id="reset-trend">↺ Reset Zoom</button><div class="source-note">Click a legend item to toggle that currency on/off the chart.</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Currency History — Select a Currency</div>
+    <p class="chart-context">The line is the CBN's <strong>central rate</strong>. The buying and selling rates sit within about 0.1% of it — far too close to separate on this axis — so instead of drawing three lines that overlap into one, the lower panel isolates the <strong>buy–sell spread</strong> (the CBN's dealing margin) on its own scale. Exact buying, central and selling values are in the table at the top of the page.</p>
+    <select id="currency-select" style="background:var(--black-2);color:var(--white);border:1px solid rgba(245,240,232,0.15);border-radius:6px;padding:9px 14px;font-family:var(--font-mono);font-size:0.8rem;margin-bottom:16px;cursor:pointer;">
+      <option value="usd">USD — US Dollar</option><option value="gbp">GBP — British Pound</option><option value="eur">EUR — Euro</option>
+      <option value="cny">CNY — Chinese Yuan</option><option value="chf">CHF — Swiss Franc</option>
+      <option value="zar">ZAR — South African Rand</option><option value="aed">AED — UAE Dirham (Jan–Apr 2026 only)</option><option value="sar">SAR — Saudi Riyal</option>
+      <option value="sdr">SDR — Special Drawing Rights</option><option value="cfa">CFA — CFA Franc</option><option value="waua">WAUA — West African Unit</option>
+    </select>
+    <div class="spread-stat"><span class="ss-value" id="spread-value">—</span><span class="ss-pct" id="spread-pct"></span><span class="ss-label" id="spread-label">Latest buy–sell spread</span></div>
+    <div class="chart-wrap-lg"><div class="chart-loading" id="loading-single">Select a currency above</div><canvas id="chart-single" style="display:none"></canvas></div>
+    <button class="btn-chart-reset" id="reset-single">↺ Reset Zoom</button>
+    <div class="takeaway-divider"></div>
+    <div class="chart-card-title" style="margin-top:8px;">Dealing Spread — Selling minus Buying (NGN)</div>
+    <p class="chart-context">How many Naira separate the rate you buy at from the rate you sell at, tracked over time. This is the margin the price chart above hides. A wider spread means a bigger CBN margin on that currency.</p>
+    <div class="chart-wrap-sm"><div class="chart-loading" id="loading-spread">Select a currency above</div><canvas id="chart-spread" style="display:none"></canvas></div>
+    <div class="source-note" id="single-source">Source: CBN Official Exchange Rates</div>
+  </div>
+</div></main>
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>An open platform for Nigeria's public economic data.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<script>
+const SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const H={apikey:KEY,Authorization:'Bearer '+KEY};
+async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
+const CURRENCY_NAMES={usd:'US Dollar',gbp:'British Pound',eur:'Euro',cny:'Chinese Yuan',chf:'Swiss Franc',zar:'South African Rand',aed:'UAE Dirham',sar:'Saudi Riyal',sdr:'Special Drawing Rights',cfa:'CFA Franc',waua:'West African Unit of Account'};
+function fmt(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
+const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true,usePointStyle:true,boxWidth:8,boxHeight:8};
+const ZOOM={zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'},pan:{enabled:true,mode:'x'},limits:{x:{min:'original',max:'original'}}};
+const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
+const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
+Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
+let allData={};let singleChart=null;let spreadChart=null;
+function filterByDate(arr,start,end){if(!start||!end)return arr;return arr.filter(d=>d.obs_date>=start&&d.obs_date<=end);}
+let currentFilter={start:null,end:null};
+function drawSingleChart(currency){
+  const raw=allData[currency];if(!raw||!raw.central||raw.central.length===0)return;
+  const rates={buying:filterByDate(raw.buying,currentFilter.start,currentFilter.end),central:filterByDate(raw.central,currentFilter.start,currentFilter.end),selling:filterByDate(raw.selling,currentFilter.start,currentFilter.end)};
+  document.getElementById('loading-single').style.display='none';
+  const canvas=document.getElementById('chart-single');canvas.style.display='block';
+  if(singleChart)singleChart.destroy();
+  const labels=rates.central.map(d=>fmt(d.obs_date));
+  singleChart=new Chart(canvas,{data:{labels,datasets:[{type:'line',label:'Central rate',data:rates.central.map(d=>d.value),borderColor:'#4FC3F7',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(79,195,247,0.13)','rgba(79,195,247,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#4FC3F7',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.35,fill:true}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`Central rate: NGN ${ctx.parsed.y.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2})}`}},zoom:ZOOM},scales:{y:{...SY,title:{display:true,text:`NGN per ${currency.toUpperCase()}`,color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  document.getElementById('single-source').textContent=`Source: CBN Official Exchange Rates · ${CURRENCY_NAMES[currency]||currency.toUpperCase()} · Central rate 2020–2026 · buy/sell spread shown below`;
+  attachEndLabels('chart-single', v=>'₦'+Number(v).toLocaleString('en-US',{maximumFractionDigits:v<100?2:0}));
+  drawSpreadChart(currency,rates,labels);
+}
+function drawSpreadChart(currency,rates,labels){
+  const buyMap={},sellMap={};
+  rates.buying.forEach(d=>buyMap[d.obs_date]=d.value);
+  rates.selling.forEach(d=>sellMap[d.obs_date]=d.value);
+  const spreadVals=rates.central.map(d=>{const b=buyMap[d.obs_date],s=sellMap[d.obs_date];return(b!=null&&s!=null)?s-b:null;});
+  // latest spread callout (last date where both buying & selling exist)
+  let lastB=null,lastS=null,lastCentral=null;
+  for(let i=rates.central.length-1;i>=0;i--){const d=rates.central[i];if(buyMap[d.obs_date]!=null&&sellMap[d.obs_date]!=null){lastB=buyMap[d.obs_date];lastS=sellMap[d.obs_date];lastCentral=d.value;break;}}
+  const svEl=document.getElementById('spread-value'),spEl=document.getElementById('spread-pct'),slEl=document.getElementById('spread-label');
+  if(lastB!=null){const sp=lastS-lastB;const pct=lastCentral?sp/lastCentral*100:null;
+    svEl.textContent='₦'+sp.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
+    spEl.textContent=pct!=null?pct.toFixed(3)+'% of rate':'';
+    slEl.textContent=`Latest buy–sell spread · ${CURRENCY_NAMES[currency]||currency.toUpperCase()}`;
+  }else{svEl.textContent='—';spEl.textContent='';slEl.textContent='No paired buying/selling data in range';}
+  document.getElementById('loading-spread').style.display='none';
+  const scv=document.getElementById('chart-spread');scv.style.display='block';
+  if(spreadChart)spreadChart.destroy();
+  spreadChart=new Chart(scv,{data:{labels,datasets:[{type:'line',label:'Spread',data:spreadVals,borderColor:'#F4A017',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(244,160,23,0.28)','rgba(244,160,23,0)'),borderWidth:2,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#F4A017',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.3,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`Spread: NGN ${ctx.parsed.y.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2})}`}}},scales:{y:{...SY,title:{display:true,text:'NGN (selling − buying)',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}}}}});
+  attachEndLabels('chart-spread', v=>'₦'+Number(v).toFixed(2));
+}
+function drawTrendChart(){
+  const usd=filterByDate(allData.usd?.central||[],currentFilter.start,currentFilter.end);
+  const gbp=filterByDate(allData.gbp?.central||[],currentFilter.start,currentFilter.end);
+  const eur=filterByDate(allData.eur?.central||[],currentFilter.start,currentFilter.end);
+  const annots=(typeof npeEventAnnotations==='function')?npeEventAnnotations(usd.map(d=>d.obs_date)):{};
+  document.getElementById('loading-trend').style.display='none';
+  const ct=document.getElementById('chart-trend');ct.style.display='block';
+  const existingTrend=Chart.getChart(ct);if(existingTrend)existingTrend.destroy();
+  window.chartTrend=new Chart(ct,{data:{labels:usd.map(d=>fmt(d.obs_date)),datasets:[{type:'line',label:'NGN/USD',data:usd.map(d=>d.value),borderColor:'#00C896',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(0,200,150,0.2)','rgba(0,200,150,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#00C896',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.4},{type:'line',label:'NGN/GBP',data:gbp.map(d=>d.value),borderColor:'#F4A017',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(244,160,23,0.2)','rgba(244,160,23,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#F4A017',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.4},{type:'line',label:'NGN/EUR',data:eur.map(d=>d.value),borderColor:'#4a9eff',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.2)','rgba(74,158,255,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#4a9eff',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: NGN ${ctx.parsed.y.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2})}`}},annotation:{annotations:annots},zoom:ZOOM},scales:{y:{...SY,title:{display:true,text:'NGN per Unit',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  if(!window.chartTrend.__wired){document.getElementById('reset-trend').addEventListener('click',()=>window.chartTrend.resetZoom());window.chartTrend.__wired=true;}
+  attachEndLabels('chart-trend', v=>'₦'+Math.round(v).toLocaleString('en-US'));
+  attachRangeSelector('chart-trend', usd.map(d=>d.obs_date));
+}
+async function load(){
+ try{
+  const _cur=['usd','gbp','eur','cny','chf','zar','aed','sar','sdr','cfa','waua'];
+  const _rat=['buying','central','selling'];const _q=[],_k=[];
+  for(const c of _cur)for(const rate of _rat){_q.push(sb(`${c}_${rate}`));_k.push([c,rate]);}
+  const _res=await Promise.all(_q);
+  _res.forEach((data,i)=>{const[c,r]=_k[i];if(!allData[c])allData[c]={};allData[c][r]=data;});
+  const order=['usd','gbp','eur','cny','chf','zar','aed','sar','sdr','cfa','waua'];
+  const tbody=document.getElementById('rates-tbody');
+  for(const c of order){const rates=allData[c];if(!rates)continue;const b=rates.buying?.slice(-1)[0];const n=rates.central?.slice(-1)[0];const s=rates.selling?.slice(-1)[0];const fv=v=>v!=null?Number(v).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2}):'-';tbody.innerHTML+=`<tr><td><strong>${c.toUpperCase()}</strong>&nbsp;<span style="color:var(--slate);font-size:11px">${CURRENCY_NAMES[c]||''}</span></td><td class="num">${fv(b?.value)}</td><td class="num"><strong>${fv(n?.value)}</strong></td><td class="num">${fv(s?.value)}</td></tr>`;}
+  document.getElementById('loading-table').style.display='none';document.getElementById('rates-table').style.display='table';
+  attachSortableTable(document.getElementById('rates-table'));
+  drawTrendChart();
+  document.querySelectorAll('#trend-legend span[data-idx]').forEach(span=>{
+    span.addEventListener('click',()=>{
+      const idx=Number(span.dataset.idx);
+      const meta=window.chartTrend.getDatasetMeta(idx);
+      meta.hidden=meta.hidden===null?!window.chartTrend.data.datasets[idx].hidden:!meta.hidden;
+      span.classList.toggle('toggle-off',meta.hidden);
+      window.chartTrend.update();
+    });
+  });
+  if(!window.__singleResetWired){document.getElementById('reset-single').addEventListener('click',()=>singleChart&&singleChart.resetZoom());window.__singleResetWired=true;}
+  drawSingleChart(document.getElementById('currency-select').value);
+  if(!window.__currencySelectWired){document.getElementById('currency-select').addEventListener('change',e=>{drawSingleChart(e.target.value);});window.__currencySelectWired=true;}
+ }catch(err){showLoadError(err);}
+}
+document.getElementById('apply-filter').addEventListener('click', () => {
+  currentFilter.start=document.getElementById('flt-start').value;
+  currentFilter.end=document.getElementById('flt-end').value;
+  drawTrendChart();
+  drawSingleChart(document.getElementById('currency-select').value);
+  document.getElementById('filter-status').textContent=`${fmt(currentFilter.start)} – ${fmt(currentFilter.end)} loaded`;
+});
+document.addEventListener('DOMContentLoaded', function(){ attachLastUpdated('last-updated', 'usd_central', 'CBN'); });
+load();
+</script>
+<script src="shared.js"></script>
+</body></html>

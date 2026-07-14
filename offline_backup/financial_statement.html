@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="offline/snapshot.js"></script>
+<script src="offline/npe-offline.js"></script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Central Bank of Nigeria annual financial statement data, 1960–2012 — external reserves, total assets and annual surplus/deficit. From the Nigerian Public Economic Data Aggregation and Analytics Platform.">
+<title>CBN Financial Statement — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/chart.umd.js"></script>
+<script src="vendor/chartjs-plugin-annotation.js"></script>
+<script src="vendor/hammer.min.js"></script>
+<script src="vendor/chartjs-plugin-zoom.min.js"></script>
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
+    <li><a href="#" class="active">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html" class="active">Financial Statement</a></div></li>
+    <li><a href="#">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a></div></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
+  <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
+  <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html" class="active">Financial Statement</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a>
+</div>
+<section class="page-hero"><div class="container">
+  <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / CBN Data / Financial Statement</div>
+  <h1>CBN Annual Financial Statement</h1><div class="page-hero-rule"></div>
+  <p>Central Bank of Nigeria historical financial data — 1960–2012</p>
+</div></section>
+<div class="last-updated" id="last-updated">Loading…</div>
+<main class="page-content"><div class="container">
+  <div class="insight-card reveal"><div class="insight-label">Key Insight</div><p>The CBN financial statement data spans Nigerian monetary history from independence in 1960. The dramatic growth in external reserves from the 1970s reflects Nigeria's oil boom era. Annual surplus and income data provide a window into decades of central bank policy and performance.</p></div>
+  <div class="ops-card reveal">
+    <h2>Date Range Filter</h2>
+    <div class="ops-grid">
+      <section class="ops-panel"><label for="flt-start">From</label><input id="flt-start" type="date" value="1960-01-01"></section>
+      <section class="ops-panel"><label for="flt-end">To</label><input id="flt-end" type="date" value="2012-12-31"></section>
+      <section class="ops-panel ops-action"><label>&nbsp;</label><button id="apply-filter" type="button">Apply</button></section>
+      <section class="ops-panel"><label>Status</label><strong class="inline-status" id="filter-status">Full range loaded</strong></section>
+    </div>
+  </div>
+  <div class="chart-card reveal"><div class="chart-card-title">External Reserves and Total Assets — 1960–2012</div><p class="chart-context">Nigeria's external reserves and CBN total assets over five decades — the long-run growth of the central bank's balance sheet before the more detailed modern records begin in 2005.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-main">Loading…</div><canvas id="chart-main" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4FC3F7"></span>External Reserves</span><span><span class="dot" style="background:#008751"></span>Total Assets</span></div><button class="btn-chart-reset" id="reset-main">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/cbn_annual_total_assets" download>⬇ Download CSV</a></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Annual Operating Surplus</div><p class="chart-context">The CBN's yearly operating result. Every year on record here (1960–2012) was a <strong>surplus</strong> — the bank earned more than it spent — so there are no deficit bars in this window; the red colour is retained so any future deficit would stand out. The figures span four orders of magnitude (from about ₦10m in 1972 to ₦100bn in 2012), so the chart defaults to a <strong>log scale</strong> to keep the early decades visible. Switch to Linear to see true relative size.</p>
+    <div class="scale-toggle" role="group" aria-label="Y-axis scale"><button type="button" id="surplus-log" class="active">Log scale</button><button type="button" id="surplus-linear">Linear</button></div>
+    <div class="chart-wrap-lg"><div class="chart-loading" id="loading-surplus">Loading…</div><canvas id="chart-surplus" style="display:none"></canvas></div><div class="source-note">Bars = annual surplus · The CBN's reporting basis changed across the decades (the pre-1972 series is not directly comparable with later years), so read cross-era jumps with care · Source: CBN Annual Report</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Annual Financial Statement Data (₦ million)</div><div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="fs-table" style="display:none"><thead><tr><th>Year</th><th class="num">Ext Reserves</th><th class="num">Currency in Circ</th><th class="num">Total Assets</th><th class="num">Surplus</th><th class="num">Total Income</th></tr></thead><tbody id="fs-tbody"></tbody></table></div></div>
+</div></main>
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>An open platform for Nigeria's public economic data.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<script>
+const SB_URL='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1/observations';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const SB_HDRS={apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`};
+function fetchSB(id,extra){return fetch(`${SB_URL}?indicator_id=eq.${id}&order=obs_date.asc${extra||''}`,{headers:SB_HDRS}).then(r=>r.json());}
+function fmtYear(d){return d.substring(0,4);}
+function fmtN(v){if(v==null)return'-';return Number(v).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});}
+const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true,usePointStyle:true,boxWidth:8,boxHeight:8};
+const ZOOM={zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'},pan:{enabled:true,mode:'x'},limits:{x:{min:'original',max:'original'}}};
+const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
+const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
+Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
+function drawSurplus(scale){
+  const surplus=window.__surplusData||[];if(!surplus.length)return;
+  const labels=surplus.map(d=>fmtYear(d.obs_date));const vals=surplus.map(d=>d.value);
+  const cv=document.getElementById('chart-surplus');
+  const existing=Chart.getChart(cv);if(existing)existing.destroy();
+  const isLog=scale==='log'&&vals.every(v=>v>0);
+  const yScale=isLog
+    ?{type:'logarithmic',grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',callback:v=>Number(v).toLocaleString('en-US')},border:{display:false},title:{display:true,text:'Surplus · ₦ million (log scale)',color:'rgba(245,240,232,0.4)',font:{size:11}}}
+    :{...SY,title:{display:true,text:'Surplus · ₦ million (linear)',color:'rgba(245,240,232,0.4)',font:{size:11}}};
+  new Chart(cv,{type:'bar',data:{labels,datasets:[{label:'Surplus',data:vals,backgroundColor:vals.map(v=>v>=0?'#008751':'#e05252'),borderWidth:0,barPercentage:0.7}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.parsed.y>=0?'Surplus':'Deficit'}: ₦${fmtN(Math.abs(ctx.parsed.y))}m`}},annotation:isLog?{}:{annotations:{zero:{type:'line',yMin:0,yMax:0,borderColor:'rgba(245,240,232,0.15)',borderWidth:1,borderDash:[4,4]}}}},scales:{y:yScale,x:SX}}});
+}
+function setSurplusScale(s){window.__surplusScale=s;var lg=document.getElementById('surplus-log'),ln=document.getElementById('surplus-linear');if(lg)lg.classList.toggle('active',s==='log');if(ln)ln.classList.toggle('active',s==='linear');if(window.__surplusData)drawSurplus(s);}
+async function load(start,end){
+ try{
+  const extra=(start&&end)?`&obs_date=gte.${start}&obs_date=lte.${end}`:'';
+  const[extRes,cin,ta,surplus,income]=await Promise.all([fetchSB('cbn_annual_ext_reserve',extra),fetchSB('cbn_annual_cin_c',extra),fetchSB('cbn_annual_total_assets',extra),fetchSB('cbn_annual_surplus',extra),fetchSB('cbn_annual_total_income',extra)]);
+  if(!extRes.length){document.getElementById('filter-status').textContent='No data in range';return;}
+  const labels=extRes.map(d=>fmtYear(d.obs_date));
+  document.getElementById('loading-main').style.display='none';document.getElementById('chart-main').style.display='block';
+  const taMap={};ta.forEach(d=>taMap[d.obs_date]=d.value);
+  const existingMain=Chart.getChart(document.getElementById('chart-main'));if(existingMain)existingMain.destroy();
+  window.chartMain=new Chart(document.getElementById('chart-main'),{data:{labels,datasets:[{type:'line',label:'External Reserves',data:extRes.map(d=>d.value/1e6),borderColor:'#4a9eff',backgroundColor:'transparent',borderWidth:2.5,pointRadius:2,pointHoverRadius:6,pointHoverBackgroundColor:'#4a9eff',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},{type:'line',label:'Total Assets',data:extRes.map(d=>{const v=taMap[d.obs_date];return v!=null?v/1e6:null;}),borderColor:'#00C896',backgroundColor:'transparent',borderWidth:2.5,pointRadius:2,pointHoverRadius:6,pointHoverBackgroundColor:'#00C896',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: ₦${ctx.parsed.y.toFixed(2)}T`}},zoom:ZOOM},scales:{y:{...SY,title:{display:true,text:'NGN Trillions',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  if(!window.chartMain.__wired){document.getElementById('reset-main').addEventListener('click',()=>window.chartMain.resetZoom());window.chartMain.__wired=true;}
+  attachRangeSelector('chart-main', extRes.map(d=>d.obs_date));
+  attachAnalystStats('chart-main', extRes, 'cbn_annual_ext_reserve', 'NGN Thousands');
+  attachChartTools('chart-main', {indicator:'cbn_annual_ext_reserve', name:'CBN External Reserves (Annual)', source:'CBN'});
+  attachEndLabels('chart-main', v=>'₦'+v.toFixed(1)+'T');
+  window.__surplusData=surplus;
+  document.getElementById('loading-surplus').style.display='none';document.getElementById('chart-surplus').style.display='block';
+  drawSurplus(window.__surplusScale||'log');
+  const cinMap={},taMapT={},surpMap={},incMap={};
+  cin.forEach(d=>cinMap[d.obs_date]=d.value);ta.forEach(d=>taMapT[d.obs_date]=d.value);surplus.forEach(d=>surpMap[d.obs_date]=d.value);income.forEach(d=>incMap[d.obs_date]=d.value);
+  const tbody=document.getElementById('fs-tbody');
+  tbody.innerHTML='';
+  extRes.forEach(d=>{tbody.innerHTML+=`<tr><td>${fmtYear(d.obs_date)}</td><td class="num">${fmtN(d.value)}</td><td class="num">${fmtN(cinMap[d.obs_date])}</td><td class="num">${fmtN(taMapT[d.obs_date])}</td><td class="num" style="color:${(surpMap[d.obs_date]??0)>=0?'#008751':'#e05252'}">${fmtN(surpMap[d.obs_date])}</td><td class="num">${fmtN(incMap[d.obs_date])}</td></tr>`;});
+  document.getElementById('loading-table').style.display='none';document.getElementById('fs-table').style.display='table';
+  attachSortableTable(document.getElementById('fs-table'));
+  if(start&&end)document.getElementById('filter-status').textContent=`${fmtYear(start)} – ${fmtYear(end)} loaded`;
+ }catch(err){showLoadError(err);}
+}
+document.getElementById('apply-filter').addEventListener('click', () => {
+  load(document.getElementById('flt-start').value, document.getElementById('flt-end').value);
+});
+document.getElementById('surplus-log').addEventListener('click', () => setSurplusScale('log'));
+document.getElementById('surplus-linear').addEventListener('click', () => setSurplusScale('linear'));
+document.addEventListener('DOMContentLoaded', function(){ attachLastUpdated('last-updated', 'cbn_annual_ext_reserve', 'CBN'); });
+load();
+</script>
+<script src="shared.js"></script>
+</body></html>

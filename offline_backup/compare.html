@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="offline/snapshot.js"></script>
+<script src="offline/npe-offline.js"></script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Compare any two Nigerian economic indicators side by side with a live, computed Pearson correlation. From the Nigerian Public Economic Data Aggregation and Analytics Platform.">
+<title>Compare Indicators — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/chart.umd.js"></script>
+<script src="vendor/hammer.min.js"></script>
+<script src="vendor/chartjs-plugin-zoom.min.js"></script>
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
+    <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="#" class="active">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html" class="active">Overview</a><a href="compare.html" class="active">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a></div></li>
+    <li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
+  <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
+  <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html">Overview</a><a href="compare.html" class="active">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a>
+</div>
+<section class="page-hero"><div class="container">
+  <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / Analytics / Compare</div>
+  <h1>Compare Indicators</h1><div class="page-hero-rule"></div>
+  <p>Pick any two indicators to see them plotted together with a live, computed Pearson correlation</p>
+</div></section>
+<main class="page-content"><div class="container">
+
+  <div class="ops-card reveal">
+    <h2>Choose Two Indicators</h2>
+    <div class="ops-grid">
+      <section class="ops-panel">
+        <label for="cmp-a">Indicator A</label>
+        <select id="cmp-a"></select>
+      </section>
+      <section class="ops-panel">
+        <label for="cmp-b">Indicator B</label>
+        <select id="cmp-b"></select>
+      </section>
+      <section class="ops-panel ops-action">
+        <label>&nbsp;</label>
+        <button id="cmp-run" type="button">Compare</button>
+      </section>
+      <section class="ops-panel">
+        <label>Status</label>
+        <strong class="inline-status" id="cmp-status">Loading defaults…</strong>
+      </section>
+    </div>
+  </div>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">Pearson Correlation</div>
+    <div id="cmp-pearson" style="padding:8px 0;"><p style="font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Run a comparison to compute correlation.</p></div>
+    <div id="cmp-warn"></div>
+    <div class="source-note">r is the Pearson correlation on the two series' overlapping dates, computed client-side. Any two indicators from the full catalogue can be compared — but correlation does not imply causation, and the warnings above flag when a result is unreliable.</div>
+  </div>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title" id="cmp-chart-title">Indicator A vs Indicator B</div>
+    <p class="chart-context">Both series are <strong>standardised</strong> — plotted as how many standard deviations each sits from its own average — so two different units share one honest axis instead of a misleading dual axis. Lines that rise and fall together indicate positive correlation; opposite movements indicate negative. Raw values are in the tooltip and the table below.</p>
+    <div class="chart-wrap-lg">
+      <div class="chart-loading" id="cmp-loading">Choose two indicators and click Compare…</div>
+      <canvas id="cmp-chart" style="display:none"></canvas>
+    </div>
+    <div class="dual-legend" id="cmp-legend"></div>
+    <button class="btn-chart-reset" id="cmp-reset">↺ Reset Zoom</button>
+  </div>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">Paired Data Table</div>
+    <div class="data-table-wrap"><table class="data-table" id="cmp-table" style="display:none">
+      <thead><tr><th>Date</th><th class="num" id="cmp-th-a">A</th><th class="num" id="cmp-th-b">B</th></tr></thead>
+      <tbody id="cmp-tbody"></tbody>
+    </table></div>
+  </div>
+
+</div></main>
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>An open platform for Nigeria's public economic data.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<script>
+const SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const H={apikey:KEY,Authorization:'Bearer '+KEY};
+async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
+function fmt(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
+const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true,usePointStyle:true,boxWidth:8,boxHeight:8};
+const ZOOM={zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'},pan:{enabled:true,mode:'x'},limits:{x:{min:'original',max:'original'}}};
+const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
+const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
+Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+
+let CAT=[], CATMAP={};
+const CMP_A='#4a9eff', CMP_B='#F4A017';
+async function populateSelects(){
+  const a=document.getElementById('cmp-a'), b=document.getElementById('cmp-b');
+  CAT=await npeCatalogue();
+  CAT.forEach(x=>{CATMAP[x.id]=x;});
+  npeFillSelect(a,CAT,'inflation');
+  npeFillSelect(b,CAT,'exchange_rate');
+}
+
+function pearson(x,y){
+  const n=Math.min(x.length,y.length);
+  const xs=x.slice(0,n), ys=y.slice(0,n);
+  const xm=xs.reduce((a,b)=>a+b,0)/n, ym=ys.reduce((a,b)=>a+b,0)/n;
+  let num=0,dx2=0,dy2=0;
+  for(let i=0;i<n;i++){const dx=xs[i]-xm, dy=ys[i]-ym; num+=dx*dy; dx2+=dx*dx; dy2+=dy*dy;}
+  return (dx2&&dy2)?num/Math.sqrt(dx2*dy2):0;
+}
+
+function zscores(vals){
+  const n=vals.length; if(!n) return vals;
+  const m=vals.reduce((a,b)=>a+b,0)/n;
+  const sd=Math.sqrt(vals.reduce((a,b)=>a+(b-m)*(b-m),0)/n)||1;
+  return vals.map(v=>(v-m)/sd);
+}
+
+let cmpChart=null;
+
+async function runCompare(){
+  const idA=document.getElementById('cmp-a').value, idB=document.getElementById('cmp-b').value;
+  const indA=CATMAP[idA], indB=CATMAP[idB];
+  if(!indA||!indB){document.getElementById('cmp-status').textContent='Loading catalogue…';return;}
+  if(idA===idB){document.getElementById('cmp-status').textContent='Choose two different indicators';return;}
+  document.getElementById('cmp-status').textContent='Loading…';
+  try{
+    const [dataA,dataB]=await Promise.all([sb(idA),sb(idB)]);
+    const mapA={},mapB={};
+    dataA.forEach(d=>mapA[d.obs_date]=d.value);
+    dataB.forEach(d=>mapB[d.obs_date]=d.value);
+    const common=Object.keys(mapA).filter(d=>mapB[d]!=null).sort();
+    const warnEl=document.getElementById('cmp-warn');
+    if(common.length<2){
+      document.getElementById('cmp-status').textContent='No overlapping dates';
+      document.getElementById('cmp-pearson').innerHTML='<p style="font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Not enough overlap to correlate.</p>';
+      warnEl.innerHTML='<div class="prof-warn">⚠ <strong>'+indA.name+'</strong> and <strong>'+indB.name+'</strong> share no overlapping dates (different time coverage or frequency), so they can’t be correlated directly.</div>';
+      if(cmpChart){cmpChart.destroy();cmpChart=null;} document.getElementById('cmp-chart').style.display='none'; document.getElementById('cmp-loading').style.display='flex'; document.getElementById('cmp-loading').textContent='No overlapping data';
+      return;
+    }
+    const valsA=common.map(d=>mapA[d]), valsB=common.map(d=>mapB[d]);
+    const r=pearson(valsA,valsB);
+    const rStr=r.toFixed(4), rAbs=Math.abs(r);
+    const strength=rAbs>0.8?'Strong':rAbs>0.5?'Moderate':'Weak';
+    const direction=r>0?'Positive':'Negative';
+    const color=rAbs>0.8?'#FF6B6B':rAbs>0.5?'#F4A017':'#00C896';
+    const sig=npeSig(r,common.length);
+    // ── Honesty guards ──
+    const freqA=npeFreq(npeMedianGapDays(dataA)), freqB=npeFreq(npeMedianGapDays(dataB));
+    const dA=[],dB=[]; for(let i=1;i<valsA.length;i++){dA.push(valsA[i]-valsA[i-1]);dB.push(valsB[i]-valsB[i-1]);}
+    const rDiff=pearson(dA,dB);
+    const warns=[];
+    if(common.length<8) warns.push('Only <strong>'+common.length+'</strong> overlapping observations — too few for a reliable correlation. Treat r with caution.');
+    if(freqA!==freqB) warns.push('Different reporting frequencies (<strong>'+indA.name+'</strong> is '+freqA+', <strong>'+indB.name+'</strong> is '+freqB+') — compared on their '+common.length+' shared dates only.');
+    if(rAbs>0.6 && Math.abs(rDiff) < rAbs-0.35) warns.push('A large part of this correlation comes from a <strong>shared long-run trend</strong>: the month-to-month <em>change</em> correlation is only r&nbsp;≈&nbsp;<strong>'+rDiff.toFixed(2)+'</strong>. High correlations between trending series are common and don’t, on their own, prove a direct relationship — interpret with care.');
+    warnEl.innerHTML=warns.map(w=>'<div class="prof-warn">⚠ '+w+'</div>').join('');
+    document.getElementById('cmp-pearson').innerHTML=`<div style="display:flex;align-items:flex-start;gap:2rem;flex-wrap:wrap;">
+      <div style="min-width:120px;"><div style="font-family:var(--font-mono);font-size:3rem;font-weight:500;color:${color};letter-spacing:-2px;line-height:1;">${rStr}</div>
+      <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate);text-transform:uppercase;letter-spacing:.1em;margin-top:.3rem;">Pearson r</div></div>
+      <div style="flex:1;min-width:220px;"><div style="font-family:var(--font-display);font-size:1.1rem;color:var(--white);margin-bottom:.5rem;">${strength} ${direction} Correlation</div>
+      <p style="font-family:var(--font-body);font-size:0.82rem;color:var(--slate);line-height:1.7;">Based on <strong style="color:var(--white)">${common.length}</strong> paired observations between <strong style="color:var(--white)">${indA.name}</strong> and <strong style="color:var(--white)">${indB.name}</strong> from ${fmt(common[0])} to ${fmt(common[common.length-1])}. R² = <strong style="color:var(--white)">${sig.r2.toFixed(3)}</strong> (${(sig.r2*100).toFixed(0)}% of the shared variance); the correlation is ${sig.significant?'statistically significant':'<strong style="color:var(--gold)">not statistically significant</strong>'} (${sig.label}).</p></div></div>`;
+    document.getElementById('cmp-chart-title').textContent=`${indA.name} vs ${indB.name}`;
+    document.getElementById('cmp-legend').innerHTML=`<span><span class="dot" style="background:${CMP_A}"></span>${indA.name}</span><span><span class="dot" style="background:${CMP_B}"></span>${indB.name}</span>`;
+    document.getElementById('cmp-th-a').textContent=indA.name;
+    document.getElementById('cmp-th-b').textContent=indB.name;
+    document.getElementById('cmp-loading').style.display='none';
+    const canvas=document.getElementById('cmp-chart');
+    canvas.style.display='block';
+    const zA=zscores(valsA), zB=zscores(valsB);
+    if(cmpChart)cmpChart.destroy();
+    cmpChart=new Chart(canvas,{data:{labels:common.map(d=>fmt(d)),datasets:[
+      {type:'line',label:indA.name,data:zA,borderColor:CMP_A,backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:CMP_A,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},
+      {type:'line',label:indB.name,data:zB,borderColor:CMP_B,backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:CMP_B,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3},
+    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,displayColors:true,callbacks:{title:i=>i[0].label,label:ctx=>{const raw=ctx.datasetIndex===0?valsA[ctx.dataIndex]:valsB[ctx.dataIndex];return `${ctx.dataset.label}: ${ctx.datasetIndex===0?npeFormat(raw,idA,indA.unit):npeFormat(raw,idB,indB.unit)}`;}}},zoom:ZOOM},scales:{
+      y:{...SY,title:{display:true,text:"Standardised (z-score) — σ from each series' mean",color:'rgba(245,240,232,0.4)',font:{size:11}}},
+      x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}
+    }}});
+    const tbody=document.getElementById('cmp-tbody');
+    tbody.innerHTML='';
+    common.forEach(d=>{tbody.innerHTML+=`<tr><td>${fmt(d)}</td><td class="num">${npeFormat(mapA[d],idA,indA.unit)}</td><td class="num">${npeFormat(mapB[d],idB,indB.unit)}</td></tr>`;});
+    document.getElementById('cmp-table').style.display='table';
+    attachSortableTable(document.getElementById('cmp-table'));
+    document.getElementById('cmp-status').textContent=`${common.length} paired obs · r = ${rStr}`;
+  }catch(err){showLoadError(err);document.getElementById('cmp-status').textContent='Failed to load — see error above';}
+}
+
+document.getElementById('cmp-run').addEventListener('click', runCompare);
+document.getElementById('cmp-reset').addEventListener('click', () => { if(cmpChart) cmpChart.resetZoom(); });
+document.addEventListener('DOMContentLoaded', async function(){ await populateSelects(); runCompare(); });
+</script>
+<script src="shared.js"></script>
+</body></html>

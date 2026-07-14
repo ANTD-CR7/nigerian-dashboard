@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="offline/snapshot.js"></script>
+<script src="offline/npe-offline.js"></script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Nigeria's gross, liquid and blocked foreign exchange reserves, 2020–2026. From the Nigerian Public Economic Data Aggregation and Analytics Platform.">
+<title>FX Reserves — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/chart.umd.js"></script>
+<script src="vendor/chartjs-plugin-annotation.js"></script>
+<script src="vendor/hammer.min.js"></script>
+<script src="vendor/chartjs-plugin-zoom.min.js"></script>
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
+    <li><a href="#" class="active">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html" class="active">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="#">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a></div></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
+  <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
+  <div class="mob-group">CBN Data</div><a href="reserves.html" class="active">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a>
+</div>
+<section class="page-hero"><div class="container">
+  <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / CBN Data / FX Reserves</div>
+  <h1>Foreign Exchange Reserves</h1><div class="page-hero-rule"></div>
+  <p>Gross, liquid and blocked reserves — Central Bank of Nigeria · 2020–2026</p>
+</div></section>
+<div class="last-updated" id="last-updated">Loading…</div>
+<main class="page-content"><div class="container">
+  <div class="story-section reveal">
+    <div class="story-block"><div class="story-block-label">What happened</div><p>Gross external reserves slipped from about <strong>$38B</strong> in early 2020 to a low of <strong>$32.5B</strong> in April 2024, then recovered strongly to <strong>$48.7B</strong> by April 2026 as oil receipts and FX reforms improved inflows.</p></div>
+    <div class="story-block"><div class="story-block-label">Why it matters</div><p>Reserves are the foreign currency the CBN holds to defend the Naira, pay for imports and service external debt. A larger buffer gives the central bank more room to stabilise the currency.</p></div>
+    <div class="story-block"><div class="story-block-label">How to read it</div><p>The blue line is <strong>gross</strong> reserves; the green line is <strong>liquid</strong> (readily usable) reserves. The second chart shows blocked reserves — funds under lien that count toward the gross figure but aren't freely available.</p></div>
+  </div>
+  <div class="ops-card reveal">
+    <h2>Date Range Filter</h2>
+    <div class="ops-grid">
+      <section class="ops-panel"><label for="flt-start">From</label><input id="flt-start" type="date" value="2020-01-01"></section>
+      <section class="ops-panel"><label for="flt-end">To</label><input id="flt-end" type="date" value="2026-12-31"></section>
+      <section class="ops-panel ops-action"><label>&nbsp;</label><button id="apply-filter" type="button">Apply</button></section>
+      <section class="ops-panel"><label>Status</label><strong class="inline-status" id="filter-status">Full range loaded</strong></section>
+    </div>
+  </div>
+  <div class="chart-card reveal"><div class="chart-card-title">Gross and Liquid Reserves — 2020–2026 (USD Billions)</div><div class="chart-takeaway"><div class="takeaway-stat"><span class="takeaway-value" id="tk-res-value">—</span><span class="takeaway-change" id="tk-res-change"></span><span class="takeaway-meta" id="tk-res-meta">Loading…</span></div><p class="takeaway-story"><strong>What this shows:</strong> Nigeria's gross foreign-exchange reserves. They fell to a <strong>$32.5B</strong> low in April 2024, then recovered to <strong>$48.7B</strong> by April 2026 — a bigger buffer to defend the Naira.</p><div class="takeaway-divider"></div></div><div class="chart-wrap-lg"><div class="chart-loading" id="loading-main">Loading…</div><canvas id="chart-main" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#4FC3F7"></span>Gross Reserves</span><span><span class="dot" style="background:#008751"></span>Liquid Reserves</span></div><button class="btn-chart-reset" id="reset-main">↺ Reset Zoom</button><a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/fx_reserves" download>⬇ Download CSV</a><div class="source-note">Source: CBN Foreign Exchange Reserves Data</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Blocked Reserves and Block Percentage</div><p class="chart-context">Blocked reserves are foreign exchange under lien or encumbrance — unavailable for the CBN to deploy even though they count toward gross reserves.</p><div class="chart-wrap"><div class="chart-loading" id="loading-blocked">Loading…</div><canvas id="chart-blocked" style="display:none"></canvas></div><div class="source-note">Blocked = assets under lien/encumbrance · Source: CBN</div></div>
+  <div class="chart-card reveal"><div class="chart-card-title">Monthly Reserves Data</div><div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading…</div><div class="data-table-wrap"><table class="data-table" id="res-table" style="display:none"><thead><tr><th>Month</th><th class="num">Gross (USD Bn)</th><th class="num">Liquid (USD Bn)</th><th class="num">Blocked (USD Bn)</th><th class="num">Block %</th><th>MoM Change</th></tr></thead><tbody id="res-tbody"></tbody></table></div></div>
+</div></main>
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>An open platform for Nigeria's public economic data.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<script>
+const SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const H={apikey:KEY,Authorization:'Bearer '+KEY};
+async function sb(indicator,extra){const r=await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`,{headers:H});return(await r.json()).map(row=>({obs_date:row.obs_date,value:parseFloat(row.value)}));}
+function fmt(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
+const TIP={backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'},bodyFont:{family:"'IBM Plex Mono'",size:13},padding:14,cornerRadius:8,displayColors:true,usePointStyle:true,boxWidth:8,boxHeight:8};
+const ZOOM={zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'},pan:{enabled:true,mode:'x'},limits:{x:{min:'original',max:'original'}}};
+const SX={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10},border:{display:false}};
+const SY={grid:{color:'rgba(245,240,232,0.04)',drawBorder:false},ticks:{color:'rgba(245,240,232,0.4)'},border:{display:false}};
+Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
+function latestOf(arr){return arr&&arr.length>0?arr[arr.length-1]:null;}
+async function load(start,end){
+ try{
+  const extra=(start&&end)?`&obs_date=gte.${start}&obs_date=lte.${end}`:'';
+  const[gross,liquid,blocked,blockPct]=await Promise.all([sb('fx_reserves',extra),sb('reserves_liquid',extra),sb('reserves_blocked',extra),sb('reserves_block_pct',extra)]);
+  if(!gross.length){document.getElementById('filter-status').textContent='No data in range';return;}
+  const latestGross=latestOf(gross);
+  if(latestGross){renderTakeaway('tk-res',{value:latestGross.value,prev:gross.length>1?gross[gross.length-2].value:null,prevLabel:'vs prev month',dateLabel:fmt(latestGross.obs_date),source:'CBN',format:v=>'$'+Number(v).toFixed(2)+'B',betterWhenUp:true});}
+  document.getElementById('loading-main').style.display='none';
+  const c1=document.getElementById('chart-main');c1.style.display='block';
+  const existingMain=Chart.getChart(c1);if(existingMain)existingMain.destroy();
+  window.chartMain=new Chart(c1,{data:{labels:gross.map(d=>fmt(d.obs_date)),datasets:[{type:'line',label:'Gross Reserves',data:gross.map(d=>d.value),borderColor:'#00C896',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(0,200,150,0.22)','rgba(0,200,150,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#00C896',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.4},{type:'line',label:'Liquid Reserves',data:liquid.map(d=>d.value),borderColor:'#F4A017',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(244,160,23,0.18)','rgba(244,160,23,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#F4A017',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>`${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}B`}},zoom:ZOOM},scales:{y:{...SY,title:{display:true,text:'USD Billions',color:'rgba(245,240,232,0.4)',font:{size:11}},ticks:{...SY.ticks,callback:v=>'$'+v.toFixed(1)+'B'}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  if(!window.chartMain.__wired){document.getElementById('reset-main').addEventListener('click',()=>window.chartMain.resetZoom());window.chartMain.__wired=true;}
+  attachRangeSelector('chart-main', gross.map(d=>d.obs_date));
+  attachAnalystStats('chart-main', gross, 'fx_reserves', 'USD Billions');
+  attachChartTools('chart-main', {indicator:'fx_reserves', name:'Foreign Exchange Reserves', source:'CBN'});
+  attachEndLabels('chart-main', v=>'$'+v.toFixed(1)+'B');
+  document.getElementById('loading-blocked').style.display='none';
+  const c2=document.getElementById('chart-blocked');c2.style.display='block';
+  const existingBlocked=Chart.getChart(c2);if(existingBlocked)existingBlocked.destroy();
+  new Chart(c2,{data:{labels:blocked.map(d=>fmt(d.obs_date)),datasets:[{type:'bar',label:'Blocked (USD Bn)',data:blocked.map(d=>d.value/1e9),backgroundColor:'rgba(224,82,82,0.6)',borderWidth:0,barPercentage:0.7,yAxisID:'y'},{type:'line',label:'Block %',data:blockPct.map(d=>d.value),borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#F4A017',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.3,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top'},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>ctx.datasetIndex===0?`Blocked: $${ctx.parsed.y.toFixed(2)}B`:`Block %: ${ctx.parsed.y.toFixed(2)}%`}}},scales:{y:{...SY,title:{display:true,text:'USD Billions',color:'rgba(245,240,232,0.4)',font:{size:11}}},y1:{...SY,grid:{display:false},title:{display:true,text:'Block %',color:'rgba(245,240,232,0.4)',font:{size:11}},position:'right'},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:14}}}}});
+  const grossMap={},liquidMap={},blockedMap={},pctMap={};
+  gross.forEach(d=>grossMap[d.obs_date]=d.value);liquid.forEach(d=>liquidMap[d.obs_date]=d.value);blocked.forEach(d=>blockedMap[d.obs_date]=d.value/1e9);blockPct.forEach(d=>pctMap[d.obs_date]=d.value);
+  const dates=[...new Set([...gross.map(d=>d.obs_date)])].sort();
+  const tbody=document.getElementById('res-tbody');
+  tbody.innerHTML='';
+  dates.forEach((dt,i)=>{const g=grossMap[dt],prev=i>0?grossMap[dates[i-1]]:null;const diff=(g!=null&&prev!=null)?g-prev:null;const changeHtml=diff===null?'-':diff>=0?`<span style="color:#008751">+$${diff.toFixed(2)}B</span>`:`<span style="color:#e05252">-$${Math.abs(diff).toFixed(2)}B</span>`;tbody.innerHTML+=`<tr><td>${fmt(dt)}</td><td class="num">${g!=null?'$'+Number(g).toFixed(2)+'B':'-'}</td><td class="num">${liquidMap[dt]!=null?'$'+Number(liquidMap[dt]).toFixed(2)+'B':'-'}</td><td class="num">${blockedMap[dt]!=null?'$'+Number(blockedMap[dt]).toFixed(2)+'B':'-'}</td><td class="num">${pctMap[dt]!=null?Number(pctMap[dt]).toFixed(2)+'%':'-'}</td><td>${changeHtml}</td></tr>`;});
+  document.getElementById('loading-table').style.display='none';document.getElementById('res-table').style.display='table';
+  attachSortableTable(document.getElementById('res-table'));
+  if(start&&end)document.getElementById('filter-status').textContent=`${fmt(start)} – ${fmt(end)} loaded`;
+ }catch(err){showLoadError(err);}
+}
+document.getElementById('apply-filter').addEventListener('click', () => {
+  load(document.getElementById('flt-start').value, document.getElementById('flt-end').value);
+});
+document.addEventListener('DOMContentLoaded', function(){ attachLastUpdated('last-updated', 'fx_reserves', 'CBN'); });
+load();
+</script>
+<script src="shared.js"></script>
+</body></html>

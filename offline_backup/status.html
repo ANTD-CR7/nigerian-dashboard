@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="offline/snapshot.js"></script>
+<script src="offline/npe-offline.js"></script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Live status of the NPEDATA database and Open API, plus data-freshness per indicator category. From the Nigerian Public Economic Data Aggregation and Analytics Platform.">
+<title>System Status — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
+    <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="#">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a></div></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
+  <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
+  <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a>
+</div>
+<section class="page-hero"><div class="container">
+  <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / System Status</div>
+  <h1>System Status</h1><div class="page-hero-rule"></div>
+  <p>Live health of the database and Open API, and data freshness by indicator category</p>
+</div></section>
+<main class="page-content"><div class="container">
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">Core Services</div>
+    <div class="status-row" id="row-supabase"><span class="status-dot status-pending" id="dot-supabase"></span><div><div class="status-name">Supabase Database</div><div class="status-detail" id="detail-supabase">Checking…</div></div></div>
+    <div class="status-row" id="row-api"><span class="status-dot status-pending" id="dot-api"></span><div><div class="status-name">Open API (Render)</div><div class="status-detail" id="detail-api">Checking…</div></div></div>
+    <div class="source-note">Checked live, on page load · Render's free tier sleeps when idle — a slow-but-successful first response is shown as "waking up," not down.</div>
+  </div>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">Site Mirrors</div>
+    <p class="chart-context">The dashboard is deployed to two independent static hosts so a single provider's outage (like the GitHub Pages connectivity issue on 26 June 2026) doesn't take the whole site down.</p>
+    <div class="status-row" id="row-ghpages"><span class="status-dot status-pending" id="dot-ghpages"></span><div><div class="status-name">GitHub Pages (primary)</div><div class="status-detail" id="detail-ghpages">Checking… · <a href="https://antd-cr7.github.io/nigerian-dashboard/" style="color:var(--green-text);">antd-cr7.github.io/nigerian-dashboard</a></div></div></div>
+    <div class="status-row" id="row-cfpages"><span class="status-dot status-pending" id="dot-cfpages"></span><div><div class="status-name">Cloudflare Pages (mirror)</div><div class="status-detail" id="detail-cfpages">Checking… · <a href="https://npedata.pages.dev/" style="color:var(--green-text);">npedata.pages.dev</a></div></div></div>
+    <div class="source-note">Both hosts deploy the same static files from the GitHub repository.</div>
+  </div>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">Data Freshness</div>
+    <div id="loading-fresh" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Checking…</div>
+    <div class="data-table-wrap"><table class="data-table" id="fresh-table" style="display:none"><thead><tr><th>Category</th><th>Indicator</th><th>Current To</th><th>Source</th></tr></thead><tbody id="fresh-tbody"></tbody></table></div>
+  </div>
+
+</div></main>
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>An open platform for Nigeria's public economic data.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html" class="active">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<script>
+const SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const H={apikey:KEY,Authorization:'Bearer '+KEY};
+function setDot(id,cls){document.getElementById(id).className='status-dot '+cls;}
+async function checkSupabase(){
+  const t0=performance.now();
+  try{
+    const r=await fetch(`${SB}/observations?limit=1`,{headers:H});
+    const ms=Math.round(performance.now()-t0);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    setDot('dot-supabase',ms<800?'status-up':'status-amber');
+    document.getElementById('detail-supabase').textContent=`Online · responded in ${ms}ms`;
+  }catch(err){
+    setDot('dot-supabase','status-down');
+    document.getElementById('detail-supabase').textContent='Unreachable — '+err.message;
+  }
+}
+async function checkApi(){
+  const t0=performance.now();
+  try{
+    const r=await fetch('https://npedata-api.onrender.com/api/v1/summary');
+    const ms=Math.round(performance.now()-t0);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    if(ms>3000){setDot('dot-api','status-amber');document.getElementById('detail-api').textContent=`Online · waking up from idle (cold start, ${ms}ms)`;}
+    else{setDot('dot-api','status-up');document.getElementById('detail-api').textContent=`Online · responded in ${ms}ms`;}
+  }catch(err){
+    setDot('dot-api','status-down');
+    document.getElementById('detail-api').textContent='Unreachable — '+err.message+' (Render free tier may be cold-starting; try reloading in ~30s)';
+  }
+}
+async function checkMirror(url,dotId,detailId,linkLabel){
+  const t0=performance.now();
+  try{
+    await fetch(url,{mode:'no-cors',cache:'no-store'});
+    const ms=Math.round(performance.now()-t0);
+    setDot(dotId,'status-up');
+    document.getElementById(detailId).innerHTML=`Online · responded in ${ms}ms · <a href="${url}" style="color:var(--green-text);">${linkLabel}</a>`;
+  }catch(err){
+    setDot(dotId,'status-down');
+    document.getElementById(detailId).innerHTML=`Unreachable — ${err.message} · <a href="${url}" style="color:var(--green-text);">${linkLabel}</a>`;
+  }
+}
+async function freshness(){
+  const cats=[['Economy — GDP','gdp_growth','NBS'],['Economy — Inflation','inflation','NBS'],['Currency — Exchange Rate','exchange_rate','CBN'],['Economy — Interest Rate','mpr','CBN'],['CBN Data — FX Reserves','fx_reserves','CBN']];
+  try{
+    const rows=await Promise.all(cats.map(([,id])=>fetch(`${SB}/observations?indicator_id=eq.${id}&select=obs_date&order=obs_date.desc&limit=1`,{headers:H}).then(r=>r.json())));
+    const tbody=document.getElementById('fresh-tbody');
+    cats.forEach(([label,id,src],i)=>{
+      const row=rows[i]&&rows[i][0];
+      const current=row?new Date(row.obs_date+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'}):'—';
+      tbody.innerHTML+=`<tr><td>${label}</td><td class="src">${id}</td><td>${current}</td><td class="src">${src}</td></tr>`;
+    });
+    document.getElementById('loading-fresh').style.display='none';
+    document.getElementById('fresh-table').style.display='table';
+    attachSortableTable(document.getElementById('fresh-table'));
+  }catch(err){showLoadError(err);}
+}
+checkSupabase();
+checkApi();
+checkMirror('https://antd-cr7.github.io/nigerian-dashboard/','dot-ghpages','detail-ghpages','antd-cr7.github.io/nigerian-dashboard');
+checkMirror('https://npedata.pages.dev/','dot-cfpages','detail-cfpages','npedata.pages.dev');
+freshness();
+</script>
+<script src="shared.js"></script>
+</body></html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="offline/snapshot.js"></script>
+<script src="offline/npe-offline.js"></script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Nigeria's quarterly real GDP growth rate and annual nominal GDP in USD billions. From the Nigerian Public Economic Data Aggregation and Analytics Platform — live CBN, NBS and World Bank data with a free Open API.">
+<title>GDP Growth — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/chart.umd.js"></script>
+<script src="vendor/chartjs-plugin-annotation.js"></script>
+<script src="vendor/hammer.min.js"></script>
+<script src="vendor/chartjs-plugin-zoom.min.js"></script>
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="#" class="active">Economy <span class="nav-chevron">▾</span></a>
+      <div class="nav-dropdown"><a href="gdp.html" class="active">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a>
+      <div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
+    <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a>
+      <div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="#">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a></div></li>
+    <li><a href="api_docs.html">API</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
+  <div class="mob-group">Economy</div><a href="gdp.html" class="active">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
+  <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a>
+</div>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / Economy / GDP</div>
+    <h1>Gross Domestic Product</h1>
+    <div class="page-hero-rule"></div>
+    <p>Quarterly real GDP growth rate and annual nominal GDP in USD billions — NBS &amp; World Bank · 2020–2026</p>
+  </div>
+</section>
+<div class="last-updated" id="last-updated">Loading…</div>
+
+<main class="page-content">
+  <div class="container">
+    <div class="story-section reveal">
+      <div class="story-block">
+        <div class="story-block-label">What happened</div>
+        <p>Nigeria's economy contracted <strong>−6.10%</strong> in Q2 2020 — the COVID-19 shock and the deepest quarterly fall in the dataset. It returned to growth through 2021 and has stayed positive since, reaching <strong>3.97%</strong> by Q4 2024.</p>
+      </div>
+      <div class="story-block">
+        <div class="story-block-label">Why it matters</div>
+        <p>Real GDP growth shows whether the economy is genuinely expanding, with the effect of rising prices stripped out. Steady positive growth since 2021 signals a real recovery — even as inflation and the Naira came under heavy pressure over the same period.</p>
+      </div>
+      <div class="story-block">
+        <div class="story-block-label">How to read it</div>
+        <p>In the chart below, <strong>green bars</strong> are quarters of expansion and <strong>red bars</strong> are contraction; the dashed line marks zero. The second chart shows nominal GDP in US dollars, which can move differently because it also reflects the exchange rate.</p>
+      </div>
+    </div>
+    <div class="ops-card reveal">
+      <h2>Date Range Filter</h2>
+      <div class="ops-grid">
+        <section class="ops-panel">
+          <label for="flt-start">From</label>
+          <input id="flt-start" type="date" value="2020-01-01">
+        </section>
+        <section class="ops-panel">
+          <label for="flt-end">To</label>
+          <input id="flt-end" type="date" value="2026-12-31">
+        </section>
+        <section class="ops-panel ops-action">
+          <label>&nbsp;</label>
+          <button id="apply-filter" type="button">Apply</button>
+        </section>
+        <section class="ops-panel">
+          <label>Status</label>
+          <strong class="inline-status" id="filter-status">Full range loaded</strong>
+        </section>
+      </div>
+    </div>
+    <div class="chart-card reveal">
+      <div class="chart-card-title">Real GDP Growth Rate (%) — Quarterly</div>
+      <div class="chart-takeaway">
+        <div class="takeaway-stat">
+          <span class="takeaway-value" id="tk-gdp-value">—</span>
+          <span class="takeaway-change" id="tk-gdp-change"></span>
+          <span class="takeaway-meta" id="tk-gdp-meta">Loading…</span>
+        </div>
+        <p class="takeaway-story"><strong>What this shows:</strong> Nigeria's quarterly real GDP growth. The economy fell <strong>−6.10%</strong> in the 2020 COVID shock, then climbed back to positive territory — seventeen straight quarters of growth (every quarter since Q4 2020) through Q4 2024.</p>
+        <div class="takeaway-divider"></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-loading" id="loading-growth">Loading…</div>
+        <canvas id="chart-growth" style="display:none"></canvas>
+      </div>
+      <a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/gdp_growth" download>⬇ Download CSV</a>
+      <div class="source-note">Source: NBS Quarterly GDP Report · Real GDP at 2010 constant basic prices</div>
+    </div>
+    <div class="chart-card reveal">
+      <div class="chart-card-title">Nominal GDP (USD Billions) — Annual</div>
+      <p class="chart-context">This differs from the real growth rate chart above — a weaker Naira can shrink the USD-denominated figure even when the local economy is growing.</p>
+      <div class="chart-wrap">
+        <div class="chart-loading" id="loading-usd">Loading…</div>
+        <canvas id="chart-usd" style="display:none"></canvas>
+      </div>
+      <button class="btn-chart-reset" id="reset-usd">↺ Reset Zoom</button>
+      <a class="btn-download" href="https://npedata-api.onrender.com/api/v1/export/gdp_usd" download>⬇ Download CSV</a>
+      <div class="source-note">Source: World Bank Open Data · NY.GDP.MKTP.CD</div>
+    </div>
+    <div class="chart-card reveal">
+      <div class="chart-card-title">GDP Growth Rate Data Table</div>
+      <div id="loading-table" style="padding:16px;font-family:var(--font-mono);font-size:0.75rem;color:var(--slate);">Loading data…</div>
+      <div class="data-table-wrap">
+        <table class="data-table" id="gdp-table" style="display:none">
+          <thead><tr><th>Quarter</th><th class="num">Growth Rate (%)</th><th>Performance</th><th>Source</th></tr></thead>
+          <tbody id="gdp-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="chart-card reveal">
+      <div class="chart-card-title">Nominal GDP (USD) Data Table</div>
+      <div class="data-table-wrap">
+        <table class="data-table" id="usd-table" style="display:none">
+          <thead><tr><th>Year</th><th class="num">GDP (USD Billions)</th><th>Change</th><th>Source</th></tr></thead>
+          <tbody id="usd-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>An open platform for Nigeria's public economic data.</p></div>
+    <div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div>
+    <div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div>
+    <div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div>
+  </div>
+  <div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div>
+</footer>
+
+<script>
+const SB  = 'https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+const H   = { apikey: KEY, Authorization: 'Bearer ' + KEY };
+async function sb(indicator, extra) {
+  const r = await fetch(`${SB}/observations?indicator_id=eq.${indicator}&order=obs_date.asc${extra||''}`, { headers: H });
+  return (await r.json()).map(row => ({ obs_date: row.obs_date, value: parseFloat(row.value) }));
+}
+function fmt(d) { return new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' }); }
+function fmtYear(d) { return d.substring(0, 4); }
+function quarterLabel(d) { var q = {1:'Q1',4:'Q2',7:'Q3',10:'Q4'}[parseInt(d.substring(5,7),10)] || ''; return (q ? q + ' ' : '') + d.substring(0,4); }
+function badge(v) {
+  if (v < 0)  return '<span class="badge badge-red">Contraction</span>';
+  if (v < 10) return '<span class="badge badge-green">Growth</span>';
+  if (v < 20) return '<span class="badge badge-blue">High</span>';
+  return '<span class="badge badge-red">Very High</span>';
+}
+const TIP = { backgroundColor:'rgba(13,15,24,0.95)', borderColor:'rgba(0,135,81,0.4)', borderWidth:1, titleColor:'#F4A017', bodyColor:'rgba(245,240,232,0.85)', titleFont:{family:"'IBM Plex Mono'",size:11,weight:'500'}, bodyFont:{family:"'IBM Plex Mono'",size:13}, padding:14, cornerRadius:8, displayColors:true, usePointStyle:true, boxWidth:8, boxHeight:8 };
+const ZOOM = { zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'}, pan:{enabled:true,mode:'x'}, limits:{x:{min:'original',max:'original'}} };
+const SX  = { grid:{color:'rgba(245,240,232,0.04)',drawBorder:false}, ticks:{color:'rgba(245,240,232,0.4)',maxRotation:0,maxTicksLimit:10}, border:{display:false} };
+const SY  = { grid:{color:'rgba(245,240,232,0.04)',drawBorder:false}, ticks:{color:'rgba(245,240,232,0.4)'}, border:{display:false} };
+Chart.defaults.color='rgba(245,240,232,0.5)';Chart.defaults.borderColor='rgba(245,240,232,0.04)';Chart.defaults.font.family="'IBM Plex Mono', monospace";Chart.defaults.font.size=11;
+function mkGrad(chart,c1,c2){var ca=chart.chartArea;if(!ca)return 'transparent';var g=chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
+function showChart(lid, cid) {
+  document.getElementById(lid).style.display = 'none';
+  const canvas = document.getElementById(cid);
+  const existing = Chart.getChart(canvas);
+  if (existing) existing.destroy();
+  canvas.style.display = 'block';
+}
+async function load(start, end) {
+ try {
+  const extra = (start && end) ? `&obs_date=gte.${start}&obs_date=lte.${end}` : '';
+  const [growth, usd] = await Promise.all([sb('gdp_growth', extra), sb('gdp_usd', extra)]);
+  if (!growth.length || !usd.length) { document.getElementById('filter-status').textContent = 'No data in range'; return; }
+  const latestGDP = growth[growth.length - 1];
+  renderTakeaway('tk-gdp', {
+    value: latestGDP.value,
+    prev: growth.length > 1 ? growth[growth.length - 2].value : null,
+    prevLabel: 'vs prev quarter',
+    dateLabel: quarterLabel(latestGDP.obs_date),
+    source: 'NBS',
+    format: v => Number(v).toFixed(2) + '%',
+    betterWhenUp: true,
+  });
+  const q2Idx = growth.findIndex(d => d.obs_date.startsWith('2020-04'));
+  const growthAnnots = {};
+  if (q2Idx >= 0) growthAnnots.contraction = { type:'line', xMin:q2Idx, xMax:q2Idx, borderColor:'rgba(220,38,38,0.5)', borderWidth:1.5, borderDash:[6,4], label:{ display:true, content:'Peak Contraction -6.10%', position:'end', backgroundColor:'#DC2626', color:'#fff', font:{size:11,weight:'600'}, padding:{x:6,y:3}, borderRadius:2 } };
+  showChart('loading-growth', 'chart-growth');
+  new Chart(document.getElementById('chart-growth'), {
+    type: 'bar',
+    data: { labels: growth.map(d => fmt(d.obs_date)), datasets: [{ label: 'Real GDP Growth (%)', data: growth.map(d => d.value), backgroundColor: (ctx) => ctx.raw >= 0 ? '#00C896' : '#FF6B6B', hoverBackgroundColor: (ctx) => ctx.raw >= 0 ? '#00C896' : '#FF6B6B', borderRadius: 5, borderSkipped: false, borderWidth: 0, barPercentage: 0.65 }] },
+    options: { responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, hover:{mode:'index',intersect:false}, plugins: { legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP Growth: ${ctx.parsed.y.toFixed(2)}%` }}, annotation:{ annotations:{ zero:{ type:'line', yMin:0, yMax:0, borderColor:'rgba(245,240,232,0.15)', borderWidth:1, borderDash:[4,4] }, ...growthAnnots }}}, scales:{ y:{ ...SY, title:{display:true,text:'Growth Rate (%)',color:'rgba(245,240,232,0.4)',font:{size:11}} }, x:SX } }
+  });
+  showChart('loading-usd', 'chart-usd');
+  window.chartUsd=new Chart(document.getElementById('chart-usd'), {
+    type:'line',
+    data:{ labels:usd.map(d=>fmtYear(d.obs_date)), datasets:[{ label:'Nominal GDP (USD Bn)', data:usd.map(d=>d.value), borderColor:'#4FC3F7', backgroundColor:'transparent', borderWidth:2.5, pointRadius:5, pointBackgroundColor:'#4FC3F7', pointBorderColor:'#07080d', pointBorderWidth:2, pointHoverRadius:8, pointHoverBackgroundColor:'#4FC3F7', pointHoverBorderColor:'#fff', pointHoverBorderWidth:2, fill:false, tension:0.3 }] },
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, hover:{mode:'index',intersect:false}, plugins:{ legend:{display:false}, tooltip:{ ...TIP, callbacks:{ title:i=>i[0].label, label:ctx=>`GDP: $${ctx.parsed.y.toFixed(2)}B` }}, zoom:ZOOM}, scales:{ y:{ ...SY, title:{display:true,text:'USD Billions',color:'rgba(245,240,232,0.4)',font:{size:11}} }, x:SX } }
+  });
+  if (!window.chartUsd.__resetWired) { document.getElementById('reset-usd').addEventListener('click',()=>window.chartUsd.resetZoom()); window.chartUsd.__resetWired = true; }
+  attachRangeSelector('chart-growth', growth.map(d=>d.obs_date));
+  attachAnalystStats('chart-growth', growth, 'gdp_growth', 'Percent (%)');
+  attachChartTools('chart-growth', {indicator:'gdp_growth', name:'Real GDP Growth Rate', source:'NBS'});
+  attachEndLabels('chart-usd', v=>'$'+v.toFixed(0)+'B');
+  const tbody = document.getElementById('gdp-tbody');
+  tbody.innerHTML = '';
+  growth.forEach(d => { tbody.innerHTML += `<tr><td>${fmt(d.obs_date)}</td><td class="num">${Number(d.value).toFixed(2)}%</td><td>${badge(d.value)}</td><td class="src">NBS</td></tr>`; });
+  document.getElementById('loading-table').style.display = 'none';
+  document.getElementById('gdp-table').style.display = 'table';
+  attachSortableTable(document.getElementById('gdp-table'));
+  const usdTbody = document.getElementById('usd-tbody');
+  usdTbody.innerHTML = '';
+  usd.forEach((d,i) => { const prev=i>0?usd[i-1].value:null; const diff=prev?d.value-prev:0; const change=i===0?' - ':diff>0?`<span style="color:#e05252">up $${diff.toFixed(2)}B</span>`:`<span style="color:#008751">down $${Math.abs(diff).toFixed(2)}B</span>`; usdTbody.innerHTML+=`<tr><td>${fmtYear(d.obs_date)}</td><td class="num">$${Number(d.value).toFixed(2)}B</td><td>${change}</td><td class="src">World Bank</td></tr>`; });
+  document.getElementById('usd-table').style.display = 'table';
+  attachSortableTable(document.getElementById('usd-table'));
+  if (start && end) document.getElementById('filter-status').textContent = `${fmt(start)} – ${fmt(end)} loaded`;
+ } catch(err) { showLoadError(err); }
+}
+document.getElementById('apply-filter').addEventListener('click', () => {
+  load(document.getElementById('flt-start').value, document.getElementById('flt-end').value);
+});
+document.addEventListener('DOMContentLoaded', function(){ attachLastUpdated('last-updated', 'gdp_growth', 'NBS'); });
+load();
+</script>
+<script src="shared.js"></script>
+
+</body>
+</html>

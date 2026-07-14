@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="offline/snapshot.js"></script>
+<script src="offline/npe-offline.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>NPEDATA embed</title>
+<script src="vendor/chart.umd.js"></script>
+<style>
+  /* Self-contained on purpose: an embed must not depend on the site's CSS/JS. */
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; overflow:hidden; }
+  body {
+    background:#0d0f18; color:#F5F0E8;
+    font-family:'Segoe UI',system-ui,sans-serif;
+    display:flex; flex-direction:column; padding:14px 16px 10px;
+    border:1px solid rgba(245,240,232,0.1); border-radius:10px; overflow:hidden;
+  }
+  .hd { display:block; }
+  .name { font-size:0.68rem; letter-spacing:0.05em; color:rgba(245,240,232,0.6); text-transform:uppercase;
+          font-family:Consolas,'IBM Plex Mono',monospace; margin-bottom:3px;
+          overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .val { display:block; font-size:1.25rem; font-weight:600; font-family:Consolas,monospace; color:#F5F0E8; white-space:nowrap; }
+  .val .delta { font-size:0.62rem; font-weight:500; padding:2px 6px; border-radius:5px; margin-left:6px; vertical-align:middle; }
+  .delta.up   { background:rgba(0,135,81,0.18); color:#00c07a; }
+  .delta.down { background:rgba(224,82,82,0.18); color:#ff8a8a; }
+  .wrap { flex:1; min-height:90px; position:relative; margin:8px 0 6px; }
+  .ft { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-family:Consolas,monospace;
+        font-size:0.62rem; color:rgba(245,240,232,0.45); }
+  .ft span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1; }
+  .ft a { flex-shrink:0; }
+  .ft a { color:#00a362; text-decoration:none; font-weight:600; }
+  .msg { flex:1; display:flex; align-items:center; justify-content:center; color:rgba(245,240,232,0.5);
+         font-family:Consolas,monospace; font-size:0.72rem; text-align:center; }
+</style>
+</head>
+<body>
+  <div class="hd"><span class="name" id="e-name">NPEDATA</span><span class="val" id="e-val"></span></div>
+  <div class="wrap"><canvas id="e-chart"></canvas></div>
+  <div class="msg" id="e-msg">Loading…</div>
+  <div class="ft"><span id="e-src"></span><a id="e-link" href="https://antd-cr7.github.io/nigerian-dashboard/" target="_blank" rel="noopener">NPEDATA ↗</a></div>
+<script>
+(function(){
+  var SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+  var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+  var H={apikey:KEY,Authorization:'Bearer '+KEY};
+  var q=new URLSearchParams(location.search);
+  var id=(q.get('indicator')||'exchange_rate').replace(/[^a-zA-Z0-9_]/g,'');
+  var months=parseInt(q.get('months')||'0',10);
+
+  /* Minimal copy of the site's unit logic (kept in sync with shared.js npeFormat). */
+  function abbrev(v){var a=Math.abs(v);
+    if(a>=1e12)return (v/1e12).toFixed(2)+'T'; if(a>=1e9)return (v/1e9).toFixed(2)+'B';
+    if(a>=1e6)return (v/1e6).toFixed(2)+'M'; if(a>=1e3)return (v/1e3).toFixed(1)+'K';
+    return String(Math.round(v*100)/100);}
+  function scaleMul(id){
+    if(/^cbn_annual/.test(id))return 1e6;
+    if(/^(cbn_total|cbn_gold|cbn_govt|cbn_bankers|cbn_currency_issued)/.test(id))return 1e3;
+    if(id==='currency_circulation_full'||id==='currency_circulation')return 1e6;
+    return 0;}
+  function fmtVal(v,unit){
+    if(v==null||!isFinite(v))return '—'; unit=unit||'';
+    var m=scaleMul(id); if(m)return '₦'+abbrev(v*m);
+    if(/percent|%/i.test(unit))return v.toFixed(2)+'%';
+    if(/per (usd|gbp|eur|[a-z]{3})|naira per/i.test(unit))return '₦'+v.toLocaleString('en-US',{maximumFractionDigits:2});
+    if(/usd billion/i.test(unit))return '$'+v.toFixed(2)+'B';
+    if(/^usd$/i.test(unit))return '$'+abbrev(v);
+    if(/count/i.test(unit))return Math.round(v).toLocaleString('en-US');
+    if(/ngn billions|naira billions/i.test(unit))return '₦'+(Math.abs(v)>=1000?(v/1000).toFixed(2)+'T':v.toFixed(1)+'B');
+    if(/ngn millions|naira millions/i.test(unit))return '₦'+(Math.abs(v)>=1e6?(v/1e6).toFixed(2)+'T':(Math.abs(v)>=1e3?(v/1e3).toFixed(2)+'B':v.toFixed(1)+'M'));
+    if(/ngn thousands|naira thousands/i.test(unit))return '₦'+(v/1e9).toFixed(2)+'T';
+    if(/ngn|naira/i.test(unit))return '₦'+(Math.abs(v)<1e6?v.toLocaleString('en-US',{maximumFractionDigits:2}):abbrev(v));
+    return abbrev(v);}
+  function fmtDate(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
+  function fail(m){document.getElementById('e-msg').textContent=m;}
+
+  Promise.all([
+    fetch(SB+'/indicators?id=eq.'+id+'&select=id,name,unit,source',{headers:H}).then(function(r){return r.json();}),
+    fetch(SB+'/observations?indicator_id=eq.'+id+'&select=obs_date,value&order=obs_date.asc',{headers:H}).then(function(r){return r.json();})
+  ]).then(function(res){
+    var meta=res[0]&&res[0][0], rows=res[1]||[];
+    if(!meta||!rows.length){fail('Unknown indicator: "'+id+'" — see npedata api docs for valid ids');return;}
+    if(months>0){
+      var cut=new Date(rows[rows.length-1].obs_date+'T00:00:00Z');cut.setUTCMonth(cut.getUTCMonth()-months);
+      var iso=cut.toISOString().slice(0,10);
+      rows=rows.filter(function(d){return d.obs_date>=iso;});
+    }
+    var vals=rows.map(function(d){return parseFloat(d.value);});
+    var last=vals[vals.length-1], prev=vals.length>1?vals[vals.length-2]:null;
+    document.getElementById('e-name').textContent=meta.name;
+    var vhtml=fmtVal(last,meta.unit);
+    if(prev!=null&&isFinite(prev)){
+      var d=last-prev, up=d>0;
+      vhtml+='<span class="delta '+(up?'up':'down')+'">'+(up?'▲':'▼')+' '+fmtVal(Math.abs(d),meta.unit)+'</span>';
+    }
+    document.getElementById('e-val').innerHTML=vhtml;
+    document.getElementById('e-src').textContent='Source: '+(meta.source||'CBN/NBS/World Bank')+' · to '+fmtDate(rows[rows.length-1].obs_date);
+    document.getElementById('e-link').href='https://antd-cr7.github.io/nigerian-dashboard/?utm_source=embed';
+    document.getElementById('e-msg').style.display='none';
+    new Chart(document.getElementById('e-chart'),{type:'line',
+      data:{labels:rows.map(function(d){return fmtDate(d.obs_date);}),
+        datasets:[{data:vals,borderColor:'#00C896',borderWidth:2,pointRadius:0,tension:0.35,fill:true,
+          backgroundColor:function(ctx){var ca=ctx.chart.chartArea;if(!ca)return 'transparent';
+            var g=ctx.chart.ctx.createLinearGradient(0,ca.top,0,ca.bottom);
+            g.addColorStop(0,'rgba(0,200,150,0.18)');g.addColorStop(1,'rgba(0,200,150,0)');return g;}}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        interaction:{mode:'index',intersect:false},
+        plugins:{legend:{display:false},tooltip:{displayColors:false,
+          backgroundColor:'rgba(13,15,24,0.95)',borderColor:'rgba(0,135,81,0.4)',borderWidth:1,
+          titleColor:'#F4A017',bodyColor:'rgba(245,240,232,0.85)',padding:10,cornerRadius:6,
+          callbacks:{label:function(c){return fmtVal(c.parsed.y,meta.unit);}}}},
+        scales:{
+          y:{grid:{color:'rgba(245,240,232,0.05)'},border:{display:false},
+             ticks:{color:'rgba(245,240,232,0.4)',font:{size:9},maxTicksLimit:4,
+               callback:function(v){return fmtVal(v,meta.unit);}}},
+          x:{grid:{display:false},border:{display:false},
+             ticks:{color:'rgba(245,240,232,0.4)',font:{size:9},maxRotation:0,maxTicksLimit:5}}}}});
+  }).catch(function(){fail('Data temporarily unavailable');});
+})();
+</script>
+</body></html>

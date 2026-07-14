@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="offline/snapshot.js"></script>
+<script src="offline/npe-offline.js"></script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Free, open, no-authentication REST API for Nigerian public economic data — 12 endpoints covering GDP, inflation, exchange rates, FX reserves and more. The Open API for the Nigerian Public Economic Data Aggregation and Analytics Platform.">
+<title>API Documentation — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
+    <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="#">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a></div></li><li><a href="api_docs.html" class="active">API</a></li><li><a href="about.html">About</a></li>
+  </ul>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html" class="active">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
+  <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
+  <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a>
+</div>
+
+<section class="page-hero" style="min-height:240px;display:flex;align-items:center;">
+  <div class="container" style="width:100%;">
+    <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / API Docs</div>
+    <h1>Nigeria Economic Data — Open API</h1><div class="page-hero-rule"></div>
+    <p style="font-size:1rem;color:rgba(245,240,232,0.85);">Free. Public read-only anon key. No rate limits beyond Supabase's free tier.</p>
+  </div>
+</section>
+
+<main class="page-content"><div class="container">
+
+  <div class="api-url-box reveal">
+    <span>https://npedata-api.onrender.com</span>
+    <button class="btn-copy" data-copy="https://npedata-api.onrender.com">Copy</button>
+  </div>
+
+  <div class="insight-card reveal" style="margin-bottom:32px;">
+    <div class="insight-label">How It Works</div>
+    <p>A FastAPI backend hosted on Render aggregates and serves the underlying Supabase data through purpose-built REST endpoints. No authentication, no API key, CORS fully open. Interactive Swagger documentation with live request testing is available at <strong style="color:var(--gold);">/docs</strong> on the base URL above. Machine-readable docs for AI agents/LLMs: <strong style="color:var(--gold);">/llms.txt</strong>. Live API and database health: <a href="status.html" style="color:var(--green-text);">status page</a>.</p>
+  </div>
+
+  <div class="chart-card reveal" style="margin-bottom:32px;">
+    <div class="chart-card-title">REST Maturity — Richardson Maturity Model Level 3</div>
+    <p class="chart-context" style="margin-bottom:18px;">Every JSON response carries a <strong style="color:var(--green-text);">_links</strong> block describing the available next actions, so the entire API is navigable from the root without hardcoding any URL but the base — full HATEOAS, not just CRUD endpoints with status codes.</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;">
+      <div style="font-family:var(--font-mono);font-size:0.78rem;color:var(--slate);"><span style="color:var(--green-text);">&#10003; Level 1</span> &mdash; Resources identified by URI (one endpoint per resource)</div>
+      <div style="font-family:var(--font-mono);font-size:0.78rem;color:var(--slate);"><span style="color:var(--green-text);">&#10003; Level 2</span> &mdash; Proper HTTP verbs &amp; status codes (GET reads, POST ingestion, 404 on unknown indicator)</div>
+      <div style="font-family:var(--font-mono);font-size:0.78rem;color:var(--slate);"><span style="color:var(--green-text);">&#10003; Level 3</span> &mdash; Hypermedia controls: every response includes <code style="color:var(--gold);">_links</code> (CSV downloads carry an RFC&nbsp;8288 <code style="color:var(--gold);">Link</code> header instead)</div>
+    </div>
+    <div class="api-url-box" style="margin:0;display:block;">
+      <pre style="font-family:var(--font-mono);font-size:0.74rem;color:var(--slate);white-space:pre-wrap;margin:0;">GET /api/v1/gdp
+{
+  "gdp_growth": [ ... ],
+  "source": "NBS and World Bank",
+  "_links": {
+    "self":       { "href": ".../api/v1/gdp" },
+    "analytics":  { "href": ".../api/v1/analytics/gdp_growth" },
+    "export_csv": { "href": ".../api/v1/export/gdp_growth" },
+    "summary":    { "href": ".../api/v1/summary" },
+    "coverage":   { "href": ".../api/v1/coverage" }
+  }
+}</pre>
+    </div>
+  </div>
+
+  <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin-bottom:8px;" class="reveal">Endpoints</h2>
+  <p class="reveal" style="font-family:var(--font-body);font-size:0.82rem;color:var(--slate);margin-bottom:24px;line-height:1.6;">Press <strong style="color:var(--green-text);">Try it</strong> on any endpoint to run it live from your browser — the real response, status code and timing appear right here on the page. <span style="color:rgba(245,240,232,0.5);">(First call may take up to ~30s while the free-tier server wakes.)</span></p>
+  <div class="endpoints-grid">
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/summary</div><p class="ep-desc">Latest single value for all five headline indicators — GDP, Inflation, Exchange Rate, MPR, FX Reserves. Ideal for KPI dashboards.</p><a href="https://npedata-api.onrender.com/api/v1/summary" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/gdp</div><p class="ep-desc">Quarterly real GDP growth rate (%) and annual nominal GDP in USD billions. Optional start and end date params.</p><a href="https://npedata-api.onrender.com/api/v1/gdp" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/inflation</div><p class="ep-desc">Monthly headline, food, and core inflation rates. Optional date range params. Source: NBS CPI Report.</p><a href="https://npedata-api.onrender.com/api/v1/inflation" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/exchange-rate</div><p class="ep-desc">Monthly average NGN/USD official rate, capturing the full impact of the June 2023 FX unification reform.</p><a href="https://npedata-api.onrender.com/api/v1/exchange-rate" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/interest-rate</div><p class="ep-desc">CBN Monetary Policy Rate (MPR) at each MPC decision date. Rose from 11.5% to 27.5% between 2022 and 2024.</p><a href="https://npedata-api.onrender.com/api/v1/interest-rate" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/fx-reserves</div><p class="ep-desc">Monthly gross, liquid and blocked foreign exchange reserves plus block percentage. CBN data 2020–2026.</p><a href="https://npedata-api.onrender.com/api/v1/fx-reserves" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/currency-circulation</div><p class="ep-desc">Currency in circulation (NGN millions) — full history from 2002 to 2024. Source: CBN Statistical Bulletin.</p><a href="https://npedata-api.onrender.com/api/v1/currency-circulation" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/nfem</div><p class="ep-desc">NFEM daily rates — closing, highest, lowest and weighted average. December 2024 to April 2026.</p><a href="https://npedata-api.onrender.com/api/v1/nfem" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/multicurrency</div><p class="ep-desc">Buying, central and selling rates for 11 currencies (USD, GBP, EUR, CNY, CHF, ZAR, AED, SAR, SDR, CFA, WAUA). AED coverage is Jan–Apr 2026 only; all others span 2020–2026. Optional <code>?currency=</code> filter.</p><a href="https://npedata-api.onrender.com/api/v1/multicurrency" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/gdp-sectors</div><p class="ep-desc">Real GDP by sector — agriculture, industry, services, manufacturing, telecoms, construction and trade. NBS data.</p><a href="https://npedata-api.onrender.com/api/v1/gdp-sectors" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/cbn-balance-sheet</div><p class="ep-desc">CBN balance sheet — total assets, liabilities, gold and currency issued. 2005 to 2023.</p><a href="https://npedata-api.onrender.com/api/v1/cbn-balance-sheet" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/analytics</div><p class="ep-desc">Pearson correlation between inflation and the exchange rate over 2020–2026 — a strong positive association consistent with the June 2023 FX reform as a common driver (correlation, not proof of causation).</p><a href="https://npedata-api.onrender.com/api/v1/analytics" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/analytics/{indicator_id}</div><p class="ep-desc">Full analytical profile of one indicator — latest value, period change, year-on-year comparison, trend direction and a simple linear-regression forecast (<code>?forecast_periods=</code>, 1–12).</p><a href="https://npedata-api.onrender.com/api/v1/analytics/inflation" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/coverage</div><p class="ep-desc">Data-coverage report: observation counts, first/last dates, min/max values and sources for every indicator exposed through the analytics layer.</p><a href="https://npedata-api.onrender.com/api/v1/coverage" target="_blank" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge">GET</div><div class="ep-path">/api/v1/export/{indicator_id}</div><p class="ep-desc">Download any indicator's full series as CSV. Hypermedia for the non-JSON body travels in an RFC 8288 <code>Link</code> header, keeping the API Level 3 end to end.</p><a href="https://npedata-api.onrender.com/api/v1/export/exchange_rate" class="btn-try">Try it →</a></div>
+    <div class="endpoint-card reveal"><div class="ep-badge" style="background:rgba(244,160,23,0.15);color:var(--gold);">POST</div><div class="ep-path">/api/v1/observations</div><p class="ep-desc">Validate one normalised observation (indicator, date, value, source). Demo-safe: rows are validated and normalised but only written when the server runs with <code>ALLOW_DATA_WRITES=true</code> and the request sends <code>commit=true</code>.</p></div>
+    <div class="endpoint-card reveal"><div class="ep-badge" style="background:rgba(244,160,23,0.15);color:var(--gold);">POST</div><div class="ep-path">/api/v1/ingest/csv</div><p class="ep-desc">Bulk-validate a CSV of <code>obs_date,value,source</code> rows for one indicator — the platform's Data Validation Layer. Same demo-safe write gate as above.</p></div>
+  </div>
+
+  <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin:48px 0 24px;" class="reveal">Use Cases</h2>
+  <div class="use-cases-grid">
+    <div class="use-case-card reveal"><h3>For Researchers</h3><p>Download complete time series for econometric modelling. All data is deduplicated, date-normalised to ISO 8601, and sourced from primary CBN, NBS and World Bank publications.</p></div>
+    <div class="use-case-card reveal" style="border-top-color:var(--gold);"><h3>For Developers</h3><p>Integrate Nigerian economic data into your own applications with zero authentication. CORS is fully open and all responses are standard JSON arrays.</p></div>
+    <div class="use-case-card reveal" style="border-top-color:var(--red-accent);"><h3>For Students</h3><p>Use the data for dissertations, final year projects and academic analysis in economics, data science, finance or computer science. Free and openly accessible.</p></div>
+  </div>
+
+  <div class="endpoint-card reveal"><div class="ep-badge" style="background:rgba(244,160,23,0.15);color:var(--gold);">POST</div><div class="ep-path">/api/v1/validate/csv</div><p class="ep-desc">The platform's Validation Layer as a service: send any CSV (obs_date,value) and get a per-row verdict report — valid or rejected with reasons (bad dates, non-numeric values, duplicates, future observations). Never writes. Try it interactively in the <a href="playground.html" style="color:var(--green-text);">Pipeline Playground</a>.</p></div>
+
+  <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin:48px 0 24px;" class="reveal">Explore the Living API — follow the links</h2>
+  <div class="chart-card reveal" id="hateoas-explorer">
+    <p class="chart-context">This API is <strong>hypermedia-driven</strong> (HATEOAS — Richardson Maturity Level 3): every response carries a <code style="color:var(--gold);">_links</code> block describing where you can go next. That means the entire API is navigable from the root <em>without reading any documentation</em> — like browsing the web. The response below is <strong>live</strong>: click any green link to follow it.</p>
+    <div class="hx-bar">
+      <button id="hx-home" type="button" class="btn-chart-reset" style="margin-top:0;">⌂ Root</button>
+      <code class="hx-url" id="hx-url">/</code>
+      <span class="hx-meta" id="hx-meta"></span>
+    </div>
+    <div class="hx-crumbs" id="hx-crumbs"></div>
+    <pre class="hx-out" id="hx-out">Contacting the live API…</pre>
+    <div class="source-note">Live requests from your browser to npedata-api.onrender.com. The free-tier server sleeps when idle — the first request can take up to ~30 seconds to wake it.</div>
+  </div>
+
+  <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin:48px 0 24px;" class="reveal">Embed a Live Chart</h2>
+  <div class="chart-card reveal">
+    <p style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.75;margin-bottom:16px;">Any indicator can be embedded in a blog, article or report as a live, self-updating widget — paste one iframe, no API key. Use any indicator id from the catalogue (e.g. <code style="color:var(--gold);">inflation</code>, <code style="color:var(--gold);">exchange_rate</code>, <code style="color:var(--gold);">fx_reserves</code>, <code style="color:var(--gold);">nfem_closing</code>); an optional <code style="color:var(--gold);">&amp;months=24</code> limits the window.</p>
+    <pre style="background:var(--black);border:1px solid rgba(245,240,232,0.1);border-radius:8px;padding:14px 16px;font-family:var(--font-mono);font-size:0.7rem;color:rgba(245,240,232,0.8);overflow-x:auto;margin-bottom:18px;">&lt;iframe src="https://antd-cr7.github.io/nigerian-dashboard/embed.html?indicator=inflation"
+        width="440" height="280" style="border:0;border-radius:10px;" loading="lazy"
+        title="Nigeria headline inflation — NPEDATA"&gt;&lt;/iframe&gt;</pre>
+    <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--green-text);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:10px;">Live preview</div>
+    <iframe src="embed.html?indicator=inflation" width="440" height="280" style="border:0;border-radius:10px;max-width:100%;" loading="lazy" title="Nigeria headline inflation — NPEDATA embed preview"></iframe>
+    <div class="source-note">Each widget shows the latest value, the change vs the previous reading, the full series, the source, and links back to NPEDATA.</div>
+  </div>
+
+  <h2 style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);margin:48px 0 24px;" class="reveal">AI Agent Access</h2>
+  <div class="insight-card reveal">
+    <div class="insight-label">Model Context Protocol (MCP) Server</div>
+    <p>A standalone Node.js MCP server in the repository at <strong style="color:var(--gold);">/mcp-server</strong> exposes the read endpoints above as read-only tools for Claude Desktop, Cursor, and other MCP-compatible clients — so an AI agent can query Nigeria's GDP, inflation, exchange rate, FX reserves and CBN balance-sheet data directly in conversation, with no API key required. Setup instructions and the client config snippet are in <a href="https://github.com/ANTD-CR7/nigerian-dashboard/tree/main/mcp-server" style="color:var(--green-text);">mcp-server/README.md</a> in the source repository. The API also publishes an <a href="https://npedata-api.onrender.com/llms.txt" style="color:var(--green-text);">llms.txt</a> — a machine-readable description of the whole platform — so any AI agent that lands on the API can discover what it offers and how to use it, the same way the <code style="color:var(--gold);">_links</code> let a program navigate it.</p>
+  </div>
+
+</div></main>
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>An open platform for Nigeria's public economic data.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<script>
+/* ─── HATEOAS Explorer: browse the live API by following _links ─── */
+(function(){
+  var BASE='https://npedata-api.onrender.com';
+  var out=document.getElementById('hx-out'),urlEl=document.getElementById('hx-url'),
+      meta=document.getElementById('hx-meta'),crumbs=document.getElementById('hx-crumbs');
+  if(!out)return;
+  var hist=[];
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function linkify(t){
+    return t.replace(/"(https:\/\/npedata-api\.onrender\.com[^"]*)"/g,
+      function(m,u){return '"<a href="#" class="hx-link" data-url="'+u+'">'+u+'</a>"';});
+  }
+  function go(url,push){
+    if(push===undefined)push=true;
+    var t0=performance.now();
+    out.textContent='Fetching '+(url.replace(BASE,'')||'/')+' …';
+    meta.textContent='';
+    var waking=setTimeout(function(){
+      out.textContent+='\n\n(The free-tier server is waking from sleep — this can take up to ~30 seconds. It stays fast once awake.)';
+    },3500);
+    fetch(url).then(function(r){
+      clearTimeout(waking);
+      var ms=Math.round(performance.now()-t0);
+      return r.json().then(function(j){return{r:r,j:j,ms:ms};});
+    }).then(function(res){
+      var text=JSON.stringify(res.j,null,2), truncated=false;
+      if(text.length>28000){text=text.slice(0,28000);truncated=true;}
+      out.innerHTML=linkify(esc(text))+(truncated?'\n\n… response truncated for display — fetch the endpoint directly for the full payload.':'');
+      urlEl.textContent=url.replace(BASE,'')||'/';
+      meta.textContent='HTTP '+res.r.status+' · '+res.ms+' ms · json';
+      if(push){hist.push(url);renderCrumbs();}
+      out.querySelectorAll('.hx-link').forEach(function(a){
+        a.addEventListener('click',function(e){e.preventDefault();go(a.dataset.url);});
+      });
+    }).catch(function(){
+      clearTimeout(waking);
+      out.textContent='Request failed — the server may still be waking. Press ⌂ Root to try again.';
+    });
+  }
+  function renderCrumbs(){
+    crumbs.innerHTML=hist.map(function(u,i){
+      return '<button type="button" class="hx-crumb" data-i="'+i+'">'+((u.replace(BASE,''))||'/')+'</button>';
+    }).join('<span class="hx-sep">›</span>');
+    crumbs.querySelectorAll('.hx-crumb').forEach(function(b){
+      b.addEventListener('click',function(){var i=+b.dataset.i;hist=hist.slice(0,i+1);renderCrumbs();go(hist[i],false);});
+    });
+  }
+  document.getElementById('hx-home').addEventListener('click',function(){hist=[];go(BASE+'/');});
+  go(BASE+'/');
+})();
+
+/* ─── Inline "Try it": run each endpoint live and show a visual result ───
+   Buttons keep their href (progressive-enhancement fallback: without JS they
+   still open the raw JSON in a new tab). With JS, the request runs on this
+   page and renders a status pill + timing + formatted body — so you can see
+   it works without leaving for a raw code dump. */
+(function(){
+  var btns = document.querySelectorAll('a.btn-try[href]');
+  if(!btns.length) return;
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  btns.forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      var url = btn.getAttribute('href');
+      var card = btn.closest('.endpoint-card');
+      if(!card){ window.open(url,'_blank'); return; }
+      var panel = card.querySelector('.ep-result');
+      if(!panel){ panel = document.createElement('div'); panel.className = 'ep-result'; card.appendChild(panel); }
+      var orig = btn.textContent;
+      btn.classList.add('running'); btn.textContent = 'Running…';
+      panel.innerHTML = '<div class="ep-result-bar"><span class="ep-status wait">contacting…</span></div>';
+      var t0 = performance.now();
+      var waking = setTimeout(function(){
+        var st = panel.querySelector('.ep-status');
+        if(st){ st.textContent = 'waking server (up to ~30s)…'; }
+      }, 3500);
+      fetch(url).then(function(r){
+        clearTimeout(waking);
+        var ms = Math.round(performance.now() - t0);
+        var ct = r.headers.get('content-type') || '';
+        return r.text().then(function(body){ return { r:r, body:body, ms:ms, ct:ct }; });
+      }).then(function(res){
+        var ok = res.r.ok;
+        var pretty = res.body;
+        if(/json/.test(res.ct)){ try{ pretty = JSON.stringify(JSON.parse(res.body), null, 2); }catch(err){} }
+        var truncated = false;
+        if(pretty.length > 4000){ pretty = pretty.slice(0, 4000); truncated = true; }
+        var kind = /json/.test(res.ct) ? 'json' : (/csv/.test(res.ct) ? 'csv' : ((res.ct.split(';')[0]) || 'text'));
+        panel.innerHTML =
+          '<div class="ep-result-bar">' +
+            '<span class="ep-status ' + (ok?'ok':'err') + '">' + res.r.status + ' ' + (ok?'OK':(res.r.statusText||'Error')) + '</span>' +
+            '<span class="ep-time">' + res.ms + ' ms · ' + kind + '</span>' +
+            '<a class="ep-raw" href="' + url + '" target="_blank" rel="noopener">open raw ↗</a>' +
+          '</div>' +
+          '<pre class="ep-body">' + esc(pretty) + (truncated ? '\n\n… truncated — use “open raw” for the full payload.' : '') + '</pre>';
+        btn.classList.remove('running'); btn.textContent = orig;
+      }).catch(function(){
+        clearTimeout(waking);
+        panel.innerHTML =
+          '<div class="ep-result-bar">' +
+            '<span class="ep-status err">request failed</span>' +
+            '<span class="ep-time">the free-tier server may still be waking — try again</span>' +
+            '<a class="ep-raw" href="' + url + '" target="_blank" rel="noopener">open raw ↗</a>' +
+          '</div>';
+        btn.classList.remove('running'); btn.textContent = orig;
+      });
+    });
+  });
+})();
+</script>
+<script src="shared.js"></script>
+</body></html>

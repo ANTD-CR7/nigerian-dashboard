@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="offline/snapshot.js"></script>
+<script src="offline/npe-offline.js"></script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="NPEDATA data sources: the Central Bank of Nigeria, National Bureau of Statistics and World Bank — what each provides, update frequency, coverage and data quality notes.">
+<title>Data Sources — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
+    <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="#">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a></div></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="data_sources.html" class="active">Data Sources</a><a href="about.html">About</a>
+  <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
+  <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a>
+</div>
+<section class="page-hero"><div class="container">
+  <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / Data Sources</div>
+  <h1>Data Sources</h1><div class="page-hero-rule"></div>
+  <p>Every figure on this platform traces back to one of three official public institutions. No estimates, no third-party resellers — primary sources only.</p>
+</div></section>
+<main class="page-content"><div class="container">
+
+  <div class="chart-card reveal" id="hm-card">
+    <div class="chart-card-title">The Aggregation at a Glance — every indicator, every year</div>
+    <p class="chart-context">One picture of the whole platform: each row is one of the <strong>122 indicators</strong>, each column a year from 1960 to 2026, and each cell glows brighter the more observations were aggregated for that indicator in that year. The dense modern block on the right is the 2020–2026 case-study core; the long thin rows reaching back left are the deep historical series (GDP sectors to 1981, CBN financials to 1960). Hover any cell for the detail.</p>
+    <div class="hm-wrap"><canvas id="hm-canvas" aria-label="Coverage heatmap: 122 indicators by year, brightness showing observation count" role="img"></canvas><div class="chart-loading" id="hm-loading" style="position:static;height:80px;">Aggregating 12,100 observations…</div></div>
+    <div class="hm-legend"><span>Observations per year:</span><span><span class="sw" style="background:rgba(0,135,81,0.18)"></span>1</span><span><span class="sw" style="background:rgba(0,163,98,0.45)"></span>4</span><span><span class="sw" style="background:rgba(0,200,150,0.75)"></span>12 (monthly)</span><span><span class="sw" style="background:#00C896"></span>250+ (daily)</span><span style="margin-left:auto">Rows grouped by category · computed live from the database</span></div>
+    <div class="hm-tip" id="hm-tip"></div>
+  </div>
+
+  <div class="chart-card reveal" id="cbn">
+    <div class="chart-card-title">Central Bank of Nigeria (CBN)</div>
+    <p style="font-family:var(--font-body);font-size:0.88rem;color:var(--slate);line-height:1.7;margin-bottom:18px;">Nigeria's central monetary authority. Publishes official exchange rates, the Monetary Policy Rate, foreign reserves, the NFEM daily market report, currency-in-circulation figures and its own balance sheet.</p>
+    <div class="mini-grid" style="margin-bottom:18px;">
+      <div class="stats-strip-item" style="border:1px solid rgba(245,240,232,0.06);border-radius:8px;">
+        <div class="strip-label">Indicators Provided</div>
+        <div class="strip-value">~100</div>
+      </div>
+      <div class="stats-strip-item" style="border:1px solid rgba(245,240,232,0.06);border-radius:8px;">
+        <div class="strip-label">Update Frequency</div>
+        <div class="strip-value" style="font-size:1rem;">Daily – Monthly</div>
+      </div>
+    </div>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Dataset</th><th>Frequency</th><th>Coverage</th></tr></thead>
+        <tbody>
+          <tr><td>Exchange Rate (NGN/USD)</td><td>Daily → monthly avg</td><td>2020–2026</td></tr>
+          <tr><td>Monetary Policy Rate</td><td>Per MPC meeting</td><td>2020–2026</td></tr>
+          <tr><td>FX Reserves (gross/liquid/blocked)</td><td>Monthly</td><td>2020–2026</td></tr>
+          <tr><td>11-currency buying/central/selling rates</td><td>Monthly</td><td>2020–2026</td></tr>
+          <tr><td>NFEM daily rates</td><td>Daily</td><td>Dec 2024–Apr 2026</td></tr>
+          <tr><td>Balance sheet (assets, liabilities, gold)</td><td>Monthly</td><td>2005–2023</td></tr>
+          <tr><td>Annual financial statement</td><td>Annual</td><td>1960–2012</td></tr>
+          <tr><td>Currency in circulation</td><td>Monthly</td><td>2002–2024</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-family:var(--font-body);font-size:0.78rem;color:var(--slate);margin-top:14px;line-height:1.6;"><strong style="color:var(--slate);">Data quality note:</strong> CBN figures are published as official administrative records, not survey estimates — the highest-confidence tier of data on this platform. Source: <a href="https://www.cbn.gov.ng" target="_blank" rel="noopener" style="color:var(--green-text);">cbn.gov.ng</a></p>
+  </div>
+
+  <div class="chart-card reveal" id="nbs">
+    <div class="chart-card-title">National Bureau of Statistics (NBS)</div>
+    <p style="font-family:var(--font-body);font-size:0.88rem;color:var(--slate);line-height:1.7;margin-bottom:18px;">Nigeria's official statistics agency. Publishes the Consumer Price Index (inflation) and quarterly GDP reports, including the full 47-sector real GDP breakdown.</p>
+    <div class="mini-grid" style="margin-bottom:18px;">
+      <div class="stats-strip-item" style="border:1px solid rgba(245,240,232,0.06);border-radius:8px;">
+        <div class="strip-label">Indicators Provided</div>
+        <div class="strip-value">~60</div>
+      </div>
+      <div class="stats-strip-item" style="border:1px solid rgba(245,240,232,0.06);border-radius:8px;">
+        <div class="strip-label">Update Frequency</div>
+        <div class="strip-value" style="font-size:1rem;">Monthly / Quarterly</div>
+      </div>
+    </div>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Dataset</th><th>Frequency</th><th>Coverage</th></tr></thead>
+        <tbody>
+          <tr><td>Headline, food and core inflation</td><td>Monthly</td><td>2003–2026</td></tr>
+          <tr><td>Real GDP growth rate</td><td>Quarterly</td><td>2020–2026</td></tr>
+          <tr><td>Real GDP — 47 sectors</td><td>Quarterly / Annual</td><td>1981–2024</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-family:var(--font-body);font-size:0.78rem;color:var(--slate);margin-top:14px;line-height:1.6;"><strong style="color:var(--slate);">Data quality note:</strong> NBS Consumer Price Index methodology was rebased in 2024; this platform uses the headline year-on-year series as published, without retroactive adjustment. Source: <a href="https://nigerianstat.gov.ng" target="_blank" rel="noopener" style="color:var(--green-text);">nigerianstat.gov.ng</a></p>
+  </div>
+
+  <div class="chart-card reveal" id="worldbank">
+    <div class="chart-card-title">World Bank Open Data</div>
+    <p style="font-family:var(--font-body);font-size:0.88rem;color:var(--slate);line-height:1.7;margin-bottom:18px;">International development institution. Provides Nigeria's nominal GDP in current US Dollars, used as a cross-check against the NBS/CBN domestic series.</p>
+    <div class="mini-grid" style="margin-bottom:18px;">
+      <div class="stats-strip-item" style="border:1px solid rgba(245,240,232,0.06);border-radius:8px;">
+        <div class="strip-label">Indicators Provided</div>
+        <div class="strip-value">1</div>
+      </div>
+      <div class="stats-strip-item" style="border:1px solid rgba(245,240,232,0.06);border-radius:8px;">
+        <div class="strip-label">Update Frequency</div>
+        <div class="strip-value" style="font-size:1rem;">Annual</div>
+      </div>
+    </div>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Dataset</th><th>Frequency</th><th>Coverage</th></tr></thead>
+        <tbody>
+          <tr><td>Nominal GDP (USD Billions) — NY.GDP.MKTP.CD</td><td>Annual</td><td>2020–2024</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-family:var(--font-body);font-size:0.78rem;color:var(--slate);margin-top:14px;line-height:1.6;"><strong style="color:var(--slate);">Data quality note:</strong> USD-denominated GDP can fall even when local real GDP grows, since it is also a function of the Naira exchange rate — see the GDP page for the side-by-side comparison. Source: <a href="https://data.worldbank.org" target="_blank" rel="noopener" style="color:var(--green-text);">data.worldbank.org</a></p>
+  </div>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">Last Updated &amp; Live Status</div>
+    <p style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.75;">For real-time database health, record counts and per-indicator freshness, see the <a href="status.html" style="color:var(--green-text);font-weight:600;">System Status page</a>. For the full technology stack and project background, see <a href="about.html" style="color:var(--green-text);font-weight:600;">About</a>.</p>
+  </div>
+
+</div></main>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green-text)">E</span>DATA</span><p>An open platform for Nigeria's public economic data.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<script src="shared.js"></script>
+<script>
+/* ─── Aggregation coverage heatmap: 122 indicators × 1960–2026 ─── */
+(function(){
+  var SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+  var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+  var H={apikey:KEY,Authorization:'Bearer '+KEY};
+  var cv=document.getElementById('hm-canvas'); if(!cv)return;
+  var loading=document.getElementById('hm-loading'), tip=document.getElementById('hm-tip');
+  function page(i){
+    return fetch(SB+'/observations?select=indicator_id,obs_date&order=indicator_id.asc,obs_date.asc',
+      {headers:Object.assign({Range:(i*1000)+'-'+((i+1)*1000-1)},H)})
+      .then(function(r){return r.ok?r.json():[];}).catch(function(){return [];});
+  }
+  Promise.all([
+    fetch(SB+'/indicators?select=id,name&limit=300',{headers:H}).then(function(r){return r.json();}),
+    Promise.all([0,1,2,3,4,5,6,7,8,9,10,11,12].map(page))
+  ]).then(function(res){
+    var inds=res[0], obs=[].concat.apply([],res[1]);
+    inds.forEach(function(x){x.cat=(typeof npeCategory==='function')?npeCategory(x.id):'All';});
+    inds.sort(function(a,b){return a.cat.localeCompare(b.cat)||a.name.localeCompare(b.name);});
+    var idx={}; inds.forEach(function(x,i){idx[x.id]=i;});
+    var Y0=1960,Y1=2026,NY=Y1-Y0+1;
+    var counts=inds.map(function(){return new Array(NY).fill(0);});
+    obs.forEach(function(o){
+      var r=idx[o.indicator_id]; if(r==null)return;
+      var y=+o.obs_date.slice(0,4); if(y<Y0||y>Y1)return;
+      counts[r][y-Y0]++;
+    });
+    var cell=10,rowH=6,padL=8,padT=20,padB=6;
+    var W=padL+NY*cell+8, Hh=padT+inds.length*rowH+padB;
+    var dpr=window.devicePixelRatio||1;
+    cv.width=W*dpr; cv.height=Hh*dpr; cv.style.width=W+'px'; cv.style.height=Hh+'px';
+    var ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+    ctx.font='9px "IBM Plex Mono",monospace';
+    for(var y=Y0;y<=Y1;y+=10){
+      var x=padL+(y-Y0)*cell;
+      ctx.fillStyle='rgba(245,240,232,0.4)'; ctx.fillText(String(y),x,12);
+      ctx.fillStyle='rgba(245,240,232,0.05)'; ctx.fillRect(x,padT,1,inds.length*rowH);
+    }
+    function color(c){
+      if(!c)return null;
+      if(c<=1)return 'rgba(0,135,81,0.20)';
+      if(c<=4)return 'rgba(0,163,98,0.45)';
+      if(c<=12)return 'rgba(0,200,150,0.75)';
+      return '#00C896';
+    }
+    counts.forEach(function(row,r){
+      row.forEach(function(c,yy){
+        var col=color(c); if(!col)return;
+        ctx.fillStyle=col; ctx.fillRect(padL+yy*cell,padT+r*rowH,cell-1,rowH-1);
+      });
+    });
+    var lastCat=null;
+    inds.forEach(function(x,i){
+      if(x.cat!==lastCat){lastCat=x.cat;ctx.fillStyle='rgba(244,160,23,0.55)';ctx.fillRect(0,padT+i*rowH,4,2);}
+    });
+    loading.style.display='none';
+    cv.addEventListener('mousemove',function(e){
+      var rect=cv.getBoundingClientRect();
+      var r=Math.floor((e.clientY-rect.top-padT)/rowH), yy=Math.floor((e.clientX-rect.left-padL)/cell);
+      if(r<0||r>=inds.length||yy<0||yy>=NY){tip.style.display='none';return;}
+      var c=counts[r][yy];
+      tip.style.display='block';
+      tip.style.left=Math.min(e.clientX+14,window.innerWidth-310)+'px';
+      tip.style.top=(e.clientY+14)+'px';
+      tip.innerHTML='<strong style="color:#F5F0E8">'+inds[r].name+'</strong><br>'+inds[r].cat+' · '+(Y0+yy)+'<br>'+(c?c+' observation'+(c>1?'s':''):'no data that year');
+    });
+    cv.addEventListener('mouseleave',function(){tip.style.display='none';});
+  }).catch(function(e){loading.textContent='Could not load the coverage map';console.error(e);});
+})();
+</script>
+</body></html>

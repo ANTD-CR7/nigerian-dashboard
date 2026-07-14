@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="offline/snapshot.js"></script>
+<script src="offline/npe-offline.js"></script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Compose a cited, print-ready Nigerian economic briefing from any indicators — charts, statistics, event context, citations and method notes, generated live from the data.">
+<title>Briefing Studio — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/chart.umd.js"></script>
+<style>
+  .brief-sec { page-break-inside: avoid; }
+  .brief-cite {
+    font-family: var(--font-mono); font-size: 0.66rem; color: var(--slate);
+    border-left: 2px solid rgba(244,160,23,0.4); padding: 8px 12px; margin-top: 14px; line-height: 1.6;
+  }
+  .brief-events { font-family: var(--font-body); font-size: 0.78rem; color: var(--slate); margin-top: 10px; }
+  .brief-events strong { color: rgba(245,240,232,0.85); }
+  .brief-head-meta { font-family: var(--font-mono); font-size: 0.66rem; color: var(--slate); margin-top: 6px; }
+  @media print {
+    body { background: #fff !important; color: #111 !important; }
+    .navbar, .mobile-menu, .footer-wave-wrap, footer, .ops-card, .back-to-top, .scroll-progress,
+    .nav-search, .view-toggle, .btn-chart-tool, #brief-actions, .page-hero { display: none !important; }
+    .chart-card { background: #fff !important; border: 1px solid #ddd !important; box-shadow: none !important; }
+    .chart-card-title { color: #111 !important; }
+    .chart-context, .brief-events, .takeaway-story { color: #333 !important; }
+    .prof-tile { background: #f7f7f5 !important; border-color: #e2e2e0 !important; }
+    .prof-tile .pt-value { color: #111 !important; }
+    .prof-tile .pt-label, .prof-tile .pt-sub, .brief-cite, .brief-head-meta, .source-note { color: #555 !important; }
+    #brief-title h1, #brief-title { color: #111 !important; }
+    a { color: #0a6 !important; }
+  }
+</style>
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
+    <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="#" class="active">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html" class="active">Briefing Studio</a><a href="playground.html">Pipeline Playground</a></div></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-cta"><a href="api_docs.html" class="btn-nav-api">API Docs</a></div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="api_docs.html">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html" class="active">Briefing Studio</a><a href="playground.html">Pipeline Playground</a>
+</div>
+<section class="page-hero"><div class="container">
+  <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / Analytics / Briefing Studio</div>
+  <h1>Briefing Studio</h1><div class="page-hero-rule"></div>
+  <p>Compose a cited, print-ready economic briefing from any indicators — generated live from the aggregated data</p>
+</div></section>
+<main class="page-content"><div class="container">
+
+  <div class="ops-card reveal">
+    <h2>Compose your briefing</h2>
+    <p style="font-family:var(--font-body);font-size:0.8rem;color:var(--slate);line-height:1.7;margin-bottom:14px;">Choose up to <strong style="color:var(--white);">6 indicators</strong> (Ctrl/Cmd-click for several) and a window. Each section is built live: chart, statistics, event context and an APA citation — ready to print, save as PDF, or share as a link that regenerates it.</p>
+    <div class="ops-grid">
+      <section class="ops-panel" style="grid-column: span 2;"><label for="bf-ids">Indicators</label><select id="bf-ids" multiple size="9"><option>Loading catalogue…</option></select></section>
+      <section class="ops-panel"><label for="bf-from">From</label><input id="bf-from" type="date" value="2020-01-01"></section>
+      <section class="ops-panel"><label for="bf-to">To</label><input id="bf-to" type="date" value="2026-12-31"></section>
+      <section class="ops-panel ops-action"><label>&nbsp;</label><button id="bf-run" type="button">Generate briefing ⟶</button></section>
+    </div>
+  </div>
+
+  <div id="brief-doc" style="display:none;">
+    <div class="chart-card reveal" id="brief-title">
+      <div class="section-label">NPEDATA Briefing</div>
+      <h1 style="font-family:var(--font-display);font-size:1.9rem;color:var(--white);margin:6px 0 2px;" id="bf-doc-title">Nigeria — Economic Briefing</h1>
+      <div class="brief-head-meta" id="bf-doc-meta"></div>
+      <div id="brief-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+        <button type="button" class="btn-chart-tool" style="margin-top:0;" id="bf-print">⎙ Print / Save as PDF</button>
+        <button type="button" class="btn-chart-tool" style="margin-top:0;" id="bf-share">⤴ Share this briefing</button>
+      </div>
+    </div>
+    <div id="brief-sections"></div>
+    <div class="chart-card reveal brief-sec">
+      <div class="chart-card-title">Methodology &amp; honesty notes</div>
+      <p style="font-family:var(--font-body);font-size:0.8rem;color:var(--slate);line-height:1.75;">Statistics are computed directly from the plotted observations: min/max with dates, mean, standard deviation, and an ordinary-least-squares trend with R² and a two-tailed significance p-value. Series are shown exactly as reported by their sources (no seasonal adjustment). Coverage differs per indicator and is stated in each section. Correlation and trend describe association, not causation. Full methods and limitations: <a href="about.html" style="color:var(--green-text);">the About page</a>.</p>
+      <div class="brief-cite" id="bf-stamp"></div>
+    </div>
+  </div>
+
+</div></main>
+<div class="footer-wave-wrap"><svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C360,58 1080,2 1440,30 L1440,60 L0,60 Z" fill="#050509"/></svg></div>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>An open platform for Nigeria's public economic data.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<script src="shared.js"></script>
+<script>
+(function(){
+  var SB='https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1';
+  var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw';
+  var H={apikey:KEY,Authorization:'Bearer '+KEY};
+  var ORG={CBN:'Central Bank of Nigeria',NBS:'National Bureau of Statistics',WB:'World Bank','World Bank':'World Bank'};
+  var CATMAP={}, chartsAlive=[];
+  function fmtD(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function series(id,from,to){
+    return fetch(SB+'/observations?indicator_id=eq.'+id+'&select=obs_date,value&obs_date=gte.'+from+'&obs_date=lte.'+to+'&order=obs_date.asc',{headers:H})
+      .then(function(r){return r.json();})
+      .then(function(rows){return rows.map(function(x){return {obs_date:x.obs_date,value:parseFloat(x.value)};});});
+  }
+  npeCatalogue().then(function(cat){
+    cat.forEach(function(x){CATMAP[x.id]=x;});
+    npeFillSelect(document.getElementById('bf-ids'),cat,null);
+    var q=new URLSearchParams(location.search);
+    if(q.get('ids')){
+      var ids=q.get('ids').split(',').filter(function(i){return CATMAP[i];});
+      var sel=document.getElementById('bf-ids');
+      Array.prototype.forEach.call(sel.options,function(o){o.selected=ids.indexOf(o.value)!==-1;});
+      if(q.get('from'))document.getElementById('bf-from').value=q.get('from');
+      if(q.get('to'))document.getElementById('bf-to').value=q.get('to');
+      if(ids.length)generate();
+    }
+  });
+  document.getElementById('bf-run').addEventListener('click',generate);
+  document.getElementById('bf-print').addEventListener('click',function(){window.print();});
+  document.getElementById('bf-share').addEventListener('click',function(){
+    var sel=document.getElementById('bf-ids');
+    var ids=Array.prototype.filter.call(sel.options,function(o){return o.selected;}).map(function(o){return o.value;});
+    var u=new URL(location.href.split('?')[0]);
+    u.searchParams.set('ids',ids.join(','));
+    u.searchParams.set('from',document.getElementById('bf-from').value);
+    u.searchParams.set('to',document.getElementById('bf-to').value);
+    npeCopy(u.toString(),'Briefing link copied — opening it regenerates this exact document');
+  });
+  async function generate(){
+    var sel=document.getElementById('bf-ids');
+    var ids=Array.prototype.filter.call(sel.options,function(o){return o.selected;}).map(function(o){return o.value;}).slice(0,6);
+    if(!ids.length){if(window.npeToast)npeToast('Select at least one indicator (Ctrl/Cmd-click)');return;}
+    var from=document.getElementById('bf-from').value||'1960-01-01', to=document.getElementById('bf-to').value||'2026-12-31';
+    var host=document.getElementById('brief-sections');
+    chartsAlive.forEach(function(c){c.destroy();}); chartsAlive=[]; host.innerHTML='';
+    document.getElementById('brief-doc').style.display='';
+    document.getElementById('bf-doc-title').textContent='Nigeria — Economic Briefing ('+ids.length+' indicator'+(ids.length>1?'s':'')+')';
+    document.getElementById('bf-doc-meta').textContent='Window: '+from+' → '+to+' · Generated '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+' · NPEDATA · data: CBN / NBS / World Bank';
+    var retrieved=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+    document.getElementById('bf-stamp').textContent='Suggested citation for the briefing: NPEDATA — Nigerian Public Economic Data Aggregation and Analytics Platform. ('+new Date().getFullYear()+'). Economic briefing generated '+retrieved+'. '+location.origin+location.pathname;
+    for(let k=0;k<ids.length;k++){
+      const id=ids[k], meta=CATMAP[id]||{name:id,unit:'',source:''};
+      const sec=document.createElement('div');
+      sec.className='chart-card reveal visible brief-sec';
+      sec.innerHTML='<div class="chart-card-title">'+(k+1)+'. '+esc(meta.name)+'</div>'+
+        '<div class="chart-wrap-sm" style="height:210px"><canvas id="bf-ch-'+k+'"></canvas></div>'+
+        '<div class="profile-stats" id="bf-st-'+k+'" style="margin-top:14px;"></div>'+
+        '<div class="brief-events" id="bf-ev-'+k+'"></div>'+
+        '<div class="brief-cite" id="bf-ci-'+k+'"></div>';
+      host.appendChild(sec);
+      try{
+        let data=await series(id,from,to);
+        let usedFallback=false;
+        if(data.length<2){
+          data=await series(id,'1900-01-01','2100-12-31');
+          usedFallback=true;
+          if(data.length<2){document.getElementById('bf-st-'+k).innerHTML='<div class="prof-tile"><div class="pt-label">No data</div><div class="pt-value flat">—</div><div class="pt-sub">no observations available for this indicator</div></div>';continue;}
+        }
+        const st=npeStats(data);
+        const F=function(v){return npeFormat(v,id,meta.unit);};
+        const sig=npeSig(st.trendCorr,st.n);
+        const dir=st.slope>1e-9?'Rising':(st.slope<-1e-9?'Falling':'Flat');
+        document.getElementById('bf-st-'+k).innerHTML=[
+          ['Latest',F(st.latest.value),fmtD(st.latest.obs_date)],
+          ['Range',F(st.min.value)+' – '+F(st.max.value),'min '+st.min.date.slice(0,4)+' · max '+st.max.date.slice(0,4)],
+          ['Mean',F(st.mean),st.n+' observations'],
+          ['Volatility (σ)',F(st.std),'standard deviation'],
+          ['Trend (OLS)',dir,'R²='+(st.trendCorr*st.trendCorr).toFixed(2)+' · '+sig.label]
+        ].map(function(t){return '<div class="prof-tile"><div class="pt-label">'+t[0]+'</div><div class="pt-value">'+t[1]+'</div><div class="pt-sub">'+t[2]+'</div></div>';}).join('');
+        const rangeFrom=usedFallback?data[0].obs_date:from, rangeTo=usedFallback?data[data.length-1].obs_date:to;
+        const evs=NPE_EVENTS.filter(function(ev){return ev.date>=rangeFrom.slice(0,7)&&ev.date<=rangeTo.slice(0,7);});
+        var fallbackNote=usedFallback?('<div style="color:var(--gold);margin-bottom:6px;">This indicator has no observations between '+from+' and '+to+' — shown using its full available coverage instead ('+data[0].obs_date+' → '+data[data.length-1].obs_date+').</div>'):'';
+        document.getElementById('bf-ev-'+k).innerHTML=fallbackNote+(evs.length?('<strong>Events in this window:</strong> '+evs.map(function(e){return e.label+' ('+e.date+')';}).join(' · ')):'');
+        const org=ORG[meta.source]||meta.source||'CBN/NBS/World Bank';
+        document.getElementById('bf-ci-'+k).textContent=org+'. ('+new Date().getFullYear()+'). '+meta.name+' [Data set]. NPEDATA. Retrieved '+retrieved+', from '+location.origin+location.pathname.replace('briefing.html','')+' · Unit: '+(meta.unit||'—')+' · Coverage in this briefing: '+data[0].obs_date+' → '+data[data.length-1].obs_date;
+        const ctx=document.getElementById('bf-ch-'+k);
+        chartsAlive.push(new Chart(ctx,{type:'line',data:{labels:data.map(function(d){return fmtD(d.obs_date);}),datasets:[{data:data.map(function(d){return d.value;}),borderColor:'#4a9eff',borderWidth:2,pointRadius:0,tension:0.3,fill:false}]},
+          options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return F(c.parsed.y);}}}},
+          scales:{y:{grid:{color:'rgba(140,140,140,0.15)'},ticks:{maxTicksLimit:5,callback:function(v){return F(v);}}},x:{grid:{display:false},ticks:{maxRotation:0,maxTicksLimit:8}}}}}));
+      }catch(e){document.getElementById('bf-ci-'+k).textContent='Failed to load this indicator — try regenerating.';}
+    }
+    document.getElementById('brief-doc').scrollIntoView({behavior:'smooth',block:'start'});
+    if(window.npeToast)npeToast('Briefing generated — print it, save as PDF, or share the link');
+  }
+})();
+</script>
+</body></html>
