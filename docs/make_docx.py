@@ -132,6 +132,13 @@ def main():
     doc.styles["Heading 1"].font.size = Pt(14)
     doc.styles["Heading 2"].font.size = Pt(12)
     doc.styles["Heading 3"].font.size = Pt(12)
+    # trim wasted vertical space around headings (defaults are 24pt before H1, 10pt H2/H3)
+    doc.styles["Heading 1"].paragraph_format.space_before = Pt(6)
+    doc.styles["Heading 1"].paragraph_format.space_after = Pt(6)
+    doc.styles["Heading 2"].paragraph_format.space_before = Pt(8)
+    doc.styles["Heading 2"].paragraph_format.space_after = Pt(2)
+    doc.styles["Heading 3"].paragraph_format.space_before = Pt(6)
+    doc.styles["Heading 3"].paragraph_format.space_after = Pt(2)
     for sec in doc.sections:
         sec.top_margin = sec.bottom_margin = sec.left_margin = sec.right_margin = Inches(1)
 
@@ -172,7 +179,12 @@ def main():
             while i < len(md) and md[i].strip().startswith("|"):
                 rows.append(md[i]); i += 1
             add_table(doc, rows)
-            doc.add_paragraph()
+            # small single-spaced gap after a table (not a tall double-spaced blank line)
+            sp = doc.add_paragraph()
+            sp.paragraph_format.line_spacing = 1.0
+            sp.paragraph_format.space_before = Pt(0)
+            sp.paragraph_format.space_after = Pt(0)
+            r = sp.add_run(" "); r.font.size = Pt(4)
             continue
 
         m_img = re.match(r"^!\[(.*?)\]\((.*?)\)\s*$", line.strip())
