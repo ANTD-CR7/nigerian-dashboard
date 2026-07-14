@@ -149,6 +149,7 @@ FastAPI, data visualisation.
 - Table 1.1 Data coverage summary
 - Table 1.2 Definition of terms
 - Table 2.1 Feature-level gap analysis
+- Table 2.2 Summary of the review of related literature
 - Table 3.1 Methodology comparison
 - Table 3.2 Weaknesses of the existing workflow
 - Table 3.3 Existing vs proposed system
@@ -613,6 +614,31 @@ on correlations) that can be built directly into a product rather than left as c
 footnote. Fourth, none of the systems reviewed, Nigerian or international, combines granular
 Nigerian coverage, open machine access and built-in statistical integrity in one place.
 Chapter Three sets out to design the system that does.
+
+### 2.8 Review of Related Literature
+The literature reviewed in this chapter is drawn together in Table 2.2, which sets each principal source against its area of concern, its central contribution, and the way that contribution is applied in the present project. Taken together, the conceptual and theoretical sources supply the design vocabulary of the platform, tidy data, the relational model, REST and the Richardson Maturity Model, FAIR, and the visualisation and statistics literature, while the Nigerian policy sources establish that the barrier to open economic data in Nigeria is one of enforcement and governance rather than of technology.
+
+**Table 2.2, Summary of the review of related literature**
+
+| Source (Author, Year) | Area of concern | Central contribution | Application in this project |
+|---|---|---|---|
+| Open Government Working Group (2007); Open Knowledge Foundation (n.d.) | Open data | Principles of open government data, including machine-processability and accessibility | Machine-readable access and low-friction reach adopted as core design targets |
+| Wickham (2014) | Data standardisation | The tidy-data principle: one observation per row, one variable per column | A single tidy observations schema that unifies series of every frequency |
+| Codd (1970) | Data modelling | The relational model with typed columns and integrity constraints | Foreign keys and a uniqueness constraint that make duplicate ingestion impossible |
+| Fielding (2000) | Web architecture | REST as the architectural style for web APIs | Data exposed as resources addressed by URL and manipulated with standard HTTP verbs |
+| Richardson and Ruby (2007); Fowler (2010) | API maturity | The Richardson Maturity Model, whose Level 3 is HATEOAS | An API implemented end-to-end at Level 3 with an interactive HATEOAS Explorer |
+| Nottingham (2017) | Hypermedia | The standard Link header for non-JSON responses | Link headers applied to the platform's non-JSON endpoints |
+| Wilkinson et al. (2016) | Data governance | The FAIR principles: Findable, Accessible, Interoperable, Reusable | The evaluation yardstick for the data layer of the platform |
+| Tufte (1983) | Data visualisation | Maximising data-ink and rejecting distorting decoration | No dual axes, no truncated axes, and units stated on every chart |
+| Anscombe (1973) | Data visualisation | Identical summary statistics can conceal very different data | Every reported statistic is paired with a trustworthy plot |
+| Press et al. (2007) | Statistics | Two-tailed Student-t significance via the regularised incomplete beta function | A significance p-value reported alongside each correlation |
+| Granger and Newbold (1974) | Statistics | Spurious correlation between independently trending series | Correlations recomputed on first differences, with a warning when the relationship collapses |
+| National Information Technology Development Agency (2018) | Nigerian e-government | The e-Government Interoperability Framework (Ne-GIF) | Evidence that interoperability guidance exists but is non-binding |
+| Ogunyale and Osho (2023) | Nigerian open data | An audit finding 153 of 250 federal agencies below a basic Freedom of Information benchmark | Evidence that the access gap is one of enforcement, not of missing law |
+| Eleanya (2026); Anintah (n.d.) | Nigerian data fragmentation | Fragmentation framed as institutional and governance failure rather than a technical one | Motivates a working proof that low-cost aggregation is nonetheless feasible |
+| Falore and Jidda (2026) | Nigerian data regulation | The Nigeria Data Protection Act creating an independent regulator with enforcement powers | A precedent for an interoperability regulator with comparable enforcement teeth |
+
+The related operational systems, from FRED and the World Bank to the CBN and NBS, were compared separately in the feature-level analysis of Table 2.1, and are therefore not repeated here. The consistent message across both the scholarly literature and those systems is the same: the individual building blocks required for open, machine-readable, statistically honest Nigerian economic data are all mature and well understood, yet no existing platform brings them together, which is the space this project occupies.
 
 ---
 
