@@ -284,8 +284,8 @@ def main():
                 block.append(md[i].strip())
             p = doc.add_paragraph()
             add_runs(p, " ".join(block))
-            on_title = current_h2 in ("Title Page", "Declaration", "Certification")
-            body_format(p, center=(current_h2 == "Title Page"))
+            on_title = current_h2 == "Title Page"
+            body_format(p, center=on_title)
             if on_title:
                 for r in p.runs:
                     r.bold = True

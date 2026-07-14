@@ -34,22 +34,34 @@ IN COMPUTER SCIENCE.
 JULY 2026
 
 ### Declaration
-I declare that this project was written by me:
+I, TAOHEED ABDULMANAN OLAOSEBIKAN, with matriculation number 22/10267, hereby declare that this project titled "DESIGN AND DEVELOPMENT OF A NIGERIAN PUBLIC ECONOMIC DATA AGGREGATION AND ANALYTICS PLATFORM WITH OPEN API ACCESS: A 2020–2026 CASE STUDY" is a record of my own original work. It was carried out under the supervision of Miss Ilori Deborah in the Department of Computer Science, College of Science and Information Science (COSIS), Caleb University, Lagos. To the best of my knowledge, it has not been submitted, in whole or in part, for the award of any degree or diploma in this or any other institution, and all sources of information used have been duly acknowledged.
 
-TAOHEED ABDULMANAN OLAOSEBIKAN _______________________
+_______________________________
 
-Student's Name, Signature & Date
+TAOHEED ABDULMANAN OLAOSEBIKAN
+
+Signature and Date
 
 ### Certification
-I certify that this project is ready for departmental and college presentation:
+This is to certify that this project titled "DESIGN AND DEVELOPMENT OF A NIGERIAN PUBLIC ECONOMIC DATA AGGREGATION AND ANALYTICS PLATFORM WITH OPEN API ACCESS: A 2020–2026 CASE STUDY" was carried out by TAOHEED ABDULMANAN OLAOSEBIKAN, with matriculation number 22/10267, in partial fulfilment of the requirements for the award of the Bachelor of Science (B.Sc.) degree in Computer Science, in the Department of Computer Science, College of Science and Information Science (COSIS), Caleb University, Lagos. This project has been read and approved as meeting the requirements of the Department.
 
-DR. AYORINDE ODUROYE _______________________
+_______________________________
 
-Head of Department's Name, Signature & Date
+Miss Ilori Deborah, Project Supervisor
 
-MISS ILORI DEBORAH _______________________
+Signature and Date
 
-Supervisor's Name, Signature & Date
+_______________________________
+
+Dr. Ayorinde Oduroye, Head of Department
+
+Signature and Date
+
+_______________________________
+
+External Examiner
+
+Signature and Date
 
 ### Dedication
 I dedicate this project first to Almighty Allah, for His blessing and grace over its
