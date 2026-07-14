@@ -122,11 +122,11 @@ FastAPI, data visualisation.
 
 ### List of Figures
 - Figure 3.1 Seven-stage system architecture
-- Figure 3.1b Deployment view
-- Figure 3.2 Use-case diagram
-- Figure 3.3 Sequence diagram, loading an indicator page
-- Figure 3.4 Sequence diagram, validating a CSV through the Open API
-- Figure 3.5 Entity-relationship diagram
+- Figure 3.2 Deployment view
+- Figure 3.3 Use-case diagram
+- Figure 3.4 Sequence diagram, loading an indicator page
+- Figure 3.5 Sequence diagram, validating a CSV through the Open API
+- Figure 3.6 Entity-relationship diagram
 - Figures 4.1–4.13 System screenshots (deployed system)
 - Figure 4.14 Correlation Matrix, 12 headline indicators, computed live
 - Figure 4.15 Reform Impact, before/after June 2023 averages
@@ -137,14 +137,14 @@ FastAPI, data visualisation.
 - Table 1.1 Data coverage summary
 - Table 1.2 Definition of terms
 - Table 2.1 Feature-level gap analysis
-- Table 3.0 Methodology comparison
-- Table 3.0b Weaknesses of the existing workflow
-- Table 3.0c Existing vs proposed system
-- Table 3.1 Functional requirements
-- Table 3.1b Non-functional requirements with measurable targets
-- Table 3.1c Use-case descriptions
-- Table 3.2 Database schema (core tables)
-- Table 3.2b Data dictionary
+- Table 3.1 Methodology comparison
+- Table 3.2 Weaknesses of the existing workflow
+- Table 3.3 Existing vs proposed system
+- Table 3.4 Functional requirements
+- Table 3.5 Non-functional requirements with measurable targets
+- Table 3.6 Use-case descriptions
+- Table 3.7 Database schema (core tables)
+- Table 3.8 Data dictionary
 - Table 4.1 Test cases and results
 - Table 5.1 Achievement of objectives
 
@@ -300,12 +300,12 @@ Before the design presented in Chapter Three could be settled, it was necessary 
 that the problem is real rather than a matter of personal inconvenience, and that the
 proposed solution does not merely reinvent something already in existence. This chapter
 provides that groundwork. It works through the ideas
-the platform rests on, open data, aggregation and standardisation, data quality, REST and
-hypermedia, honest visualisation, and the classical statistics behind the analytics layer, 
-then states the theoretical framework I adopted, reviews the systems already publishing
-economic data (both international and Nigerian) to see where they fall short, and closes
-with the technology choices the implementation is built from. By the end of it, the gaps
-that Chapter Three's design has to answer should be concrete rather than assumed.
+the platform rests on (open data, aggregation and standardisation, data quality, REST and
+hypermedia, honest visualisation, and the classical statistics behind the analytics layer),
+then states the theoretical framework adopted, reviews the systems already publishing
+economic data (both international and Nigerian) to establish where they fall short, and
+closes with the technology choices from which the implementation is built. By its close, the
+gaps that Chapter Three's design must answer should be concrete rather than assumed.
 
 ### 2.2 Conceptual Review
 
@@ -360,8 +360,9 @@ related actions instead of hard-coding URLs. Very few APIs bother reaching Level
 is disproportionately useful for an open API whose consumers are strangers, because the API
 ends up describing itself, navigable from the root with no documentation required. For
 non-JSON responses the equivalent mechanism is the standard Link header (Nottingham, 2017).
-I implemented Level 3 end-to-end here, and unusually, built an interactive way to see it
-work (the HATEOAS Explorer in Chapter Four) rather than just asserting it in a spec.
+This project implements Level 3 end-to-end and, unusually, provides an interactive means of
+observing it in operation (the HATEOAS Explorer in Chapter Four) rather than merely asserting
+it in a specification.
 
 **2.2.5 Honest data visualisation.** At its core, the visualisation literature is a
 literature about not misleading people. Tufte (1983) argued for maximising the share of ink
@@ -392,8 +393,8 @@ correlation can still be highly significant in a large enough sample, and the in
 designed to preserve that distinction.
 
 ### 2.3 Theoretical Framework
-I organised both the design and the evaluation of this project around two established
-frameworks rather than inventing my own criteria as I went.
+Both the design and the evaluation of this project are organised around two established
+frameworks rather than criteria invented along the way.
 
 The first is the FAIR data principles: data should be Findable, Accessible, Interoperable
 and Reusable (Wilkinson et al., 2016). FAIR is the yardstick for the data side of the
@@ -432,9 +433,9 @@ project carries.
 
 **Our World in Data.** Not an API platform, but probably the strongest model available of
 explanatory data publication: every chart sits inside plain-language narrative, with
-sources and methods disclosed alongside it. I borrowed its storytelling pattern, what
-happened, why it matters, how to read it, for every indicator page on this platform.
-Nigerian macroeconomic coverage there is, again, limited to international aggregates.
+sources and methods disclosed alongside it. Its storytelling pattern (what happened, why it
+matters, how to read it) is adopted on every indicator page of this platform. Nigerian
+macroeconomic coverage there is, again, limited to international aggregates.
 
 **Trading Economics and Statista.** Broad commercial aggregators with polished interfaces,
 both largely paywalled, and both ultimately re-selling the same CBN and NBS publications
@@ -503,26 +504,48 @@ NDPC was given, empowered specifically to make interoperability mandatory rather
 recommended.
 
 ### 2.5 Gap Analysis
+The review above may be summarised as a feature-level comparison of the platform against the
+principal existing systems, shown in Table 2.1.
+
 **Table 2.1, Feature-level gap analysis**
 
 | Capability | FRED | World Bank | Trading Econ. | CBN | NBS | **NPEDATA** |
 |---|---|---|---|---|---|---|
 | Granular Nigerian series (daily/monthly) | No | No | Partial | Source | Source | **Yes (aggregated)** |
 | Free, no-authentication API | Key req. | Yes | No | No | No | **Yes** |
-| Hypermedia (HATEOAS L3) API | No | No | No |, |, | **Yes** |
+| Hypermedia (HATEOAS L3) API | No | No | No | N/A | N/A | **Yes** |
 | One standardised schema across sources | Yes | Yes | Yes | No | No | **Yes** |
-| Correlation with significance (R², p) | No | No | No |, |, | **Yes** |
-| Spurious-correlation warnings | No | No | No |, |, | **Yes** |
+| Correlation with significance (R², p) | No | No | No | N/A | N/A | **Yes** |
+| Spurious-correlation warnings | No | No | No | N/A | N/A | **Yes** |
 | Plain-language interpretation per series | No | Partial | No | No | No | **Yes** |
-| Public validation-as-a-service | No | No | No |, |, | **Yes** |
+| Public validation-as-a-service | No | No | No | N/A | N/A | **Yes** |
 | Citable exports (CSV/PNG/APA) | Yes | Yes | Partial | No | No | **Yes** |
 
-A clear pattern emerges once the comparison is laid out in a table: the systems with
-excellent access lack granular Nigerian data, and the systems that hold the Nigerian data
-lack machine access. More specifically, none of the systems reviewed, at any scale, combine
-statistical-integrity features, significance testing and spurious-correlation detection, 
-with plain-language interpretation for a non-specialist reader. It is that combination, not
-any single feature, that this project fills.
+**The gap.** A clear pattern emerges once the comparison is laid out in a table. The systems
+with excellent programmatic access (FRED, the World Bank and the IMF) lack granular Nigerian
+data, while the systems that hold the Nigerian data (the CBN and NBS) lack any form of machine
+access. More significantly, none of the systems reviewed, at any scale, combines three
+properties in a single, freely accessible platform: granular Nigerian coverage, open
+machine-readable access, and built-in statistical-integrity features such as significance
+testing and spurious-correlation detection presented with plain-language interpretation for
+the non-specialist reader. It is that combination, rather than any single feature, that is
+absent from the existing landscape.
+
+**How this project addresses the gap.** The design developed in Chapter Three and implemented
+in Chapter Four is directed specifically at closing each element of this gap. The absence of
+granular Nigerian data behind an open interface is addressed by the aggregation pipeline,
+which standardises daily, monthly, quarterly and annual series from the CBN, NBS and World
+Bank into one tidy observations model and republishes them through a free, no-authentication
+REST API operating at HATEOAS Level 3. The absence of statistical-integrity features is
+addressed by the analytics layer, which reports Pearson correlation together with an R² value
+and a two-tailed significance p-value, and which additionally recomputes each correlation on
+first differences and warns the user when the relationship is driven mainly by a shared trend.
+The absence of interpretation for non-specialists is addressed by the plain-language
+storytelling attached to every indicator, and the lack of trust in third-party data is
+addressed by exposing the validation layer itself as a public service and by providing
+citable CSV, image and APA-formatted exports. In combination, these design decisions convert
+the gap identified in this chapter into the concrete set of requirements specified in
+Chapter Three.
 
 ### 2.6 Review of Enabling Technologies
 Choosing the stack meant weighing several genuine alternatives rather than defaulting to
@@ -584,15 +607,24 @@ Chapter Three sets out to design the system that does.
 ## CHAPTER THREE, SYSTEM ANALYSIS AND DESIGN
 
 ### 3.1 Introduction
-This chapter translates the problem stated in Chapter One and the review in Chapter Two into
-a design. It sets out the methodology adopted and the reasons for selecting it over the
-alternatives, describes how Nigerian public economic data is obtained at present through a
-concrete scenario rather than an abstract description, specifies the proposed system and its
-requirements, and then develops the design in detail, architecture, use cases, data flow,
-database design and data dictionary, API design, core algorithms, input/output design,
-security, and the user interface. Care is taken throughout to relate each decision to a
-specific reality of the Nigerian data landscape rather than presenting it as an abstract
-choice, since very few of the decisions were abstract.
+This chapter presents the analysis and design of the proposed system. It builds directly on
+the problem established in Chapter One and the review of existing approaches in Chapter Two,
+translating them into a concrete specification and architecture for the platform. The purpose
+of the chapter is to make explicit, before implementation, both what the system is required
+to do and how it is structured to do it.
+
+The chapter first sets out the research and development methodology adopted, together with
+the reasons for selecting it in preference to the alternatives considered. It then analyses
+the existing system, that is, the manual workflow through which Nigerian public economic data
+is presently obtained, and contrasts it with the proposed system, before specifying the
+functional and non-functional requirements that the system must satisfy. The remainder of the
+chapter develops the design in detail: the overall system architecture, the use-case,
+data-flow and sequence models, the database design and data dictionary, the design of the
+Open API, the core algorithms, the input and output design, the security and data-integrity
+design, and the user-interface design. Throughout, each design decision is related to a
+specific characteristic of the Nigerian data landscape identified in the preceding chapters,
+so that the design remains grounded in the realities of the problem rather than presented in
+the abstract.
 
 ### 3.2 Research and Development Methodology
 The system was built iteratively and incrementally rather than planned in full at the outset.
@@ -604,13 +636,13 @@ checked against the stored data before the next was begun.
 **Why not another approach.** Two other candidate methodologies were considered before this
 one was adopted.
 
-**Table 3.0, Methodology comparison**
+**Table 3.1, Methodology comparison**
 
 | Methodology | Strength | Why it was unsuitable here |
 |---|---|---|
-| Waterfall | Strong documentation discipline; predictable phases | Assumes requirements are fully known up front, and mine weren't, the structure, units and quirks of CBN/NBS publications only became clear once I was actually ingesting them (the CBN balance sheet, for instance, is published in ₦'000 while its annual statement uses ₦ millions). A frozen upfront specification would simply have been wrong by the second week. |
-| Scrum/agile (team-oriented) | Responsive to change; strong feedback cadence | Built around a multi-person team with defined roles, product owner, scrum master, and so on. Running that ceremony solo would have been overhead for its own sake. |
-| **Iterative prototyping (chosen)** | Working software early; each cycle absorbs what the previous one taught | Fit a solo developer, data sources that kept revealing new quirks, and a supervisor-feedback loop naturally. Every iteration ended with what I came to think of as a data-truthfulness check, going back and re-verifying that what the screens claimed actually matched what the database held. |
+| Waterfall | Strong documentation discipline; predictable phases | Assumes requirements are fully known up front, which was not the case here: the structure, units and quirks of the CBN and NBS publications only became clear once ingestion was under way (the CBN balance sheet, for example, is published in ₦'000 while its annual statement uses ₦ millions), so a frozen upfront specification would have been incorrect within the first weeks. |
+| Scrum/agile (team-oriented) | Responsive to change; strong feedback cadence | Built around a multi-person team with defined roles such as product owner and scrum master; that ceremony would have been overhead for a single developer. |
+| **Iterative prototyping (chosen)** | Working software early; each cycle absorbs what the previous one taught | Suited a single developer, data sources that continually revealed new quirks, and a supervisor-feedback loop. Every iteration ended with a data-truthfulness check, re-verifying that what the screens claimed matched what the database held. |
 
 The habit maintained throughout the process was treating verification as part of every
 iteration rather than reserving it for the end: after each increment, the figures displayed
@@ -647,7 +679,7 @@ every manual step is an opportunity for error; and the exercise is effectively o
 for a journalist working to a deadline, a secondary-school teacher, or a developer who
 requires the figures inside a program.
 
-**Table 3.0b, Weaknesses of the existing workflow**
+**Table 3.2, Weaknesses of the existing workflow**
 
 | # | Weakness | Consequence |
 |---|---|---|
@@ -679,7 +711,7 @@ previously required days of error-prone preparation now takes minutes; the stati
 caveats are supplied rather than left to chance; and the platform itself takes no side in
 the argument for which its figures are used.
 
-**Table 3.0c, Existing vs proposed system**
+**Table 3.3, Existing vs proposed system**
 
 | Dimension | Existing workflow | NPEDATA |
 |---|---|---|
@@ -696,7 +728,7 @@ Requirements were gathered from the scenario analysis in Section 3.3, the projec
 Chapter One, and supervisor feedback across iterations. They are stated per stakeholder
 group where relevant.
 
-**Table 3.1, Functional requirements**
+**Table 3.4, Functional requirements**
 
 | ID | Requirement | Primary stakeholder |
 |---|---|---|
@@ -716,7 +748,7 @@ group where relevant.
 | FR14 | Provide embeddable live chart widgets for third-party sites | Publishers |
 | FR15 | Provide machine-readable platform discovery for AI agents (llms.txt; MCP server) | AI agents |
 
-**Table 3.1b, Non-functional requirements (with measurable targets)**
+**Table 3.5, Non-functional requirements (with measurable targets)**
 
 | ID | Requirement | Target | Achieved (evidence in Ch. 4) |
 |---|---|---|---|
@@ -759,20 +791,20 @@ default. Finally, in the **present** stage, the static dashboard deliberately re
 database's REST layer directly, so that the primary user experience does not depend on the
 API host being awake.
 
-**Figure 3.1b, Deployment view**
+**Figure 3.2, Deployment view**
 
-![Figure 3.1b, Deployment view](figures/fig3_1b_deployment.png)
+![Figure 3.2, Deployment view](figures/fig3_1b_deployment.png)
 
 The two data paths are intentional: the dashboard's independence from the API host is an
 availability decision (assessed further in Section 4.9).
 
 ### 3.7 System Design
 
-**3.7.1 Use-case design (Figure 3.2)**
+**3.7.1 Use-case design (Figure 3.3)**
 
-![Figure 3.2, Use-case diagram](figures/fig3_2_usecases.png)
+![Figure 3.3, Use-case diagram](figures/fig3_2_usecases.png)
 
-**Table 3.1c, Use-case descriptions (three representative cases in full)**
+**Table 3.6, Use-case descriptions (three representative cases in full)**
 
 **UC-1: Interpret an indicator (Public/Student).**
 *Precondition:* none, public site. *Main flow:* (1) user opens an indicator page, e.g.
@@ -808,19 +840,19 @@ the NPEDATA process, which stores standardised observations and returns charts, 
 CSV to users. At Level 1 the process decomposes into *Ingest → Validate → Store → Query →
 Analyse → Serve*. Two representative interactions are shown as sequence diagrams.
 
-**Figure 3.3, Sequence: loading an indicator page**
+**Figure 3.4, Sequence: loading an indicator page**
 
-![Figure 3.3, Sequence diagram: loading an indicator page](figures/fig3_5_seq_pageload.png)
+![Figure 3.4, Sequence diagram: loading an indicator page](figures/fig3_5_seq_pageload.png)
 
-**Figure 3.4, Sequence: validating a CSV through the Open API**
+**Figure 3.5, Sequence: validating a CSV through the Open API**
 
-![Figure 3.4, Sequence diagram: validating a CSV through the Open API](figures/fig3_6_seq_validate.png)
+![Figure 3.5, Sequence diagram: validating a CSV through the Open API](figures/fig3_6_seq_validate.png)
 
-**3.7.3 Database design (Figure 3.5, ERD)**
+**3.7.3 Database design (Figure 3.6, ERD)**
 
-![Figure 3.5, Entity-relationship diagram](figures/fig3_4_erd.png)
+![Figure 3.6, Entity-relationship diagram](figures/fig3_4_erd.png)
 
-**Table 3.2, Database schema (core tables)**
+**Table 3.7, Database schema (core tables)**
 
 | Table | Key columns | Purpose |
 |---|---|---|
@@ -831,7 +863,7 @@ Analyse → Serve*. Two representative interactions are shown as sequence diagra
 The long/tidy `observations` table lets indicators of any frequency or unit coexist in one
 structure, the key standardisation decision of the project.
 
-**Table 3.2b, Data dictionary**
+**Table 3.8, Data dictionary**
 
 *Table `data_sources`*
 | Field | Type | Constraints | Description | Example |
@@ -1085,9 +1117,9 @@ reasoning applied to the numbers above rather than a further live computation, s
 distinction between what the platform computed and what it is arguing stays honest.
 
 ### 4.7 Testing and Validation
-I validated the platform through several complementary strands rather than relying on any
-one of them alone, automated tests, independent statistical validation, and a systematic
-audit of the data itself.
+The platform was validated through several complementary strands rather than any one alone:
+automated tests, independent statistical validation, and a systematic audit of the data
+itself.
 
 **Automated unit testing (Pytest).** The Open API is covered by a suite of **24 unit
 tests** in `tests/test_main.py`, exercising the read endpoints, the demo-safe ingestion path,
@@ -1305,11 +1337,89 @@ student, within one academic year.
 ---
 
 ## APPENDICES
-- **Appendix A, Sample API response** (showing the `_links` HATEOAS block).
-- **Appendix B, Selected source code** (data model, an endpoint, the analytics function).
-- **Appendix C, Full list of endpoints** (see project `README.md`).
-- **Appendix D, Screenshots** (full set referenced in Chapter Four).
-- **Appendix E, Repository & live links:**
- - Source: https://github.com/ANTD-CR7/nigerian-dashboard
- - Dashboard: https://antd-cr7.github.io/nigerian-dashboard/
- - API: https://npedata-api.onrender.com (docs at `/docs`)
+
+### Appendix A, Sample API response (HATEOAS)
+The response below is returned by `GET /api/v1/summary`. Every response of the Open API
+carries an embedded `_links` block that describes the actions available next, which is what
+makes the interface navigable from its root without prior documentation (HATEOAS, Richardson
+Maturity Level 3).
+
+```
+GET /api/v1/summary
+{
+  "gdp_growth":    { "obs_date": "2024-10-01", "value": 3.97,    "source": "NBS" },
+  "inflation":     { "obs_date": "2026-03-01", "value": 15.38,   "source": "NBS" },
+  "exchange_rate": { "obs_date": "2026-04-01", "value": 1360.72, "source": "CBN" },
+  "mpr":           { "obs_date": "2025-11-19", "value": 26.25,   "source": "CBN" },
+  "fx_reserves":   { "obs_date": "2026-04-01", "value": 48.67,   "source": "CBN" },
+  "_links": {
+    "self":      { "href": ".../api/v1/summary" },
+    "index":     { "href": ".../" },
+    "inflation": { "href": ".../api/v1/inflation" },
+    "analytics": { "href": ".../api/v1/analytics/inflation" },
+    "coverage":  { "href": ".../api/v1/coverage" },
+    "docs":      { "href": ".../docs" }
+  }
+}
+```
+
+### Appendix B, Selected source code
+*The tidy observations model (the standardisation decision of the project):*
+
+```
+CREATE TABLE observations (
+  indicator_id TEXT    NOT NULL REFERENCES indicators(id),
+  obs_date     DATE    NOT NULL,
+  value        NUMERIC NOT NULL,
+  source       TEXT,
+  UNIQUE (indicator_id, obs_date)      -- makes duplicate ingestion impossible
+);
+```
+
+*A representative read endpoint (FastAPI), showing the hypermedia block:*
+
+```
+@app.get("/api/v1/inflation")
+def inflation(start: str | None = None, end: str | None = None):
+    rows = fetch_series("inflation", start, end)      # cached data-access layer
+    return {
+        "indicator": "inflation",
+        "count": len(rows),
+        "data": rows,
+        "_links": { "self":     {"href": "/api/v1/inflation"},
+                    "analytics":{"href": "/api/v1/analytics/inflation"},
+                    "summary":  {"href": "/api/v1/summary"},
+                    "index":    {"href": "/"} },
+    }
+```
+
+*The correlation-significance function (two-tailed Student-t p-value via the regularised
+incomplete beta function), computed identically on the client and server:*
+
+```
+function npeCorrP(r, n) {                        // p-value that Pearson r differs from 0
+  if (n < 3 || Math.abs(r) >= 1) return null;
+  var df = n - 2, t2 = r * r * df / (1 - r * r);
+  return npeIbeta(df / (df + t2), df / 2, 0.5);  // I_x(a, b): regularised incomplete beta
+}
+```
+
+### Appendix C, Full list of API endpoints
+Read endpoints (GET), all returning JSON with a `_links` block: `/`, `/api/v1/summary`,
+`/api/v1/gdp`, `/api/v1/inflation`, `/api/v1/exchange-rate`, `/api/v1/interest-rate`,
+`/api/v1/fx-reserves`, `/api/v1/currency-circulation`, `/api/v1/nfem`, `/api/v1/multicurrency`,
+`/api/v1/gdp-sectors`, `/api/v1/cbn-balance-sheet`, `/api/v1/analytics`,
+`/api/v1/analytics/{indicator_id}`, `/api/v1/coverage`, `/api/v1/export/{indicator_id}` (CSV,
+with an RFC 8288 `Link` header), and `/llms.txt` (machine-readable platform discovery).
+Write endpoints (POST), demo-safe by default (validate and normalise but do not persist unless
+explicitly enabled): `/api/v1/observations`, `/api/v1/ingest/csv`, and `/api/v1/validate/csv`.
+Interactive Swagger documentation is generated automatically at `/docs`.
+
+### Appendix D, Screenshots
+The full set of deployed-system screenshots is presented as Figures 4.1 to 4.17 in Chapter
+Four.
+
+### Appendix E, Repository and live links
+Source code: https://github.com/ANTD-CR7/nigerian-dashboard. Dashboard:
+https://antd-cr7.github.io/nigerian-dashboard/. Open API: https://npedata-api.onrender.com
+(interactive documentation at `/docs`).

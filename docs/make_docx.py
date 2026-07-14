@@ -192,8 +192,17 @@ def main():
             if len(doc.element.body) > 1:  # never open the document with a blank page
                 doc.add_page_break()
             current_h2 = ""
-            h = style_heading(doc.add_heading(current_h1, level=1))
+            h = doc.add_heading("", level=1)
             h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            # "CHAPTER ONE, INTRODUCTION" -> two centred lines (thesis convention)
+            if current_h1.startswith("CHAPTER") and ", " in current_h1:
+                label, title = current_h1.split(", ", 1)
+                h.add_run(label)
+                h.add_run().add_break()
+                h.add_run(title)
+            else:
+                h.add_run(current_h1)
+            style_heading(h)
         elif line.startswith("### "):
             current_h2 = re.sub(r"\*\*", "", line[4:]).strip()
             if current_h2 in ("Declaration", "Certification", "Dedication", "Acknowledgements", "Abstract", "Table of Contents", "List of Figures", "List of Tables"):
