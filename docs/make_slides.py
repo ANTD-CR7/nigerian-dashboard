@@ -1,4 +1,4 @@
-"""Build a 20-slide NPEDATA defence deck (16:9) in the platform's palette.
+"""Build a 21-slide NPEDATA defence deck (16:9) in the platform's palette.
 Run:  python docs/make_slides.py   ->  docs/NPEDATA_Defense_Slides.pptx
 """
 from pathlib import Path
@@ -68,7 +68,7 @@ def header(slide, eyebrow, title, n):
     # slide number chip
     num = box(slide, Inches(12.35), Inches(6.95), Inches(0.8), Inches(0.4))
     np_ = num.text_frame.paragraphs[0]; np_.alignment = PP_ALIGN.RIGHT
-    set_run(np_.add_run(), f"{n:02d} / 20", 10, SLATE, BODY_F)
+    set_run(np_.add_run(), f"{n:02d} / 21", 10, SLATE, BODY_F)
 
 
 def bullets(slide, items, top=Inches(2.35), left=Inches(1.0), width=Inches(11.2),
@@ -254,48 +254,57 @@ content("Chapter Four", "The Dashboard", 13, img=FIG / "fig4_4_analyst_dial.png"
     ("Accessible", "WCAG 2.1 AA; 100/100 Lighthouse."),
 ], caption="Figure 4.4 — The Reader/Analyst dial revealing statistical detail.")
 
-# ─────────────────────────── SLIDE 14 ───────────────────────────
-content("Chapter Four", "Feature — Reform Impact", 14, img=FIG / "fig4_15_reform_impact.png", items=[
+# ─────────────────────────── SLIDE 14 — ANALYTICS ───────────────────────────
+content("Chapter Four", "The Analytics Engine", 14, img=FIG / "fig4_9_compare_significance.png", items=[
+    ("Full profile, any of 122 indicators", "latest value, year-on-year change, min/max range, volatility and OLS trend — all computed live."),
+    ("Correlation with significance", "Pearson r reported with R² and a two-tailed Student-t p-value — strength AND reliability, not just a number."),
+    ("Correlation matrix", "12 headline indicators cross-correlated at once — the whole aggregation related to itself, not one pair at a time."),
+    ("Standardisation & projection", "z-scores put different-unit series on one honest axis; OLS gives the trend and an illustrative linear projection."),
+    ("Classical & transparent", "every figure is checkable and reproducible — no black-box ML, by design."),
+], caption="Figure 4.9 — Correlation reported with R² and a significance p-value.")
+
+# ─────────────────────────── SLIDE 15 ───────────────────────────
+content("Chapter Four", "Feature — Reform Impact", 15, img=FIG / "fig4_15_reform_impact.png", items=[
     ("The 2023 reforms", "fuel-subsidy removal and FX unification, split before/after June 2023."),
     ("Computed live", "every headline indicator averaged on each side of the reform."),
     ("Takes no side", "a critic and a supporter can both cite real numbers on one page."),
     ("Neutrality is the contribution", "the platform makes the data checkable, not the argument settled."),
 ], caption="Figure 4.15 — Reform Impact: before/after June 2023, neutral critic/supporter readings.")
 
-# ─────────────────────────── SLIDE 15 ───────────────────────────
-content("Chapter Four", "Honesty Guards & Validation", 15, img=FIG / "fig4_12_playground.png", items=[
+# ─────────────────────────── SLIDE 16 ───────────────────────────
+content("Chapter Four", "Honesty Guards & Validation", 16, img=FIG / "fig4_12_playground.png", items=[
     ("Spurious-correlation warning", "level r vs detrended r — flags shared-trend illusions."),
     ("Significance separated from strength", "a weak r can still be significant in a large sample."),
     ("Validation as a service", "the Pipeline Playground judges any CSV row-by-row — and never writes."),
     ("Demo-safe by default", "write paths are structurally disabled."),
 ], caption="Figure 4.12 — Pipeline Playground: per-row verdicts, nothing written.")
 
-# ─────────────────────────── SLIDE 16 ───────────────────────────
-content("Chapter Four", "Testing & Validation", 16, items=[
+# ─────────────────────────── SLIDE 17 ───────────────────────────
+content("Chapter Four", "Testing & Validation", 17, items=[
     ("24 automated unit tests (Pytest)", "read endpoints, demo-safe ingestion, TTL cache, and the HATEOAS _links — all pass."),
     ("Independent statistical validation", "p-values checked against known cases; the value formatter unit-tested across every unit type."),
     ("Data-truthfulness audit", "found and fixed real defects: a data-censoring routine, unit mislabels (×1000), a mis-titled “inverse” chart, a year-mismatched comparison."),
     ("Accessibility & robustness", "WCAG AA contrast; adversarial inputs (NaN/∞, 5,000-row floods) survive."),
 ])
 
-# ─────────────────────────── SLIDE 17 ───────────────────────────
-content("Chapter Four", "Results", 17, img=FIG / "fig4_10_heatmap.png", items=[
+# ─────────────────────────── SLIDE 18 ───────────────────────────
+content("Chapter Four", "Results", 18, img=FIG / "fig4_10_heatmap.png", items=[
     ("122 indicators, ~12,100 observations", "aggregated into one queryable store."),
     ("17 live API endpoints", "documented, HATEOAS Level 3, all passing."),
     ("100/100 Lighthouse", "accessibility, on a zero-build static frontend."),
     ("Correct by audit", "displayed figures verified against stored data."),
 ], caption="Figure 4.10 — The aggregation at a glance: 122 indicators × 1960–2026, computed live.")
 
-# ─────────────────────────── SLIDE 18 ───────────────────────────
-content("Chapter Five", "Contribution to Knowledge", 18, items=[
+# ─────────────────────────── SLIDE 19 ───────────────────────────
+content("Chapter Five", "Contribution to Knowledge", 19, items=[
     ("A working reference implementation", "of a unified Nigerian public-economic-data platform."),
     ("With a genuinely open, HATEOAS-level API", "an artefact that did not previously exist in freely accessible form."),
     ("Built entirely from free & open-source tools", "reproducible from the repository alone."),
     ("Evidence for a governance argument", "that unifying this data was always a choice, not an engineering barrier."),
 ])
 
-# ─────────────────────────── SLIDE 19 ───────────────────────────
-content("Chapter Five", "Limitations & Future Work", 19, items=[
+# ─────────────────────────── SLIDE 20 ───────────────────────────
+content("Chapter Five", "Limitations & Future Work", 20, items=[
     ("Automate collection", "scheduled connectors to source portals, ending manual re-ingestion."),
     ("Expand coverage", "more indicators, state-level data, longer historical series."),
     ("Richer analytics", "seasonal adjustment and proper forecasting — keeping transparency."),
@@ -303,7 +312,7 @@ content("Chapter Five", "Limitations & Future Work", 19, items=[
     ("Client SDKs", "Python / JavaScript packages to ease adoption."),
 ])
 
-# ─────────────────────────── SLIDE 20: CLOSE ───────────────────────────
+# ─────────────────────────── SLIDE 21: CLOSE ───────────────────────────
 s = prs.slides.add_slide(BLANK); bg(s)
 accent_bar(s, Inches(0.9), Inches(2.0), Inches(0.7))
 t = box(s, Inches(0.88), Inches(2.2), Inches(11.5), Inches(1.4))
