@@ -101,12 +101,12 @@ def content(eyebrow, title, n, items=None, img=None, img_side="right", caption=N
     header(s, eyebrow, title, n)
     if img and items:
         # split: bullets left, image right
-        bullets(s, items, top=Inches(2.4), left=Inches(1.0), width=Inches(6.0), size=16, gap=9)
-        add_image(s, img, Inches(7.25), Inches(2.35), Inches(5.4), Inches(4.4))
+        bullets(s, items, top=Inches(2.55), left=Inches(1.0), width=Inches(6.0), size=19, gap=16)
+        add_image(s, img, Inches(7.25), Inches(2.5), Inches(5.4), Inches(4.2))
     elif img:
         add_image(s, img, Inches(1.4), Inches(2.35), Inches(10.5), Inches(4.4))
     elif items:
-        bullets(s, items, size=18)
+        bullets(s, items, top=Inches(2.7), size=24, gap=22)
     if caption:
         c = box(s, Inches(1.0), Inches(6.85), Inches(11.0), Inches(0.4))
         cp = c.text_frame.paragraphs[0]
@@ -142,174 +142,160 @@ for i, (k, v) in enumerate(lines):
     set_run(p.add_run(), v, 14, CREAM, BODY_F)
 
 # ─────────────────────────── SLIDE 2 ───────────────────────────
-content("Chapter One", "Introduction & Background", 2, items=[
-    ("Economic data is a public good", "decisions by government, researchers, journalists, developers and the public depend on timely, reliable figures."),
-    ("Nigeria's data is produced by credible institutions", "the CBN and NBS, supplemented by the World Bank."),
-    ("But it is fragmented", "scattered across many sites and published for reading, not computation — PDF bulletins, spreadsheets, inconsistent web tables."),
-    ("The result is a high “friction cost”", "combining even two indicators means locating, reconciling and aligning them by hand before any analysis can begin."),
-    ("This project", "consolidates and standardises that data, then republishes it as a dashboard for people and an open API for programs."),
+content("The Context", "The data exists. You just can't use it.", 2, items=[
+    ("Credible sources", "CBN, NBS, World Bank."),
+    ("But fragmented", "scattered PDFs and spreadsheets, published to read, not to compute."),
+    ("High friction", "every question starts with manual cleaning."),
 ])
 
 # ─────────────────────────── SLIDE 3 ───────────────────────────
-content("Chapter One", "Statement of the Problem", 3, items=[
-    ("Fragmentation", "no common point of access across institutional sites and documents."),
-    ("Not machine-readable", "locked in PDFs and inconsistent spreadsheets; every reuse starts with manual extraction."),
-    ("Inconsistent structure & units", "daily to annual frequencies; ₦'000, ₦ millions, %, USD — no unified schema."),
-    ("No open API", "nothing free, documented and authentication-free to query programmatically."),
-    ("Minimal presentation", "rarely beyond a static figure — little comparison or plain-language interpretation."),
-    ("Duplicated effort", "every user repeats the same collection and cleaning work."),
+content("The Problem", "Public data, practically closed", 3, items=[
+    ("Not machine-readable", "locked in PDFs."),
+    ("No common schema", "clashing units and frequencies."),
+    ("No open API", "nothing free to query."),
+    ("Duplicated effort", "everyone re-cleans the same data."),
 ])
 
 # ─────────────────────────── SLIDE 4 ───────────────────────────
-s = content("Chapter One", "Aim & Objectives", 4)
-a = box(s, Inches(1.0), Inches(2.2), Inches(11.2), Inches(1.0))
+s = content("Aim & Objectives", "One store. Two front doors.", 4)
+a = box(s, Inches(1.0), Inches(2.25), Inches(11.3), Inches(1.0))
 ap = a.text_frame.paragraphs[0]
-set_run(ap.add_run(), "Aim:  ", 17, GOLD, BODY_F, bold=True)
-set_run(ap.add_run(), "To design and develop a web-based platform that aggregates Nigeria's public economic data into a single standardised store, accessible through an interactive dashboard and a free, open API.", 17, CREAM, BODY_F)
+set_run(ap.add_run(), "Aim  ", 18, GOLD, BODY_F, bold=True)
+set_run(ap.add_run(), "Aggregate Nigeria's public economic data into one standardised store, served through a dashboard and a free open API.", 18, CREAM, BODY_F)
 objs = [
-    ("", "Collect indicators from the CBN, NBS and World Bank into one repository."),
-    ("", "Design a unified relational model standardising indicators, sources and observations."),
-    ("", "Implement server-side analytics — change, year-on-year, trend and correlation."),
-    ("", "Build a free, documented REST API with HATEOAS and no authentication."),
-    ("", "Build an interactive dashboard with clear, accurate visualisations."),
-    ("", "Test and evaluate for correctness, usability and accessibility."),
+    "Collect  —  CBN, NBS, World Bank into one repository",
+    "Standardise  —  one relational model",
+    "Analyse  —  change, trend, correlation, server-side",
+    "Open API  —  free, documented, HATEOAS, no auth",
+    "Dashboard  —  clear, honest visualisations",
+    "Evaluate  —  correctness, usability, accessibility",
 ]
-tb = box(s, Inches(1.0), Inches(3.3), Inches(11.3), Inches(3.5)); tf = tb.text_frame
-for i, (_, v) in enumerate(objs):
-    p = tf.paragraphs[0] if i == 0 else tf.add_paragraph(); p.space_after = Pt(7)
-    set_run(p.add_run(), f"{i+1}.  ", 15, GREEN, BODY_F, bold=True)
-    set_run(p.add_run(), v, 15, CREAM, BODY_F)
+tb = box(s, Inches(1.0), Inches(3.5), Inches(11.3), Inches(3.4)); tf = tb.text_frame
+for i, v in enumerate(objs):
+    p = tf.paragraphs[0] if i == 0 else tf.add_paragraph(); p.space_after = Pt(9)
+    set_run(p.add_run(), f"{i+1}   ", 17, GREEN, BODY_F, bold=True)
+    set_run(p.add_run(), v, 17, CREAM, BODY_F)
 
 # ─────────────────────────── SLIDE 5 ───────────────────────────
-content("Chapter One", "Scope & Limitations", 5, items=[
-    ("Scope", "collection, standardisation, storage, analysis, API exposure and visualisation."),
-    ("Coverage", "122 indicators and ~12,100 observations — a controlled case study, extensible via CSV/API ingestion."),
-    ("Manual collection", "source files are ingested manually; figures reflect the latest snapshot, not a live feed."),
-    ("Bounded by sources", "coverage stops where the sources stop (e.g. the CBN annual statement ends in 2012)."),
-    ("Classical analytics", "correlation, OLS trend and linear forecast — no machine learning, by design."),
-    ("Not national infrastructure", "a student-built reference implementation, not an official system."),
+content("Scope", "What it is — and isn't", 5, items=[
+    ("Is", "a working prototype + open API, 122 indicators."),
+    ("Isn't", "not national infrastructure, not a bank, not real-time."),
+    ("No AI / ML", "transparent by design."),
+    ("Classical analytics", "correlation, trend, forecast."),
 ])
 
 # ─────────────────────────── SLIDE 6 ───────────────────────────
-content("Chapter Two", "Literature Review — Key Concepts", 6, items=[
-    ("Open data", "a public good; machine-processability and accessibility do the heavy lifting (Open Gov Working Group, 2007)."),
-    ("Tidy data", "one observation per row, metadata separate — lets any-frequency series share one table (Wickham, 2014)."),
-    ("REST & HATEOAS", "the Richardson Maturity Model; Level 3 makes an API self-describing (Fielding, 2000)."),
-    ("Honest visualisation", "no dual axes, no truncation; plots must be trustworthy (Tufte, 1983; Anscombe, 1973)."),
-    ("Classical statistics", "Pearson r with a Student-t p-value; spurious-trend caution (Granger & Newbold, 1974)."),
+content("Foundations", "Built on established ideas", 6, items=[
+    ("Open data", "machine-readable means actually usable."),
+    ("Tidy data", "one row per observation (Wickham, 2014)."),
+    ("REST & HATEOAS", "a self-describing API (Fielding, 2000)."),
+    ("Honest charts", "no dual axes (Tufte; Anscombe)."),
 ])
 
 # ─────────────────────────── SLIDE 7 ───────────────────────────
-content("Chapter Two", "Related Systems & the Gap", 7, items=[
-    ("FRED / World Bank / IMF", "excellent access, but coarse or minimal Nigerian granularity."),
-    ("Trading Economics / Statista", "largely paywalled; re-sell the same CBN/NBS figures."),
-    ("CBN & NBS", "authoritative sources — but PDF/Excel, no public API."),
-    ("data.gov.ng / BudgIT", "civic appetite exists, but focused on budgets, not usable economic time series."),
-    ("The gap", "no system combines granular Nigerian coverage, open machine access AND built-in statistical honesty."),
+content("The Gap", "Nobody puts it all together", 7, items=[
+    ("Global tools", "FRED, World Bank — thin Nigerian detail."),
+    ("Local sources", "CBN, NBS — no API."),
+    ("Paywalled aggregators", "resell the same figures."),
+    ("The gap", "none combine coverage + open access + honesty."),
 ])
 
 # ─────────────────────────── SLIDE 8 ───────────────────────────
-content("Chapter Two", "Why Hasn't This Been Built?", 8, items=[
-    ("Not a technical problem", "Nigeria has had an e-Government Interoperability Framework since 2018."),
-    ("Institutional cause", "agencies treat held data as a source of value and are reluctant to share it (Eleanya, 2026)."),
-    ("A legislative gap too", "the FOI Act mandates publication since 2011, yet 153 of 250 MDAs failed a compliance benchmark in 2022 (Ogunyale & Osho, 2023)."),
-    ("Precedent for a fix", "the 2023 Data Protection Act created the NDPC — a regulator with real enforcement power (Falore & Jidda, 2026)."),
-    ("This project", "removes the technical excuse — one student, free tools, one academic year."),
+content("Why Now", "Not a technical problem", 8, items=[
+    ("Framework exists", "Ne-GIF since 2018."),
+    ("Institutional", "agencies hoard data (Eleanya, 2026)."),
+    ("Enforcement gap", "153 of 250 MDAs fail FOI (Ogunyale & Osho, 2023)."),
+    ("This project", "removes the technical excuse."),
 ])
 
 # ─────────────────────────── SLIDE 9 ───────────────────────────
-content("Chapter Three", "Methodology", 9, items=[
-    ("Iterative & incremental prototyping", "data model → API → dashboard → analytics → refinement."),
-    ("Why not Waterfall", "requirements were not fully known up front; source quirks emerged during ingestion."),
-    ("Why not team Scrum", "the ceremony overhead is wasted on a single-developer project."),
-    ("Verification every iteration", "displayed figures cross-checked against the database before new work began."),
-    ("Consequence", "this is why the design and testing chapters are so closely connected."),
+content("Method", "Build in slices, verify each loop", 9, items=[
+    ("Iterative prototyping", "model → API → dashboard → analytics."),
+    ("Verify every loop", "figures checked against the database."),
+    ("Not Waterfall or Scrum", "requirements emerged; solo developer."),
 ])
 
 # ─────────────────────────── SLIDE 10 ───────────────────────────
-content("Chapter Three", "System Architecture", 10, img=FIG / "fig3_1_architecture.png",
-        caption="Figure 3.1 — Seven-stage pipeline: Collect → Validate → Standardise → Store → Analyse → API → Present.")
+content("Architecture", "One pipeline, seven stages", 10, img=FIG / "fig3_1_architecture.png",
+        caption="Collect → Validate → Standardise → Store → Analyse → API → Present.")
 
 # ─────────────────────────── SLIDE 11 ───────────────────────────
-content("Chapter Three", "Database Design", 11, img=FIG / "fig3_4_erd.png", items=[
-    ("Tidy / long schema", "sources → indicators → observations."),
-    ("One observations table", "holds daily-to-annual series in one shape: (indicator_id, obs_date, value)."),
-    ("Integrity", "typed columns, foreign keys, and a uniqueness constraint that makes duplicate ingestion impossible."),
-    ("Unit metadata", "carried per series — the key to avoiding silent ₦'000-vs-₦m errors."),
+content("Data Model", "One table, every frequency", 11, img=FIG / "fig3_4_erd.png", items=[
+    ("Tidy schema", "sources → indicators → observations."),
+    ("One shape", "(indicator, date, value) — daily to annual."),
+    ("Integrity", "keys + uniqueness kill duplicate ingestion."),
+    ("Unit metadata", "no silent ₦'000-vs-₦m errors."),
 ], caption="Figure 3.4 — Entity-relationship diagram.")
 
 # ─────────────────────────── SLIDE 12 ───────────────────────────
-content("Chapter Four", "The Open API — HATEOAS Level 3", 12, img=FIG / "fig4_11_hateoas_explorer.png", items=[
-    ("FastAPI, versioned REST", "17 read endpoints, no key, open CORS."),
-    ("HATEOAS", "every response carries a _links block — the whole API is navigable from the root."),
-    ("Level 3 demonstrated live", "the HATEOAS Explorer follows _links in the browser."),
-    ("Machine-ready", "MCP server + llms.txt for AI-agent access."),
+content("Open API", "HATEOAS, Level 3", 12, img=FIG / "fig4_11_hateoas_explorer.png", items=[
+    ("FastAPI REST", "17 endpoints, no key."),
+    ("Self-describing", "every response carries _links."),
+    ("Proven live", "the HATEOAS Explorer follows them."),
+    ("Machine-ready", "MCP + llms.txt for AI agents."),
 ], caption="Figure 4.11 — HATEOAS Explorer browsing the live API.")
 
 # ─────────────────────────── SLIDE 13 ───────────────────────────
-content("Chapter Four", "The Dashboard", 13, img=FIG / "fig4_4_analyst_dial.png", items=[
-    ("Storytelling pattern", "headline stat, what happened / why it matters / how to read it, chart, table."),
-    ("Reader / Analyst dial", "one page serves the public and researchers — no forked interface."),
-    ("Honest encoding", "no dual axes; aligned panels or z-scores; units always stated."),
-    ("Accessible", "WCAG 2.1 AA; 100/100 Lighthouse."),
+content("Dashboard", "One page, two audiences", 13, img=FIG / "fig4_4_analyst_dial.png", items=[
+    ("Story pattern", "what happened / why / how to read it."),
+    ("Reader ⇄ Analyst dial", "public and researcher, one page."),
+    ("Honest encoding", "no dual axes; units stated."),
+    ("100 / 100", "Lighthouse accessibility."),
 ], caption="Figure 4.4 — The Reader/Analyst dial revealing statistical detail.")
 
 # ─────────────────────────── SLIDE 14 — ANALYTICS ───────────────────────────
-content("Chapter Four", "The Analytics Engine", 14, img=FIG / "fig4_9_compare_significance.png", items=[
-    ("Full profile, any of 122 indicators", "latest value, year-on-year change, min/max range, volatility and OLS trend — all computed live."),
-    ("Correlation with significance", "Pearson r reported with R² and a two-tailed Student-t p-value — strength AND reliability, not just a number."),
-    ("Correlation matrix", "12 headline indicators cross-correlated at once — the whole aggregation related to itself, not one pair at a time."),
-    ("Standardisation & projection", "z-scores put different-unit series on one honest axis; OLS gives the trend and an illustrative linear projection."),
-    ("Classical & transparent", "every figure is checkable and reproducible — no black-box ML, by design."),
+content("Analytics", "The analytics engine", 14, img=FIG / "fig4_9_compare_significance.png", items=[
+    ("Full profile", "latest, YoY, range, volatility, trend."),
+    ("Correlation + significance", "Pearson r with R² and a p-value."),
+    ("Correlation matrix", "12 indicators, cross-correlated at once."),
+    ("Standardise & project", "z-scores + OLS trend."),
+    ("No black box", "classical, checkable, reproducible."),
 ], caption="Figure 4.9 — Correlation reported with R² and a significance p-value.")
 
 # ─────────────────────────── SLIDE 15 ───────────────────────────
-content("Chapter Four", "Feature — Reform Impact", 15, img=FIG / "fig4_15_reform_impact.png", items=[
-    ("The 2023 reforms", "fuel-subsidy removal and FX unification, split before/after June 2023."),
-    ("Computed live", "every headline indicator averaged on each side of the reform."),
-    ("Takes no side", "a critic and a supporter can both cite real numbers on one page."),
-    ("Neutrality is the contribution", "the platform makes the data checkable, not the argument settled."),
-], caption="Figure 4.15 — Reform Impact: before/after June 2023, neutral critic/supporter readings.")
+content("In Action", "Reform Impact — takes no side", 15, img=FIG / "fig4_15_reform_impact.png", items=[
+    ("June 2023", "subsidy removal + FX unification, split before/after."),
+    ("Computed live", "every headline indicator, both sides."),
+    ("Neutral", "critic and supporter cite the same real numbers."),
+], caption="Figure 4.15 — Reform Impact: before/after June 2023, neutral readings.")
 
 # ─────────────────────────── SLIDE 16 ───────────────────────────
-content("Chapter Four", "Honesty Guards & Validation", 16, img=FIG / "fig4_12_playground.png", items=[
-    ("Spurious-correlation warning", "level r vs detrended r — flags shared-trend illusions."),
-    ("Significance separated from strength", "a weak r can still be significant in a large sample."),
-    ("Validation as a service", "the Pipeline Playground judges any CSV row-by-row — and never writes."),
-    ("Demo-safe by default", "write paths are structurally disabled."),
+content("Integrity", "It warns you when it might mislead", 16, img=FIG / "fig4_12_playground.png", items=[
+    ("Spurious-correlation guard", "level r vs detrended r."),
+    ("Significance ≠ strength", "kept visually separate."),
+    ("Validation as a service", "the Playground — and it never writes."),
 ], caption="Figure 4.12 — Pipeline Playground: per-row verdicts, nothing written.")
 
 # ─────────────────────────── SLIDE 17 ───────────────────────────
-content("Chapter Four", "Testing & Validation", 17, items=[
-    ("24 automated unit tests (Pytest)", "read endpoints, demo-safe ingestion, TTL cache, and the HATEOAS _links — all pass."),
-    ("Independent statistical validation", "p-values checked against known cases; the value formatter unit-tested across every unit type."),
-    ("Data-truthfulness audit", "found and fixed real defects: a data-censoring routine, unit mislabels (×1000), a mis-titled “inverse” chart, a year-mismatched comparison."),
-    ("Accessibility & robustness", "WCAG AA contrast; adversarial inputs (NaN/∞, 5,000-row floods) survive."),
+content("Testing", "Checked, not eyeballed", 17, items=[
+    ("24 automated tests", "endpoints, HATEOAS, cache — all pass."),
+    ("Stats validated", "p-values vs known cases."),
+    ("Truth audit", "found and fixed real defects."),
+    ("Robust", "survives NaN / ∞ and 5,000-row floods."),
 ])
 
 # ─────────────────────────── SLIDE 18 ───────────────────────────
-content("Chapter Four", "Results", 18, img=FIG / "fig4_10_heatmap.png", items=[
-    ("122 indicators, ~12,100 observations", "aggregated into one queryable store."),
-    ("17 live API endpoints", "documented, HATEOAS Level 3, all passing."),
-    ("100/100 Lighthouse", "accessibility, on a zero-build static frontend."),
-    ("Correct by audit", "displayed figures verified against stored data."),
-], caption="Figure 4.10 — The aggregation at a glance: 122 indicators × 1960–2026, computed live.")
+content("Results", "What it delivers", 18, img=FIG / "fig4_10_heatmap.png", items=[
+    ("122 indicators / 12,100 obs", "one queryable store."),
+    ("17 live endpoints", "HATEOAS Level 3."),
+    ("100 / 100", "accessibility, zero build."),
+    ("Audited correct", "figures verified against data."),
+], caption="Figure 4.10 — The aggregation at a glance: 122 indicators × 1960–2026.")
 
 # ─────────────────────────── SLIDE 19 ───────────────────────────
-content("Chapter Five", "Contribution to Knowledge", 19, items=[
-    ("A working reference implementation", "of a unified Nigerian public-economic-data platform."),
-    ("With a genuinely open, HATEOAS-level API", "an artefact that did not previously exist in freely accessible form."),
-    ("Built entirely from free & open-source tools", "reproducible from the repository alone."),
-    ("Evidence for a governance argument", "that unifying this data was always a choice, not an engineering barrier."),
+content("Contribution", "What's new", 19, items=[
+    ("A reference implementation", "of unified Nigerian economic data."),
+    ("A genuinely open API", "didn't exist in free form before."),
+    ("All free tools", "reproducible from the repo alone."),
+    ("A governance argument", "it was always a choice, not a barrier."),
 ])
 
 # ─────────────────────────── SLIDE 20 ───────────────────────────
-content("Chapter Five", "Limitations & Future Work", 20, items=[
-    ("Automate collection", "scheduled connectors to source portals, ending manual re-ingestion."),
-    ("Expand coverage", "more indicators, state-level data, longer historical series."),
-    ("Richer analytics", "seasonal adjustment and proper forecasting — keeping transparency."),
-    ("Authentication tiers & rate limiting", "for heavier API consumers."),
-    ("Client SDKs", "Python / JavaScript packages to ease adoption."),
+content("What's Next", "Where it goes", 20, items=[
+    ("Automate collection", "scheduled connectors."),
+    ("Expand coverage", "states, longer history."),
+    ("Richer analytics", "seasonal adjustment, forecasting."),
+    ("SDKs & auth tiers", "for heavier API users."),
 ])
 
 # ─────────────────────────── SLIDE 21: CLOSE ───────────────────────────
