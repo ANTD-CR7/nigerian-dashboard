@@ -1245,7 +1245,7 @@ source. The known weakness of the approach, namely duplicated code drifting apar
 pages, was addressed architecturally with a single shared library (`shared.js`) carrying all
 chart, analytics and UI logic, so that a fix in one place applies everywhere. The FastAPI and
 Supabase (PostgreSQL) combination likewise handled every stress-test scenario, including a
-5, 000-row adversarial CSV, with all 17 live endpoints passing, while the relational
+5, 000-row adversarial CSV, with all 15 data endpoints passing, while the relational
 tidy-observations model absorbed daily, monthly, quarterly and annual series in a single
 schema.
 
