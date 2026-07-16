@@ -1,3 +1,15 @@
+# NPEDATA - Nigerian Public Economic Data Aggregation and Analytics Platform
+# FastAPI Open API backend.
+#
+# Copyright 2026 Taoheed Abdulmanan Olaosebikan (Matric 22/10267,
+# Computer Science, Caleb University, Lagos). All original code by the author.
+#
+# Licensed under the Apache License, Version 2.0; see the LICENSE and NOTICE
+# files distributed with this work. You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Authorship provenance fingerprint (see PROVENANCE.json):
+#   3b191f211c44c1286fd5ec5cf9ddb867988c33da3ea228040c9a7b53226c6966
 import csv
 import io
 import math

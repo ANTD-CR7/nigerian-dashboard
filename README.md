@@ -226,7 +226,33 @@ pytest -q            # endpoint + HATEOAS unit tests in tests/test_main.py
 ## Author
 
 **Taoheed Abdulmanan Olaosebikan** — BSc Computer Science, Caleb University, Imota, Lagos.
-Final Year Project, 2026.
+Final Year Project, 2026. Matriculation No. 22/10267. GitHub: [@ANTD-CR7](https://github.com/ANTD-CR7).
 
 Data © their respective sources (CBN, NBS, World Bank). This project aggregates and
 re-presents publicly available data for research and educational use.
+
+## License & attribution
+
+Copyright © 2026 Taoheed Abdulmanan Olaosebikan. All original source code, database schema,
+analytics and presentation are licensed under the **Apache License, Version 2.0** — see
+[`LICENSE`](LICENSE) and [`NOTICE`](NOTICE). You may use and build on this work, but you must
+keep the copyright and attribution notices.
+
+**Authorship provenance ("DNA").** Authorship is recorded in [`AUTHORS`](AUTHORS) and
+[`PROVENANCE.json`](PROVENANCE.json), and fingerprinted with a SHA-256 of the canonical author
+manifest:
+
+```
+3b191f211c44c1286fd5ec5cf9ddb867988c33da3ea228040c9a7b53226c6966   (short: 3B191F211C44C128)
+```
+
+This fingerprint is embedded in the source headers, in `shared.js` (as `window.NPEDATA_AUTHOR`
+and a browser-console signature), and in a `<meta name="npedata-provenance">` tag on every page.
+Verify it any time with:
+
+```
+python tools/verify_authorship.py
+```
+
+The full authorship history is also independently timestamped in this repository's git commit
+log (161 commits since the genesis commit on 2026-04-14, all authored by @ANTD-CR7).

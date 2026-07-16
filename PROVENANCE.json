@@ -1,0 +1,18 @@
+{
+  "author": "Taoheed Abdulmanan Olaosebikan",
+  "matric_no": "22/10267",
+  "institution": "Caleb University, Lagos",
+  "department": "Computer Science, College of Science and Information Science (COSIS)",
+  "project": "NPEDATA",
+  "title": "Design and Development of a Nigerian Public Economic Data Aggregation and Analytics Platform with Open API Access",
+  "year": "2026",
+  "email": "taoheedolaosebikanabdulmanan@gmail.com",
+  "github": "ANTD-CR7",
+  "repository": "https://github.com/ANTD-CR7/nigerian-dashboard",
+  "genesis_commit": "395b98b26198dc028e8aad32f376222cb278e8f9",
+  "genesis_date": "2026-04-14",
+  "license": "Apache-2.0",
+  "provenance_fingerprint_sha256": "3b191f211c44c1286fd5ec5cf9ddb867988c33da3ea228040c9a7b53226c6966",
+  "fingerprint_short": "3B191F211C44C128",
+  "note": "This fingerprint is the SHA-256 of the canonical author manifest above. It is embedded across the source tree as an authorship marker. Recompute: sha256( json.dumps(manifest, sort_keys=True, separators=(\",\",\":\")) )."
+}

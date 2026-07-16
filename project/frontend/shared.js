@@ -1,5 +1,36 @@
-/* NPEDATA — Shared page utilities */
+/*!
+ * NPEDATA — Nigerian Public Economic Data Aggregation and Analytics Platform
+ * Shared page utilities (charts, analytics, UI).
+ *
+ * Copyright 2026 Taoheed Abdulmanan Olaosebikan (Matric 22/10267,
+ * Computer Science, Caleb University, Lagos). All original code by the author.
+ * Licensed under the Apache License, Version 2.0 — see LICENSE and NOTICE.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Authorship provenance fingerprint (see PROVENANCE.json):
+ *   3b191f211c44c1286fd5ec5cf9ddb867988c33da3ea228040c9a7b53226c6966
+ */
 (function () {
+
+  /* ─── Authorship signature (provenance "DNA") ─── */
+  var NPEDATA_AUTHOR = Object.freeze({
+    author: 'Taoheed Abdulmanan Olaosebikan',
+    matric: '22/10267',
+    institution: 'Caleb University, Lagos',
+    project: 'NPEDATA',
+    year: 2026,
+    github: 'ANTD-CR7',
+    license: 'Apache-2.0',
+    fingerprint: '3b191f211c44c1286fd5ec5cf9ddb867988c33da3ea228040c9a7b53226c6966'
+  });
+  try {
+    window.NPEDATA_AUTHOR = NPEDATA_AUTHOR;
+    console.log(
+      '%cNPEDATA%c  Designed & developed by Taoheed Abdulmanan Olaosebikan (22/10267), Caleb University.\n' +
+      'Apache-2.0 licensed. Provenance fingerprint 3B191F211C44C128.',
+      'font-weight:bold;color:#00A362', 'color:#888'
+    );
+  } catch (e) { /* non-browser context */ }
 
   /* ─── Navbar Scroll ─── */
   var nav = document.querySelector('.navbar');

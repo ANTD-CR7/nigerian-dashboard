@@ -1,0 +1,47 @@
+NPEDATA — Nigerian Public Economic Data Aggregation and Analytics Platform
+==========================================================================
+
+Copyright 2026 Taoheed Abdulmanan Olaosebikan
+
+This product was designed and developed by:
+
+    Taoheed Abdulmanan Olaosebikan
+    Matriculation No. 22/10267
+    Department of Computer Science,
+    College of Science and Information Science (COSIS),
+    Caleb University, Lagos, Nigeria
+
+as the Final Year Project titled "Design and Development of a Nigerian
+Public Economic Data Aggregation and Analytics Platform with Open API
+Access: A 2020-2026 Case Study".
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may
+not use this work except in compliance with the License. A copy of the
+License is distributed with this work in the file named LICENSE, and is
+also available at http://www.apache.org/licenses/LICENSE-2.0
+
+Authorship provenance fingerprint (SHA-256 of the canonical author
+manifest; see PROVENANCE.json):
+
+    3b191f211c44c1286fd5ec5cf9ddb867988c33da3ea228040c9a7b53226c6966
+    (short: 3B191F211C44C128)
+
+If you redistribute this work or any derivative of it, this NOTICE file
+and the attribution above must be retained, as required by Section 4 of
+the License.
+
+-----------------------------------------------------------------------
+Third-party components (not covered by the copyright above)
+-----------------------------------------------------------------------
+This product uses open-source software and public data that remain the
+property of their respective owners, including but not limited to:
+
+  - Chart.js and its plugins (MIT License)
+  - FastAPI, Starlette, Uvicorn, Pydantic (MIT / BSD)
+  - Supabase client libraries (MIT / Apache-2.0)
+
+The underlying economic data is sourced from public publications of the
+Central Bank of Nigeria (CBN), the National Bureau of Statistics (NBS),
+and the World Bank, and remains the property of those institutions. The
+copyright asserted here covers only the original source code, schema,
+analytics, and presentation created by the author.
