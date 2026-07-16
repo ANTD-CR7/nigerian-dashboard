@@ -29,6 +29,7 @@ from supabase import create_client, Client
 from typing import Optional
 
 import forecasting
+import ai_assistant
 
 app = FastAPI(
     title="Nigerian Public Economic Data API",
@@ -657,6 +658,55 @@ def _leadlag_text(x, y, cc):
     if cc["relationship"] == "y_leads_x":
         return f"{y} appears to lead {x} by {abs(lag)} period(s) (r={r}). This is association, not proven causation."
     return f"{x} and {y} co-move contemporaneously (r={r}, no lead detected). Association, not proven causation."
+
+
+class AskRequest(BaseModel):
+    question: str = Field(..., min_length=3, max_length=500)
+
+
+@app.post("/api/v1/ask")
+def ask_the_data(request: Request, body: AskRequest):
+    """Natural-language questions answered strictly from real platform figures.
+    Retrieves the relevant indicators, hands the figures to the model, and
+    instructs it to answer only from them and cite each one. Returns 503 if no
+    ANTHROPIC_API_KEY is configured, so the rest of the API is unaffected."""
+    if not ai_assistant.key_configured():
+        raise HTTPException(status_code=503, detail="AI assistant not configured (set ANTHROPIC_API_KEY).")
+
+    ids = ai_assistant.match_indicators(body.question, INDICATORS)
+    if not ids:
+        ids = [i for i in ("inflation", "exchange_rate", "gdp", "fx_reserves", "interest_rate")
+               if i in INDICATORS]
+
+    context = {"available_indicator_count": len(INDICATORS), "indicators": {}}
+    for iid in ids:
+        a = analytics_for(iid, "2020-01-01", "2026-12-31", 3)
+        if a.get("data_points"):
+            context["indicators"][iid] = {
+                "name": a.get("indicator"), "unit": a.get("unit"),
+                "latest": a.get("latest"),
+                "previous_change": a.get("previous_change"),
+                "year_over_year_change": a.get("year_over_year_change"),
+                "trend": a.get("trend"),
+                "forecast_next": (a.get("forecast") or [None])[0],
+            }
+
+    try:
+        result = ai_assistant.call_anthropic(
+            ai_assistant.build_user_message(body.question, context),
+            api_key=os.environ["ANTHROPIC_API_KEY"],
+        )
+    except Exception as exc:  # network / API error
+        raise HTTPException(status_code=502, detail=f"AI request failed: {exc}")
+
+    return {
+        "question": body.question,
+        "answer": result["text"],
+        "model": result.get("model"),
+        "data_used": context,
+        "disclaimer": "Generated from the figures shown in data_used. Correlation is not causation. Not financial advice.",
+        "_links": hypermedia(request, "/api/v1/ask", related=["analytics", "coverage"]),
+    }
 
 
 @app.get("/api/v1/coverage")

@@ -154,6 +154,37 @@ def test_cross_correlation_finds_lead():
     assert cc["best"]["r"] == pytest.approx(1.0, abs=1e-6)
 
 
+# --- AI "ask the data" assistant (ai_assistant.py) ---
+
+import ai_assistant
+
+
+def test_ai_matches_indicators_from_question():
+    ids = ai_assistant.match_indicators(
+        "why did the naira weaken while inflation rose?", main.INDICATORS)
+    assert "exchange_rate" in ids
+    assert "inflation" in ids
+
+
+def test_ai_key_not_configured_by_default(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    assert ai_assistant.key_configured() is False
+
+
+def test_ai_build_user_message_embeds_figures():
+    msg = ai_assistant.build_user_message("What is inflation?", {"indicators": {"inflation": {"latest": {"value": 15.38}}}})
+    assert "15.38" in msg
+    assert "What is inflation?" in msg
+
+
+def test_ask_route_503_without_key(monkeypatch):
+    from fastapi.testclient import TestClient
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    client = TestClient(main.app)
+    r = client.post("/api/v1/ask", json={"question": "What is inflation?"})
+    assert r.status_code == 503
+
+
 # --- HATEOAS / Richardson Maturity Model Level 3 ---
 
 class _FakeRequest:

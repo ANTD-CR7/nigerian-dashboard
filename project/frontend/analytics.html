@@ -44,6 +44,21 @@
   <p>Cross-indicator analysis, correlation and trend — computed in pure JavaScript · 2020–2026</p>
 </div></section>
 <main class="page-content"><div class="container">
+  <div class="chart-card reveal" id="ask-card">
+    <div class="chart-card-title">Ask the Data <span style="font-size:0.6em;color:var(--gold);vertical-align:middle;border:1px solid var(--gold);border-radius:10px;padding:2px 8px;margin-left:8px;">AI</span></div>
+    <p class="chart-context">Ask a plain-language question about Nigeria's economy. The assistant answers <strong>only</strong> from real figures it retrieves from the platform, and cites the indicator and date for every number. It will tell you when the data can't answer — it never invents figures.</p>
+    <div class="ask-row" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+      <input id="ask-input" type="text" class="sector-filter-input" style="flex:1;min-width:260px;" placeholder="e.g. How has inflation changed over the past year?" maxlength="500">
+      <button id="ask-btn" class="btn-try" style="border:none;cursor:pointer;">Ask →</button>
+    </div>
+    <div class="ask-chips" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <button class="ask-chip" type="button">What is inflation now?</button>
+      <button class="ask-chip" type="button">How did the Naira move since the 2023 reform?</button>
+      <button class="ask-chip" type="button">Is GDP growing?</button>
+    </div>
+    <div id="ask-result" style="display:none;"></div>
+    <div class="source-note">Answers are generated from live figures; correlation is not causation. Not financial advice.</div>
+  </div>
   <div class="chart-card reveal" id="profile-card">
     <div class="chart-card-title">Analyze Any Indicator</div>
     <p class="chart-context">Pick any of the platform's <strong>122 indicators</strong> — every headline series, all 47 GDP sub-sectors, every currency and CBN balance-sheet item — to see its full analytical profile computed live: latest value, change, year-on-year, range, volatility, trend and a Holt-Winters forecast with a 95% confidence band.</p>
@@ -332,6 +347,34 @@ async function renderProfile(id){
   document.getElementById('prof-source').textContent=`Source: ${meta.source||'—'} · ${meta.unit||''} · ${st.n} observations · gold = OLS trend · green dashed = ${fcNote}`;
 }
 document.addEventListener('DOMContentLoaded', initProfile);
+
+/* ─── Ask the Data (AI) ─── */
+const NPE_API='https://npedata-api.onrender.com';
+function askRender(html){const el=document.getElementById('ask-result');el.style.display='block';el.innerHTML=html;}
+function askEsc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+async function askQuestion(q){
+  q=(q||'').trim(); if(q.length<3)return;
+  const btn=document.getElementById('ask-btn'); btn.disabled=true;
+  askRender('<p style="font-family:var(--font-mono);font-size:0.8rem;color:var(--slate);">Thinking… if the server was asleep the first request can take ~30s.</p>');
+  try{
+    const res=await fetch(NPE_API+'/api/v1/ask',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({question:q})});
+    if(res.status===503){askRender('<div class="insight-card" style="margin:0;"><div class="insight-label">AI not enabled yet</div><p>The Ask assistant needs an API key set on the server. Everything else on this page works without it — try “Analyze Any Indicator” below.</p></div>');return;}
+    if(!res.ok){askRender('<p style="color:#e05252;font-family:var(--font-mono);font-size:0.8rem;">Request failed ('+res.status+'). Please retry in a moment.</p>');return;}
+    const j=await res.json();
+    const pill=(name,v)=>`<span style="display:inline-block;background:rgba(0,163,98,0.12);border:1px solid rgba(0,163,98,0.3);border-radius:12px;padding:2px 10px;margin:2px;font-size:0.72rem;color:var(--green-text);">${askEsc(name)}: ${v}</span>`;
+    const used=Object.entries((j.data_used&&j.data_used.indicators)||{}).map(([k,v])=>pill(v.name||k, v.latest?askEsc(String(v.latest.value))+' ('+askEsc(v.latest.obs_date)+')':'—')).join(' ');
+    askRender('<div class="insight-card" style="margin:0;"><div class="insight-label">Answer</div><p style="white-space:pre-wrap;line-height:1.6;">'+askEsc(j.answer)+'</p>'+(used?'<div style="margin-top:12px;font-size:0.72rem;color:var(--slate);">Grounded in: '+used+'</div>':'')+'<div style="margin-top:8px;font-size:0.68rem;color:var(--slate);">Model: '+askEsc(j.model||'—')+'</div></div>');
+  }catch(e){askRender('<p style="color:#e05252;font-family:var(--font-mono);font-size:0.8rem;">Could not reach the API. Check your connection and retry.</p>');}
+  finally{btn.disabled=false;}
+}
+function initAsk(){
+  const inp=document.getElementById('ask-input'),btn=document.getElementById('ask-btn');
+  if(!inp||!btn)return;
+  btn.addEventListener('click',()=>askQuestion(inp.value));
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')askQuestion(inp.value);});
+  document.querySelectorAll('.ask-chip').forEach(c=>c.addEventListener('click',()=>{inp.value=c.textContent;askQuestion(c.textContent);}));
+}
+document.addEventListener('DOMContentLoaded', initAsk);
 </script>
 <script src="shared.js"></script>
 </body></html>
