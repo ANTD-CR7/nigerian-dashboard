@@ -185,6 +185,44 @@ def test_ask_route_503_without_key(monkeypatch):
     assert r.status_code == 503
 
 
+# --- Optional API-key auth + rate limiting middleware ---
+
+from fastapi.testclient import TestClient
+
+
+def _client_stubbed(monkeypatch):
+    monkeypatch.setattr(main, "fetch", lambda *a, **k: [{"obs_date": "2026-01-01", "value": 1.0}])
+    main._rate_state.clear()
+    return TestClient(main.app)
+
+
+def test_api_open_by_default_no_auth(monkeypatch):
+    monkeypatch.delenv("NPE_API_KEYS", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setenv("NPE_RATE_LIMIT_PER_MIN", "1000")
+    client = _client_stubbed(monkeypatch)
+    # no key required: /ask reaches the 503 (AI-not-configured), not a 401
+    assert client.post("/api/v1/ask", json={"question": "hello there"}).status_code == 503
+
+
+def test_api_key_required_when_configured(monkeypatch):
+    monkeypatch.setenv("NPE_API_KEYS", "k1,k2")
+    monkeypatch.setenv("NPE_RATE_LIMIT_PER_MIN", "1000")
+    client = _client_stubbed(monkeypatch)
+    assert client.post("/api/v1/ask", json={"question": "hello there"}).status_code == 401
+    ok = client.post("/api/v1/ask", json={"question": "hello there"}, headers={"X-API-Key": "k1"})
+    assert ok.status_code != 401  # passes auth (503 without an LLM key)
+
+
+def test_rate_limit_returns_429(monkeypatch):
+    monkeypatch.delenv("NPE_API_KEYS", raising=False)
+    monkeypatch.setenv("NPE_RATE_LIMIT_PER_MIN", "3")
+    client = _client_stubbed(monkeypatch)
+    codes = [client.get("/api/v1/coverage").status_code for _ in range(5)]
+    assert 429 in codes
+    assert codes[0] != 429  # first few allowed
+
+
 # --- HATEOAS / Richardson Maturity Model Level 3 ---
 
 class _FakeRequest:

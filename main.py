@@ -23,7 +23,7 @@ from datetime import date, datetime
 
 from fastapi import FastAPI, File, Form, HTTPException, Query, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from pydantic import BaseModel, Field
 from supabase import create_client, Client
 from typing import Optional
@@ -38,6 +38,49 @@ app = FastAPI(
 )
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "POST"], allow_headers=["*"])
+
+
+# --- Optional API-key auth + per-IP rate limiting (opt-in via env) --------- #
+# Both are OFF by default: with NPE_API_KEYS unset the API stays fully open, as
+# it is today. Set a comma-separated NPE_API_KEYS to require an X-API-Key header
+# on /api/v1 routes. NPE_RATE_LIMIT_PER_MIN caps requests per IP per minute.
+_rate_state: dict = {}
+_rate_lock = threading.Lock()
+
+
+def _allowed_keys() -> set:
+    return {k.strip() for k in os.environ.get("NPE_API_KEYS", "").split(",") if k.strip()}
+
+
+def _rate_limit_per_min() -> int:
+    try:
+        return int(os.environ.get("NPE_RATE_LIMIT_PER_MIN", "120") or 0)
+    except ValueError:
+        return 120
+
+
+@app.middleware("http")
+async def gate(request: Request, call_next):
+    path = request.url.path
+    if path.startswith("/api/v1"):
+        limit = _rate_limit_per_min()
+        if limit > 0:
+            ip = request.client.host if request.client else "?"
+            now = time.time()
+            with _rate_lock:
+                window_start, count = _rate_state.get(ip, (now, 0))
+                if now - window_start >= 60:
+                    window_start, count = now, 0
+                count += 1
+                _rate_state[ip] = (window_start, count)
+            if count > limit:
+                return JSONResponse(status_code=429,
+                                    content={"detail": "Rate limit exceeded. Please slow down and retry shortly."})
+        keys = _allowed_keys()
+        if keys and request.headers.get("x-api-key") not in keys:
+            return JSONResponse(status_code=401,
+                                content={"detail": "Missing or invalid API key. Send it in the X-API-Key header."})
+    return await call_next(request)
 
 # Credentials read from the environment when set (Render dashboard / local .env),
 # falling back to the existing anon key so this never breaks a deploy that hasn't
