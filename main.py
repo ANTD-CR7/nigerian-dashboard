@@ -33,8 +33,10 @@ import ai_assistant
 
 app = FastAPI(
     title="Nigerian Public Economic Data API",
-    description="A free, open economic data API for Nigeria. 12,100 records. 122 indicators. CBN, NBS, World Bank. No authentication required.",
-    version="1.0.0",
+    description=("A free, open economic data API for Nigeria. 122 indicators from CBN, NBS and the "
+                 "World Bank, with Holt-Winters forecasting, seasonal decomposition, lead/lag analysis, "
+                 "a grounded AI assistant, and full HATEOAS. No authentication required by default."),
+    version="1.1.0",
 )
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "POST"], allow_headers=["*"])
