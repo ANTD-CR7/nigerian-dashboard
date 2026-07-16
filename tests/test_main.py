@@ -83,7 +83,12 @@ def test_analytics_for_computes_rising_trend_and_forecast(monkeypatch):
     assert result["trend"]["direction"] == "rising"
     assert result["trend"]["slope_per_period"] == pytest.approx(2.0)
     assert len(result["forecast"]) == 2
-    assert result["forecast"][0]["value"] == pytest.approx(16.0)
+    # Holt-Winters (short series -> Holt's linear) tracks the upward trend and
+    # now carries a 95% prediction interval around each point.
+    f0 = result["forecast"][0]
+    assert f0["value"] == pytest.approx(16.0, abs=1.0)
+    assert f0["lower_95"] < f0["value"] < f0["upper_95"]
+    assert result["forecast_model"]["method"] == "holt_linear_trend"
 
 
 def test_analytics_for_year_over_year_change(monkeypatch):
@@ -95,6 +100,58 @@ def test_analytics_for_year_over_year_change(monkeypatch):
     result = main.analytics_for("inflation", "2023-01-01", "2024-12-31", periods=1)
     assert result["year_over_year_change"]["absolute"] == pytest.approx(5.0)
     assert result["year_over_year_change"]["percent"] == pytest.approx(25.0)
+
+
+# --- Forecasting & time-series engine (forecasting.py) ---
+
+import math
+
+import forecasting
+
+
+def test_season_length_from_frequency():
+    assert forecasting.season_length_for("monthly") == 12
+    assert forecasting.season_length_for("quarterly") == 4
+    assert forecasting.season_length_for("annual") == 0
+
+
+def test_holt_winters_detects_seasonality_and_brackets_forecast():
+    vals = [100 + 2 * t + 10 * math.sin(2 * math.pi * t / 12) for t in range(48)]
+    hw = forecasting.holt_winters(vals, 12, 6)
+    assert hw["method"] == "holt_winters_additive"
+    assert hw["seasonal"] is True
+    for e in hw["forecast"]:
+        assert e["lower"] < e["value"] < e["upper"]
+    # bands must widen with the horizon
+    assert (hw["forecast"][-1]["upper"] - hw["forecast"][-1]["lower"]) > \
+           (hw["forecast"][0]["upper"] - hw["forecast"][0]["lower"])
+
+
+def test_holt_winters_short_series_falls_back_to_linear():
+    hw = forecasting.holt_winters([10.0, 11.0, 12.0, 13.0], 12, 3)
+    assert hw["method"] == "holt_linear_trend"
+    assert hw["seasonal"] is False
+
+
+def test_seasonal_decompose_recovers_strength():
+    vals = [50 + 5 * math.sin(2 * math.pi * t / 4) for t in range(40)]
+    d = forecasting.seasonal_decompose(vals, 4)
+    assert d["seasonal_detected"] is True
+    assert d["seasonal_strength"] > 0.8
+
+
+def test_seasonal_decompose_rejects_short_series():
+    d = forecasting.seasonal_decompose([1.0, 2.0, 3.0], 12)
+    assert d["seasonal_detected"] is False
+
+
+def test_cross_correlation_finds_lead():
+    x = [math.sin(t / 3.0) for t in range(60)]
+    y = [x[t - 3] if t >= 3 else 0.0 for t in range(60)]  # y lags x by 3
+    cc = forecasting.cross_correlation(x, y, 8)
+    assert cc["best"]["lag"] == 3
+    assert cc["relationship"] == "x_leads_y"
+    assert cc["best"]["r"] == pytest.approx(1.0, abs=1e-6)
 
 
 # --- HATEOAS / Richardson Maturity Model Level 3 ---

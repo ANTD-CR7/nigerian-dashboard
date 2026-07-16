@@ -28,6 +28,8 @@ from pydantic import BaseModel, Field
 from supabase import create_client, Client
 from typing import Optional
 
+import forecasting
+
 app = FastAPI(
     title="Nigerian Public Economic Data API",
     description="A free, open economic data API for Nigeria. 12,100 records. 122 indicators. CBN, NBS, World Bank. No authentication required.",
@@ -228,14 +230,20 @@ def analytics_for(indicator_id: str, start: str, end: str, periods: int):
         slope = numerator / denominator if denominator else 0.0
         intercept = mean_y - slope * mean_x
 
+    # Holt-Winters (additive) forecast with prediction intervals, replacing the
+    # old straight-line projection. Seasonal period is inferred from frequency;
+    # short series fall back to Holt's linear trend automatically.
+    m = forecasting.season_length_for(meta["frequency"])
+    hw = forecasting.holt_winters(values, m, periods)
     forecast = []
-    for step in range(1, periods + 1):
-        projected_date = add_months(latest_date, meta["period_months"] * step)
-        projected_value = latest_point["value"] + slope * step
+    for entry in hw["forecast"]:
+        projected_date = add_months(latest_date, meta["period_months"] * entry["step"])
         forecast.append({
             "obs_date": projected_date.isoformat(),
-            "value": round(projected_value, 4),
-            "method": "simple_linear_regression",
+            "value": entry["value"],
+            "lower_95": entry["lower"],
+            "upper_95": entry["upper"],
+            "method": hw["method"],
         })
 
     direction = "stable"
@@ -255,6 +263,14 @@ def analytics_for(indicator_id: str, start: str, end: str, periods: int):
         "year_over_year_change": yoy_change,
         "trend": {"direction": direction, "slope_per_period": round(slope, 4)},
         "forecast": forecast,
+        "forecast_model": {
+            "method": hw["method"],
+            "seasonal": hw["seasonal"],
+            "season_length": hw["season_length"],
+            "params": hw["params"],
+            "residual_std_error": hw["residual_std_error"],
+            "confidence": hw["confidence"],
+        },
     }
 
 
@@ -310,6 +326,7 @@ API_LINKS = {
     "gdp_sectors": "/api/v1/gdp-sectors",
     "cbn_balance_sheet": "/api/v1/cbn-balance-sheet",
     "analytics": "/api/v1/analytics",
+    "leadlag": "/api/v1/leadlag?x=exchange_rate&y=inflation",
     "coverage": "/api/v1/coverage",
 }
 
@@ -379,7 +396,9 @@ Auth: none. CORS: open. Format: JSON. Every JSON response includes a HATEOAS `_l
 
 Read endpoints (GET, all under /api/v1/): /summary, /gdp, /inflation, /exchange-rate, /interest-rate,
 /fx-reserves, /currency-circulation, /nfem, /multicurrency, /gdp-sectors, /cbn-balance-sheet, /analytics,
-/analytics/{indicator_id} (trend + simple linear-regression forecast), /coverage, /export/{indicator_id} (CSV).
+/analytics/{indicator_id} (trend + Holt-Winters forecast), /forecast/{indicator_id} (Holt-Winters with
+95% prediction intervals), /decompose/{indicator_id} (seasonal decomposition), /leadlag (lead/lag
+cross-correlation), /coverage, /export/{indicator_id} (CSV).
 Most accept optional start/end date query params (ISO 8601). Interactive docs at /docs.
 
 A demo-safe data-ingestion path also exists (POST /api/v1/observations, /api/v1/ingest/csv) for the
@@ -518,6 +537,126 @@ def get_indicator_analytics(
         extra={"export_csv": f"/api/v1/export/{indicator_id}", "analytics_correlation": "/api/v1/analytics"},
     )
     return result
+
+
+@app.get("/api/v1/forecast/{indicator_id}")
+def get_forecast(
+    request: Request,
+    indicator_id: str,
+    start: Optional[str] = Query(default="2020-01-01"),
+    end: Optional[str] = Query(default="2026-12-31"),
+    periods: int = Query(default=6, ge=1, le=24),
+    confidence: float = Query(default=0.95, ge=0.5, le=0.99),
+):
+    """Holt-Winters forecast with prediction intervals. Seasonal period is
+    inferred from the indicator's frequency; short series fall back to Holt's
+    linear trend. Every smoothing parameter is reported (no black box)."""
+    meta = require_indicator(indicator_id)
+    rows = fetch(indicator_id, start, end)
+    values = [float(r["value"]) for r in rows]
+    if len(values) < 3:
+        raise HTTPException(status_code=422, detail="Need at least 3 observations to forecast.")
+
+    last_date = datetime.strptime(rows[-1]["obs_date"], "%Y-%m-%d").date()
+    m = forecasting.season_length_for(meta["frequency"])
+    hw = forecasting.holt_winters(values, m, periods, ci=confidence)
+    for entry in hw["forecast"]:
+        entry["obs_date"] = add_months(last_date, meta["period_months"] * entry["step"]).isoformat()
+
+    return {
+        "indicator_id": indicator_id,
+        "indicator": meta["name"],
+        "unit": meta["unit"],
+        "frequency": meta["frequency"],
+        "history_points": len(values),
+        "last_observed": {"obs_date": rows[-1]["obs_date"], "value": values[-1]},
+        "model": {
+            "method": hw["method"], "seasonal": hw["seasonal"], "season_length": hw["season_length"],
+            "params": hw["params"], "residual_std_error": hw["residual_std_error"],
+        },
+        "confidence": hw["confidence"],
+        "forecast": hw["forecast"],
+        "source": meta["source"],
+        "_links": hypermedia(
+            request, f"/api/v1/forecast/{indicator_id}", related=["coverage"],
+            extra={"analytics": f"/api/v1/analytics/{indicator_id}",
+                   "decompose": f"/api/v1/decompose/{indicator_id}",
+                   "export_csv": f"/api/v1/export/{indicator_id}"},
+        ),
+    }
+
+
+@app.get("/api/v1/decompose/{indicator_id}")
+def get_decompose(
+    request: Request,
+    indicator_id: str,
+    start: Optional[str] = Query(default="2020-01-01"),
+    end: Optional[str] = Query(default="2026-12-31"),
+):
+    """Classical additive seasonal decomposition: value = trend + seasonal +
+    residual, with a 0-1 seasonal-strength score."""
+    meta = require_indicator(indicator_id)
+    rows = fetch(indicator_id, start, end)
+    values = [float(r["value"]) for r in rows]
+    dates = [r["obs_date"] for r in rows]
+    m = forecasting.season_length_for(meta["frequency"])
+    decomp = forecasting.seasonal_decompose(values, m)
+    return {
+        "indicator_id": indicator_id,
+        "indicator": meta["name"],
+        "unit": meta["unit"],
+        "frequency": meta["frequency"],
+        "dates": dates,
+        "observed": [round(v, 4) for v in values],
+        **decomp,
+        "source": meta["source"],
+        "_links": hypermedia(
+            request, f"/api/v1/decompose/{indicator_id}", related=["coverage"],
+            extra={"forecast": f"/api/v1/forecast/{indicator_id}",
+                   "analytics": f"/api/v1/analytics/{indicator_id}"},
+        ),
+    }
+
+
+@app.get("/api/v1/leadlag")
+def get_leadlag(
+    request: Request,
+    x: str = Query(..., description="Leading indicator id"),
+    y: str = Query(..., description="Lagging indicator id"),
+    start: Optional[str] = Query(default="2020-01-01"),
+    end: Optional[str] = Query(default="2026-12-31"),
+    max_lag: int = Query(default=12, ge=1, le=36),
+):
+    """Lead/lag cross-correlation between two indicators. A positive best lag
+    means x leads y (x's past co-moves with y's present)."""
+    require_indicator(x)
+    require_indicator(y)
+    xr = {r["obs_date"]: float(r["value"]) for r in fetch(x, start, end)}
+    yr = {r["obs_date"]: float(r["value"]) for r in fetch(y, start, end)}
+    common = sorted(set(xr) & set(yr))
+    if len(common) < 4:
+        raise HTTPException(status_code=422, detail="Need at least 4 overlapping observations.")
+    xs = [xr[d] for d in common]
+    ys = [yr[d] for d in common]
+    cc = forecasting.cross_correlation(xs, ys, max_lag)
+    return {
+        "x": x, "y": y, "n": len(common),
+        "period": f"{common[0]} to {common[-1]}",
+        **cc,
+        "interpretation": _leadlag_text(x, y, cc),
+        "source": "CBN, NBS, World Bank",
+        "_links": hypermedia(request, "/api/v1/leadlag", related=["analytics", "coverage"]),
+    }
+
+
+def _leadlag_text(x, y, cc):
+    best = cc["best"]
+    lag, r = best["lag"], best["r"]
+    if cc["relationship"] == "x_leads_y":
+        return f"{x} appears to lead {y} by {lag} period(s) (r={r}). Movements in {x} precede similar movements in {y}. This is association, not proven causation."
+    if cc["relationship"] == "y_leads_x":
+        return f"{y} appears to lead {x} by {abs(lag)} period(s) (r={r}). This is association, not proven causation."
+    return f"{x} and {y} co-move contemporaneously (r={r}, no lead detected). Association, not proven causation."
 
 
 @app.get("/api/v1/coverage")
