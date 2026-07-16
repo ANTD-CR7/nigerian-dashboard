@@ -540,6 +540,63 @@ function npeStats(series) {
   };
 }
 
+/* ─── Forecasting: additive Holt-Winters with 95% prediction intervals ───
+   A faithful JS port of forecasting.py so the dashboard forecasts client-side
+   (works offline), while the API serves the same method to programs. Smoothing
+   constants are grid-searched to minimise in-sample error; short series fall
+   back to Holt's linear trend. Every parameter is reported — no black box. */
+function npeSeasonLen(freq) { return { daily: 7, monthly: 12, quarterly: 4, weekly: 52 }[freq] || 0; }
+
+function npeForecast(series, periods, freq) {
+  var pts = series.filter(function (d) { return d.value != null && isFinite(d.value); });
+  var vals = pts.map(function (d) { return d.value; });
+  var n = vals.length;
+  if (n < 3) return null;
+  var m = npeSeasonLen(freq) || 0;
+  var useSeason = !!(m && n >= 2 * m);
+  function run(a, b, g, mm) {
+    var level, trend, season = [];
+    if (mm) {
+      level = vals.slice(0, mm).reduce(function (s, v) { return s + v; }, 0) / mm;
+      var tr = 0; for (var i = 0; i < mm; i++) tr += (vals[mm + i] - vals[i]); trend = tr / (mm * mm);
+      for (var j = 0; j < mm; j++) season.push(vals[j] - level);
+    } else { level = vals[0]; trend = n > 1 ? vals[1] - vals[0] : 0; }
+    var err = 0;
+    for (var t = 0; t < n; t++) {
+      var s = mm ? season[t % mm] : 0, f = level + trend + s, y = vals[t];
+      err += (y - f) * (y - f);
+      if (mm) {
+        var nl = a * (y - s) + (1 - a) * (level + trend);
+        var nt = b * (nl - level) + (1 - b) * trend;
+        season[t % mm] = g * (y - nl) + (1 - g) * s; level = nl; trend = nt;
+      } else { var nl2 = a * y + (1 - a) * (level + trend); trend = b * (nl2 - level) + (1 - b) * trend; level = nl2; }
+    }
+    return { err: err, level: level, trend: trend, season: season, mm: mm };
+  }
+  var grid = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], best = null;
+  for (var ai = 0; ai < grid.length; ai++) for (var bi = 0; bi < grid.length; bi++) {
+    var gs = useSeason ? grid : [0];
+    for (var gi = 0; gi < gs.length; gi++) {
+      var r = run(grid[ai], grid[bi], gs[gi], useSeason ? m : 0);
+      if (!best || r.err < best.err) best = { err: r.err, a: grid[ai], b: grid[bi], g: gs[gi], level: r.level, trend: r.trend, season: r.season, mm: r.mm };
+    }
+  }
+  var dof = Math.max(1, n - (best.mm ? 3 : 2));
+  var sd = Math.sqrt(best.err / dof), z = 1.959963984540054, out = [];
+  var fp = periods || 6;
+  for (var h = 1; h <= fp; h++) {
+    var s = best.mm ? best.season[(n + h - 1) % best.mm] : 0;
+    var point = best.level + h * best.trend + s, band = z * sd * Math.sqrt(h);
+    out.push({ step: h, value: point, lower: point - band, upper: point + band });
+  }
+  return {
+    method: best.mm ? 'Holt-Winters (seasonal)' : 'Holt linear trend',
+    seasonal: !!best.mm, seasonLength: best.mm,
+    alpha: best.a, beta: best.b, gamma: best.mm ? best.g : null,
+    residStdError: sd, forecast: out
+  };
+}
+
 function npeMedianGapDays(series) {
   if (!series || series.length < 2) return null;
   var g = [];
