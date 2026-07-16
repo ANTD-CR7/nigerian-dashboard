@@ -597,6 +597,60 @@ function npeForecast(series, periods, freq) {
   };
 }
 
+/* ─── Lead/lag cross-correlation (JS port of forecasting.cross_correlation) ─── */
+function npePearsonArr(x, y) {
+  var n = x.length; if (n < 2) return 0;
+  var mx = 0, my = 0, i;
+  for (i = 0; i < n; i++) { mx += x[i]; my += y[i]; } mx /= n; my /= n;
+  var num = 0, dx = 0, dy = 0;
+  for (i = 0; i < n; i++) { num += (x[i] - mx) * (y[i] - my); dx += (x[i] - mx) * (x[i] - mx); dy += (y[i] - my) * (y[i] - my); }
+  var den = Math.sqrt(dx * dy); return den ? num / den : 0;
+}
+function npeCrossCorr(x, y, maxLag) {
+  var n = Math.min(x.length, y.length); x = x.slice(0, n); y = y.slice(0, n);
+  maxLag = Math.min(maxLag, n > 2 ? n - 2 : 0);
+  var results = [];
+  for (var lag = -maxLag; lag <= maxLag; lag++) {
+    var a, b;
+    if (lag < 0) { a = x.slice(-lag); b = y.slice(0, n + lag); }
+    else if (lag > 0) { a = x.slice(0, n - lag); b = y.slice(lag); }
+    else { a = x; b = y; }
+    if (a.length >= 2) results.push({ lag: lag, r: npePearsonArr(a, b), n: a.length });
+  }
+  var best = results.reduce(function (bst, c) { return Math.abs(c.r) > Math.abs(bst.r) ? c : bst; }, { lag: 0, r: 0 });
+  var rel = best.lag > 0 ? 'x_leads_y' : (best.lag < 0 ? 'y_leads_x' : 'contemporaneous');
+  return { maxLag: maxLag, correlations: results, best: best, relationship: rel };
+}
+
+/* ─── Additive seasonal decomposition (JS port of forecasting.seasonal_decompose) ─── */
+function npeDecompose(vals, m) {
+  var n = vals.length, i, k;
+  if (!m || n < 2 * m) return { detected: false };
+  var trend = new Array(n).fill(null), half = Math.floor(m / 2);
+  for (i = half; i < n - half; i++) {
+    if (m % 2 === 0) {
+      var w = vals.slice(i - half, i + half + 1);
+      trend[i] = (w.reduce(function (s, v) { return s + v; }, 0) - 0.5 * w[0] - 0.5 * w[w.length - 1]) / m;
+    } else {
+      var sum = 0; for (k = i - half; k <= i + half; k++) sum += vals[k]; trend[i] = sum / m;
+    }
+  }
+  var detr = vals.map(function (v, idx) { return trend[idx] != null ? v - trend[idx] : null; });
+  var seasonal_idx = [];
+  for (k = 0; k < m; k++) {
+    var arr = []; for (i = k; i < n; i += m) if (detr[i] != null) arr.push(detr[i]);
+    seasonal_idx.push(arr.length ? arr.reduce(function (s, v) { return s + v; }, 0) / arr.length : 0);
+  }
+  var centre = seasonal_idx.reduce(function (s, v) { return s + v; }, 0) / m;
+  seasonal_idx = seasonal_idx.map(function (v) { return v - centre; });
+  var seasonal = vals.map(function (_, idx) { return seasonal_idx[idx % m]; });
+  var residual = vals.map(function (v, idx) { return trend[idx] != null ? v - trend[idx] - seasonal[idx] : null; });
+  function varc(a) { a = a.filter(function (x) { return x != null; }); if (a.length < 2) return 0; var mu = a.reduce(function (s, v) { return s + v; }, 0) / a.length; return a.reduce(function (s, v) { return s + (v - mu) * (v - mu); }, 0) / (a.length - 1); }
+  var vr = varc(residual), vd = varc(vals.map(function (v, idx) { return trend[idx] != null ? v - trend[idx] : null; }));
+  var strength = vd ? Math.max(0, 1 - vr / vd) : 0;
+  return { detected: true, seasonLength: m, strength: strength, trend: trend, seasonal: seasonal, residual: residual, indices: seasonal_idx };
+}
+
 function npeMedianGapDays(series) {
   if (!series || series.length < 2) return null;
   var g = [];

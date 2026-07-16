@@ -55,6 +55,28 @@
     <div class="dual-legend"><span><span class="dot" id="prof-dot" style="background:#4a9eff"></span><span id="prof-series-label">Value</span></span><span><span class="dot" style="background:#F4A017;height:1px;border-radius:0;"></span>OLS trend</span><span><span class="dot" style="background:#00C896;height:1px;border-radius:0;"></span>Holt-Winters forecast (95% band)</span></div>
     <div class="source-note" id="prof-source">—</div>
   </div>
+  <div class="chart-card reveal" id="leadlag-card">
+    <div class="chart-card-title">Lead / Lag Explorer</div>
+    <p class="chart-context">Does one indicator move <em>before</em> another? Pick two series and the tool correlates them at every monthly shift, finding the lag with the strongest relationship. A positive lag means the first series (X) leads the second (Y). This is association, not proof of causation.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;">
+      <div><label style="display:block;font-size:0.7rem;color:var(--slate);margin-bottom:4px;">Leading (X)</label><select id="ll-x" class="sector-filter-input" style="max-width:260px;"></select></div>
+      <div><label style="display:block;font-size:0.7rem;color:var(--slate);margin-bottom:4px;">Lagging (Y)</label><select id="ll-y" class="sector-filter-input" style="max-width:260px;"></select></div>
+      <div><label style="display:block;font-size:0.7rem;color:var(--slate);margin-bottom:4px;">Max lag</label><select id="ll-lag" class="sector-filter-input" style="max-width:110px;"><option>6</option><option selected>12</option><option>18</option><option>24</option></select></div>
+      <button id="ll-run" class="btn-try" style="border:none;cursor:pointer;">Analyze →</button>
+    </div>
+    <div id="ll-verdict" class="insight-card" style="display:none;margin:0 0 16px;"></div>
+    <div class="chart-wrap-lg"><div class="chart-loading" id="ll-loading">Pick two indicators and click Analyze.</div><canvas id="ll-chart" style="display:none"></canvas></div>
+    <div class="source-note">Correlation of X with Y shifted by each lag; the gold bar is the strongest. Computed in-browser.</div>
+  </div>
+  <div class="chart-card reveal" id="decomp-card">
+    <div class="chart-card-title">Seasonal Decomposition</div>
+    <p class="chart-context">Split a series into its <strong>trend</strong>, a repeating <strong>seasonal</strong> pattern, and the <strong>residual</strong> left over. The seasonal-strength score (0–1) says how much of the movement is a regular calendar pattern. Needs at least two full cycles of monthly or quarterly data.</p>
+    <select id="dc-select" class="sector-filter-input" style="max-width:460px;margin-bottom:14px;"></select>
+    <div id="dc-strength" style="font-family:var(--font-mono);font-size:0.82rem;color:var(--slate);margin-bottom:12px;">—</div>
+    <div class="chart-wrap-lg"><div class="chart-loading" id="dc-loading">Loading…</div><canvas id="dc-chart" style="display:none"></canvas></div>
+    <div class="dual-legend"><span><span class="dot" style="background:#4a9eff"></span>Observed</span><span><span class="dot" style="background:#F4A017;height:1px;border-radius:0;"></span>Trend</span><span><span class="dot" style="background:#00C896;height:1px;border-radius:0;"></span>Seasonal (offset)</span></div>
+    <div class="source-note" id="dc-source">—</div>
+  </div>
   <div class="chart-card reveal"><div class="chart-card-title">Inflation Trend with Linear Regression</div><p class="chart-context">The dashed line is an ordinary least squares (OLS) regression. It slopes upward across the whole window — but a single straight line can't capture the real shape: inflation climbed to a <strong>34.8% peak in December 2024</strong>, then eased to <strong>15.4%</strong> by early 2026. Read the line as a rough long-run summary, not the month-to-month path.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-inf">Loading…</div><canvas id="chart-inf" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#e05252"></span>Inflation</span><span><span class="dot" style="background:#F4A017;height:1px;border-radius:0;"></span>OLS Trend</span></div><button class="btn-chart-reset" id="reset-inf">↺ Reset Zoom</button><div class="source-note">Source: NBS · Trend line = Ordinary Least Squares linear regression</div></div>
   <div class="ops-card reveal">
     <h2>Pearson Correlation: Inflation vs Exchange Rate</h2>
@@ -332,6 +354,89 @@ async function renderProfile(id){
   document.getElementById('prof-source').textContent=`Source: ${meta.source||'—'} · ${meta.unit||''} · ${st.n} observations · gold = OLS trend · green dashed = ${fcNote}`;
 }
 document.addEventListener('DOMContentLoaded', initProfile);
+
+/* ─── Lead / Lag Explorer ─── */
+function llEsc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+let llChart=null, LLCAT=[], LLMAP={};
+async function initLeadLag(){
+  const xs=document.getElementById('ll-x'); if(!xs)return;
+  try{ if(!LLCAT.length){LLCAT=await npeCatalogue(); LLCAT.forEach(x=>LLMAP[x.id]=x);} }catch(e){document.getElementById('ll-loading').textContent='Catalogue unavailable';return;}
+  npeFillSelect(xs, LLCAT, 'exchange_rate');
+  npeFillSelect(document.getElementById('ll-y'), LLCAT, 'inflation');
+  document.getElementById('ll-run').addEventListener('click', runLeadLag);
+}
+async function runLeadLag(){
+  const xid=document.getElementById('ll-x').value, yid=document.getElementById('ll-y').value;
+  const maxLag=parseInt(document.getElementById('ll-lag').value)||12;
+  const load=document.getElementById('ll-loading'); load.style.display='flex'; load.textContent='Computing…';
+  document.getElementById('ll-chart').style.display='none';
+  document.getElementById('ll-verdict').style.display='none';
+  if(xid===yid){load.textContent='Pick two different indicators.';return;}
+  let xs, ys;
+  try{ [xs,ys]=await Promise.all([sb(xid),sb(yid)]); }catch(e){load.textContent='Could not load data';return;}
+  const xm={}, ym={}; xs.forEach(d=>{if(d.value!=null)xm[d.obs_date]=d.value;}); ys.forEach(d=>{if(d.value!=null)ym[d.obs_date]=d.value;});
+  const common=Object.keys(xm).filter(d=>d in ym).sort();
+  if(common.length<4){load.textContent='Need at least 4 overlapping observations for these two.';return;}
+  const cc=npeCrossCorr(common.map(d=>xm[d]), common.map(d=>ym[d]), maxLag);
+  const xn=(LLMAP[xid]||{name:xid}).name, yn=(LLMAP[yid]||{name:yid}).name;
+  const b=cc.best, absL=Math.abs(b.lag);
+  let verdict;
+  if(cc.relationship==='x_leads_y') verdict=`<strong>${llEsc(xn)}</strong> appears to lead <strong>${llEsc(yn)}</strong> by <strong>${absL}</strong> period(s) — its past moves line up with ${llEsc(yn)}'s present (r = ${b.r.toFixed(3)}).`;
+  else if(cc.relationship==='y_leads_x') verdict=`<strong>${llEsc(yn)}</strong> appears to lead <strong>${llEsc(xn)}</strong> by <strong>${absL}</strong> period(s) (r = ${b.r.toFixed(3)}).`;
+  else verdict=`<strong>${llEsc(xn)}</strong> and <strong>${llEsc(yn)}</strong> move together with no lead detected (r = ${b.r.toFixed(3)}).`;
+  const v=document.getElementById('ll-verdict'); v.style.display='block';
+  v.innerHTML=`<div class="insight-label">Strongest relationship at lag ${b.lag}</div><p>${verdict}</p><p style="font-size:0.72rem;color:var(--slate);margin-top:6px;">Based on ${common.length} overlapping observations. Correlation is not causation.</p>`;
+  load.style.display='none';
+  const cv=document.getElementById('ll-chart'); cv.style.display='block';
+  if(llChart)llChart.destroy();
+  const labels=cc.correlations.map(c=>c.lag), data=cc.correlations.map(c=>+c.r.toFixed(4));
+  const colors=cc.correlations.map(c=>c.lag===b.lag?'#F4A017':'rgba(74,158,255,0.55)');
+  llChart=new Chart(cv,{type:'bar',data:{labels,datasets:[{label:'r',data,backgroundColor:colors,borderRadius:3,barPercentage:0.85}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>'Lag '+i[0].label,label:ctx=>'r = '+ctx.parsed.y.toFixed(3)}}},scales:{y:{...SY,suggestedMin:-1,suggestedMax:1,title:{display:true,text:'Correlation (r)',color:'rgba(245,240,232,0.4)',font:{size:11}}},x:{...SX,title:{display:true,text:'Lag (periods) — positive = X leads Y',color:'rgba(245,240,232,0.4)',font:{size:11}}}}}});
+}
+document.addEventListener('DOMContentLoaded', initLeadLag);
+
+/* ─── Seasonal Decomposition ─── */
+let dcChart=null, DCCAT=[], DCMAP={};
+async function initDecomp(){
+  const sel=document.getElementById('dc-select'); if(!sel)return;
+  try{ if(!DCCAT.length){DCCAT=await npeCatalogue(); DCCAT.forEach(x=>DCMAP[x.id]=x);} }catch(e){document.getElementById('dc-loading').textContent='Catalogue unavailable';return;}
+  npeFillSelect(sel, DCCAT, 'inflation');
+  sel.addEventListener('change',()=>renderDecomp(sel.value));
+  renderDecomp('inflation');
+}
+async function renderDecomp(id){
+  const meta=DCMAP[id]||{name:id,unit:'',source:''};
+  const load=document.getElementById('dc-loading'); load.style.display='flex'; load.textContent='Loading '+meta.name+'…';
+  document.getElementById('dc-chart').style.display='none';
+  let series; try{series=await sb(id);}catch(e){load.textContent='Could not load data';return;}
+  const pts=series.filter(d=>d.value!=null&&isFinite(d.value));
+  const gap=npeMedianGapDays(pts), freq=npeFreq(gap), m=npeSeasonLen(freq);
+  const vals=pts.map(d=>d.value);
+  const d=npeDecompose(vals, m);
+  const strengthEl=document.getElementById('dc-strength');
+  if(!d.detected){
+    load.textContent='This series is '+(freq==='annual'||freq==='daily'?freq+' — seasonal decomposition needs monthly or quarterly data with ≥2 full cycles.':'too short for a full seasonal cycle.');
+    strengthEl.textContent=''; document.getElementById('dc-source').textContent=`Source: ${meta.source||'—'} · ${pts.length} observations · ${freq}`;
+    if(dcChart)dcChart.destroy(); return;
+  }
+  const meanV=vals.reduce((a,b)=>a+b,0)/vals.length;
+  const bar=Math.round(d.strength*20);
+  strengthEl.innerHTML=`Seasonal strength: <span style="color:var(--gold);">${d.strength.toFixed(2)}</span> / 1.00 &nbsp; [${'█'.repeat(bar)}${'░'.repeat(20-bar)}] &nbsp; ${d.strength>0.6?'strongly seasonal':d.strength>0.3?'moderately seasonal':'weakly seasonal'}`;
+  load.style.display='none';
+  const cv=document.getElementById('dc-chart'); cv.style.display='block';
+  if(dcChart)dcChart.destroy();
+  const labels=pts.map(d2=>fmt(d2.obs_date));
+  const seasonalOffset=d.seasonal.map(s=>s+meanV); // lift seasonal onto the series scale so it's visible
+  const F=v=>npeFormat(v,id,meta.unit);
+  dcChart=new Chart(cv,{data:{labels,datasets:[
+    {type:'line',label:'Observed',data:vals,borderColor:'#4a9eff',backgroundColor:'transparent',borderWidth:2,pointRadius:0,tension:0.3},
+    {type:'line',label:'Trend',data:d.trend,borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,spanGaps:true,tension:0.2},
+    {type:'line',label:'Seasonal (offset to mean)',data:seasonalOffset,borderColor:'#00C896',backgroundColor:'transparent',borderWidth:1.5,borderDash:[4,3],pointRadius:0,tension:0.3}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>ctx.parsed.y==null?null:`${ctx.dataset.label}: ${ctx.dataset.label.indexOf('Seasonal')===0?(ctx.parsed.y-meanV>=0?'+':'')+F(ctx.parsed.y-meanV):F(ctx.parsed.y)}`}},zoom:ZOOM},scales:{y:{...SY,ticks:{...SY.ticks,callback:v=>npeFormat(v,id,meta.unit)}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}}}}});
+  document.getElementById('dc-source').textContent=`Source: ${meta.source||'—'} · ${meta.unit||''} · ${pts.length} observations · ${freq}, season length ${m} · additive decomposition (green line is the seasonal component lifted to the series mean so it's visible)`;
+}
+document.addEventListener('DOMContentLoaded', initDecomp);
+
 </script>
 <script src="shared.js"></script>
 </body></html>
