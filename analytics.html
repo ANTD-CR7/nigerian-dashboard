@@ -46,11 +46,11 @@
 <main class="page-content"><div class="container">
   <div class="chart-card reveal" id="profile-card">
     <div class="chart-card-title">Analyze Any Indicator</div>
-    <p class="chart-context">Pick any of the platform's <strong>122 indicators</strong> — every headline series, all 47 GDP sub-sectors, every currency and CBN balance-sheet item — to see its full analytical profile computed live: latest value, change, year-on-year, range, volatility, trend and a simple linear forecast.</p>
+    <p class="chart-context">Pick any of the platform's <strong>122 indicators</strong> — every headline series, all 47 GDP sub-sectors, every currency and CBN balance-sheet item — to see its full analytical profile computed live: latest value, change, year-on-year, range, volatility, trend and a Holt-Winters forecast with a 95% confidence band.</p>
     <select id="prof-select" class="sector-filter-input" style="max-width:460px;margin-bottom:18px;"><option>Loading catalogue…</option></select>
     <div class="profile-stats" id="prof-stats"></div>
     <div class="chart-wrap-lg"><div class="chart-loading" id="loading-prof">Loading…</div><canvas id="chart-prof" style="display:none"></canvas></div>
-    <div class="dual-legend"><span><span class="dot" id="prof-dot" style="background:#4a9eff"></span><span id="prof-series-label">Value</span></span><span><span class="dot" style="background:#F4A017;height:1px;border-radius:0;"></span>OLS trend + forecast</span></div>
+    <div class="dual-legend"><span><span class="dot" id="prof-dot" style="background:#4a9eff"></span><span id="prof-series-label">Value</span></span><span><span class="dot" style="background:#F4A017;height:1px;border-radius:0;"></span>OLS trend</span><span><span class="dot" style="background:#00C896;height:1px;border-radius:0;"></span>Holt-Winters forecast (95% band)</span></div>
     <div class="source-note" id="prof-source">—</div>
   </div>
   <div class="chart-card reveal"><div class="chart-card-title">Inflation Trend with Linear Regression</div><p class="chart-context">The dashed line is an ordinary least squares (OLS) regression. It slopes upward across the whole window — but a single straight line can't capture the real shape: inflation climbed to a <strong>34.8% peak in December 2024</strong>, then eased to <strong>15.4%</strong> by early 2026. Read the line as a rough long-run summary, not the month-to-month path.</p><div class="chart-wrap-lg"><div class="chart-loading" id="loading-inf">Loading…</div><canvas id="chart-inf" style="display:none"></canvas></div><div class="dual-legend"><span><span class="dot" style="background:#e05252"></span>Inflation</span><span><span class="dot" style="background:#F4A017;height:1px;border-radius:0;"></span>OLS Trend</span></div><button class="btn-chart-reset" id="reset-inf">↺ Reset Zoom</button><div class="source-note">Source: NBS · Trend line = Ordinary Least Squares linear regression</div></div>
@@ -306,18 +306,30 @@ async function renderProfile(id){
   ];
   document.getElementById('prof-stats').innerHTML=tiles.map(t=>`<div class="prof-tile"><div class="pt-label">${t[0]}</div><div class="pt-value ${t[2]}">${t[1]}</div><div class="pt-sub">${t[3]}</div></div>`).join('');
   const fcMap={daily:20,monthly:6,quarterly:4,annual:3};const fc=fcMap[freq]||4;
+  const fcast=npeForecast(series,fc,freq);
   const fcDates=[];for(let k=1;k<=fc;k++)fcDates.push(addDaysISO(st.latest.obs_date,gap*k));
   const labels=st.pts.map(d=>fmt(d.obs_date)).concat(fcDates.map(fmt));
+  const total=st.n+fc;
   const valueData=st.vals.concat(fcDates.map(()=>null));
-  const trendData=st.trendLine.concat(fcDates.map((_,k)=>st.slope*(st.n-1+k+1)+st.intercept));
+  const trendData=st.trendLine.concat(fcDates.map(()=>null));
+  const fcArr=key=>{const a=new Array(total).fill(null);if(fcast){a[st.n-1]=st.latest.value;fcast.forecast.forEach((f,k)=>{a[st.n+k]=f[key];});}return a;};
+  // Forecast line + 95% band: an invisible upper boundary, then the lower
+  // boundary fills up to it (fill:'-1'), then the dashed centre line on top.
+  const bandDs=fcast?[
+    {type:'line',label:'fc-upper',data:fcArr('upper'),borderColor:'transparent',backgroundColor:'transparent',pointRadius:0,fill:false,tension:0.2},
+    {type:'line',label:'95% interval',data:fcArr('lower'),borderColor:'transparent',backgroundColor:'rgba(0,200,150,0.14)',pointRadius:0,fill:'-1',tension:0.2},
+    {type:'line',label:'Forecast',data:fcArr('value'),borderColor:'#00C896',backgroundColor:'transparent',borderWidth:2.5,borderDash:[5,4],pointRadius:0,tension:0.2}
+  ]:[];
   loadEl.style.display='none';
   const cv2=document.getElementById('chart-prof');cv2.style.display='block';
   if(profChart)profChart.destroy();
   profChart=new Chart(cv2,{data:{labels,datasets:[
     {type:'line',label:meta.name,data:valueData,borderColor:'#4a9eff',backgroundColor:ctx=>mkGrad(ctx.chart,'rgba(74,158,255,0.12)','rgba(74,158,255,0)'),borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#4a9eff',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,fill:true,tension:0.3,spanGaps:false},
-    {type:'line',label:'Trend + forecast',data:trendData,borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2,borderDash:[7,4],pointRadius:0,tension:0}
-  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{title:i=>i[0].label,label:ctx=>ctx.datasetIndex===0?(ctx.parsed.y==null?null:`${meta.name}: ${F(ctx.parsed.y)}`):`Trend: ${F(ctx.parsed.y)}`}},zoom:ZOOM},scales:{y:{...SY,ticks:{...SY.ticks,callback:v=>npeFormat(v,id,meta.unit)}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}}}}});
-  document.getElementById('prof-source').textContent=`Source: ${meta.source||'—'} · ${meta.unit||''} · ${st.n} observations · dashed line = OLS trend extrapolated ${fc} periods (illustrative, not a prediction)`;
+    {type:'line',label:'Trend (OLS)',data:trendData,borderColor:'#F4A017',backgroundColor:'transparent',borderWidth:2,borderDash:[7,4],pointRadius:0,tension:0},
+    ...bandDs
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},hover:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TIP,filter:it=>it.dataset.label!=='fc-upper'&&it.dataset.label!=='95% interval',callbacks:{title:i=>i[0].label,label:ctx=>{if(ctx.parsed.y==null)return null;const l=ctx.dataset.label;if(l==='Trend (OLS)')return 'Trend: '+F(ctx.parsed.y);if(l==='Forecast')return 'Forecast: '+F(ctx.parsed.y);return `${meta.name}: ${F(ctx.parsed.y)}`;}}},zoom:ZOOM},scales:{y:{...SY,ticks:{...SY.ticks,callback:v=>npeFormat(v,id,meta.unit)}},x:{...SX,ticks:{...SX.ticks,maxTicksLimit:12}}}}});
+  const fcNote=fcast?`${fcast.method}, ${fc} periods, 95% interval (α=${fcast.alpha}${fcast.gamma!=null?', γ='+fcast.gamma:''})`:'forecast needs ≥3 observations';
+  document.getElementById('prof-source').textContent=`Source: ${meta.source||'—'} · ${meta.unit||''} · ${st.n} observations · gold = OLS trend · green dashed = ${fcNote}`;
 }
 document.addEventListener('DOMContentLoaded', initProfile);
 </script>
