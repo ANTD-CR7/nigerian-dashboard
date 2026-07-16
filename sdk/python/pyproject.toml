@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "npedata"
+version = "1.0.0"
+description = "Official Python client for the NPEDATA Nigerian public economic data API."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Taoheed Abdulmanan Olaosebikan", email = "taoheedolaosebikanabdulmanan@gmail.com" }]
+keywords = ["nigeria", "economics", "cbn", "nbs", "inflation", "forecasting", "open-data"]
+dependencies = []  # standard library only
+
+[project.optional-dependencies]
+pandas = ["pandas>=1.0"]
+
+[project.urls]
+Homepage = "https://antd-cr7.github.io/nigerian-dashboard/"
+API = "https://npedata-api.onrender.com/docs"
+Source = "https://github.com/ANTD-CR7/nigerian-dashboard"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["npedata*"]

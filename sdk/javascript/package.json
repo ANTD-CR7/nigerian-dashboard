@@ -1,0 +1,23 @@
+{
+  "name": "@npedata/client",
+  "version": "1.0.0",
+  "description": "Official JavaScript/TypeScript client for the NPEDATA Nigerian public economic data API.",
+  "type": "module",
+  "main": "index.mjs",
+  "module": "index.mjs",
+  "exports": {
+    ".": "./index.mjs"
+  },
+  "types": "index.d.ts",
+  "files": ["index.mjs", "index.d.ts", "README.md"],
+  "keywords": ["nigeria", "economics", "cbn", "nbs", "inflation", "forecasting", "open-data", "hateoas"],
+  "author": "Taoheed Abdulmanan Olaosebikan <taoheedolaosebikanabdulmanan@gmail.com>",
+  "license": "Apache-2.0",
+  "homepage": "https://antd-cr7.github.io/nigerian-dashboard/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ANTD-CR7/nigerian-dashboard.git",
+    "directory": "sdk/javascript"
+  },
+  "engines": { "node": ">=18" }
+}
