@@ -185,6 +185,38 @@ def test_ask_route_503_without_key(monkeypatch):
     assert r.status_code == 503
 
 
+# --- Automated collection framework (collectors/) ---
+
+def test_collector_normalize_dedups_and_drops_invalid():
+    from collectors.base import normalize
+    rows = [
+        {"indicator_id": "wb_gdp_usd", "obs_date": "2023-01-01", "value": 100.0, "source": "WB"},
+        {"indicator_id": "wb_gdp_usd", "obs_date": "2023-01-01", "value": 200.0, "source": "WB"},  # dup, last wins
+        {"indicator_id": "bad", "obs_date": "not-a-date", "value": 1, "source": "x"},               # bad date
+        {"indicator_id": "inf", "obs_date": "2023-01-01", "value": float("inf"), "source": "x"},     # non-finite
+    ]
+    clean, dropped = normalize(rows)
+    assert len(clean) == 1
+    assert clean[0]["value"] == 200.0  # uniqueness rule: last write wins
+    assert dropped == 2
+
+
+def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
+    from collectors.base import Connector
+    from collectors import runner
+
+    class _Mock(Connector):
+        name = "mock"
+        source_label = "Mock"
+        def fetch(self, start_year=2015):
+            yield {"indicator_id": "wb_inflation", "obs_date": "2023-01-01", "value": 24.66, "source": "Mock"}
+
+    summary = runner.run(connectors=[_Mock()], out_dir=str(tmp_path), write_db=False, stamp="unit")
+    assert summary["rows"] == 1
+    assert summary["written_to_db"] == 0  # never writes to DB by default
+    assert (tmp_path / "collected_unit.json").exists()
+
+
 # --- Optional API-key auth + rate limiting middleware ---
 
 from fastapi.testclient import TestClient
