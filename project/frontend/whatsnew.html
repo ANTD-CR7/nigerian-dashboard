@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Author: Taoheed Abdulmanan Olaosebikan (Matric 22/10267), Caleb University, Lagos.
+       (c) 2026, Apache-2.0 licensed. Provenance fingerprint 3b191f211c44c1286fd5ec5cf9ddb867988c33da3ea228040c9a7b53226c6966 -->
+  <meta name="author" content="Taoheed Abdulmanan Olaosebikan">
+  <meta name="copyright" content="(c) 2026 Taoheed Abdulmanan Olaosebikan - Apache-2.0">
+  <meta name="npedata-provenance" content="3b191f211c44c1286fd5ec5cf9ddb867988c33da3ea228040c9a7b53226c6966">
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="What's new on NPEDATA: forecasting with confidence bands, an AI 'ask the data' assistant, a lead/lag explorer, seasonal decomposition, and official Python and JavaScript SDKs for the open API.">
+<title>What's New — NPEDATA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo"><span class="logo-text">NP<span class="logo-e">E</span>DATA</span><span class="logo-pulse"></span><span class="logo-live">LIVE</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="#">Economy <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a></div></li>
+    <li><a href="#">Currency <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a></div></li>
+    <li><a href="#">CBN Data <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a></div></li>
+    <li><a href="#">Analytics <span class="nav-chevron">▾</span></a><div class="nav-dropdown"><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a></div></li><li><a href="whatsnew.html" class="active">What's New</a></li><li><a href="api_docs.html">API</a></li><li><a href="about.html">About</a></li>
+  </ul>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mob-group">Main</div><a href="index.html">Dashboard</a><a href="whatsnew.html" class="active">What's New</a><a href="api_docs.html">API Docs</a><a href="data_sources.html">Data Sources</a><a href="about.html">About</a>
+  <div class="mob-group">Economy</div><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="interest_rate.html">Interest Rate</a>
+  <div class="mob-group">Currency</div><a href="exchange_rate.html">Exchange Rate</a><a href="multicurrency.html">Multi-Currency</a><a href="nfem.html">NFEM Rates</a><a href="currency_converter.html">Currency Converter</a>
+  <div class="mob-group">CBN Data</div><a href="reserves.html">FX Reserves</a><a href="currency_circulation.html">Currency Circulation</a><a href="assets_liabilities.html">Assets &amp; Liabilities</a><a href="financial_statement.html">Financial Statement</a>
+  <div class="mob-group">Analytics</div><a href="analytics.html">Overview</a><a href="compare.html">Compare Indicators</a><a href="reform_impact.html">Reform Impact</a><a href="briefing.html">Briefing Studio</a><a href="playground.html">Pipeline Playground</a>
+</div>
+<section class="page-hero"><div class="container">
+  <div class="page-breadcrumb"><a href="index.html">NPEDATA</a> / What's New</div>
+  <h1>What's New</h1><div class="page-hero-rule"></div>
+  <p>New forecasting, an AI assistant, richer analytics and developer SDKs · July 2026</p>
+</div></section>
+<main class="page-content"><div class="container">
+
+  <div class="insight-card reveal" style="border-left-color:var(--green);background:rgba(0,135,81,0.06);">
+    <div class="insight-label">In one line</div>
+    <p>The platform can now <strong>forecast</strong> where a series is heading, <strong>answer questions in plain English</strong>, show which indicators <strong>lead others</strong>, and be <strong>called from your own code</strong> in Python or JavaScript — all free, and all still transparent.</p>
+  </div>
+
+  <h2 style="font-family:var(--font-display);font-size:1.5rem;color:var(--white);margin:8px 0 18px;" class="reveal">For everyone</h2>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">📈 Forecasts with a confidence band</div>
+    <p class="chart-context">Every indicator profile now projects the next few periods with a Holt-Winters forecast and a shaded <strong>95% prediction interval</strong> — an honest range, not a single confident line. It even reports the model's own parameters.</p>
+    <a href="analytics.html#profile-card" class="btn-try" style="display:inline-block;text-decoration:none;">Try it on Analytics →</a>
+  </div>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">🤖 Ask the Data <span style="font-size:0.55em;color:var(--gold);border:1px solid var(--gold);border-radius:10px;padding:2px 8px;vertical-align:middle;">AI</span></div>
+    <p class="chart-context">Ask a plain-language question — "how has inflation changed this year?" — and get an answer grounded <strong>only</strong> in real figures the platform retrieves, with the indicator and date cited for every number. It tells you when the data can't answer, and never invents figures.</p>
+    <a href="analytics.html#ask-card" class="btn-try" style="display:inline-block;text-decoration:none;">Ask a question →</a>
+  </div>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">🔗 Lead / Lag Explorer</div>
+    <p class="chart-context">Does the exchange rate move <em>before</em> inflation? Pick any two indicators and the tool correlates them at every monthly shift, highlights the strongest lead/lag, and explains it in plain language — always noting that association is not causation.</p>
+    <a href="analytics.html#leadlag-card" class="btn-try" style="display:inline-block;text-decoration:none;">Explore lead/lag →</a>
+  </div>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">🍂 Seasonal Decomposition</div>
+    <p class="chart-context">Split any monthly or quarterly series into its underlying <strong>trend</strong>, its repeating <strong>seasonal pattern</strong>, and the leftover <strong>residual</strong>, with a 0–1 score for how seasonal it really is.</p>
+    <a href="analytics.html#decomp-card" class="btn-try" style="display:inline-block;text-decoration:none;">See a decomposition →</a>
+  </div>
+
+  <h2 style="font-family:var(--font-display);font-size:1.5rem;color:var(--white);margin:32px 0 18px;" class="reveal">For developers</h2>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">🧰 Official SDKs — Python &amp; JavaScript</div>
+    <p class="chart-context">Call the open API from your own code without writing HTTP boilerplate. The Python client is <strong>zero-dependency</strong> (standard library only); the JavaScript/TypeScript client works in the browser and Node. Both cover every endpoint and can follow HATEOAS links.</p>
+    <div class="api-url-box" style="display:block;margin:0 0 14px;">
+      <pre style="font-family:var(--font-mono);font-size:0.74rem;color:var(--slate);white-space:pre-wrap;margin:0;">from npedata import NPEData
+api = NPEData()
+api.forecast("inflation", periods=6)        # Holt-Winters + 95% band
+api.leadlag("exchange_rate", "inflation")   # does FX lead inflation?</pre>
+    </div>
+    <a href="https://github.com/ANTD-CR7/nigerian-dashboard/tree/main/sdk" class="btn-try" style="display:inline-block;text-decoration:none;">SDKs on GitHub →</a>
+  </div>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">🛰️ New API endpoints</div>
+    <p class="chart-context">The free, no-key REST API gained four new capabilities, all with HATEOAS <code style="color:var(--gold);">_links</code>:</p>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Endpoint</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code>/api/v1/forecast/{id}</code></td><td>Holt-Winters forecast with 95% prediction intervals</td></tr>
+          <tr><td><code>/api/v1/decompose/{id}</code></td><td>Trend / seasonal / residual decomposition</td></tr>
+          <tr><td><code>/api/v1/leadlag</code></td><td>Lead/lag cross-correlation between two indicators</td></tr>
+          <tr><td><code>/api/v1/ask</code></td><td>Grounded natural-language question answering</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <a href="api_docs.html" class="btn-try" style="display:inline-block;text-decoration:none;margin-top:14px;">Read the API docs →</a>
+  </div>
+
+  <div class="chart-card reveal">
+    <div class="chart-card-title">⚙️ Under the hood</div>
+    <p class="chart-context" style="margin-bottom:10px;">Quieter improvements that keep the platform trustworthy and maintainable:</p>
+    <ul style="font-family:var(--font-body);font-size:0.86rem;color:var(--slate);line-height:1.8;padding-left:20px;">
+      <li><strong>Automated collection</strong> — a live World Bank connector and a weekly scheduled job, demo-safe by default.</li>
+      <li><strong>Optional API keys &amp; rate limiting</strong> — the API stays fully open, but can be gated when needed.</li>
+      <li><strong>Continuous integration</strong> — every change runs a 39-test suite across three Python versions.</li>
+      <li><strong>Open source, Apache-2.0</strong> — reuse it freely, just keep the attribution.</li>
+    </ul>
+  </div>
+
+  <div class="insight-card reveal" style="text-align:center;">
+    <p style="margin-bottom:16px;">Everything above is free and live. Point your students, your code, or your curiosity at it.</p>
+    <a href="analytics.html" class="btn-try" style="display:inline-block;text-decoration:none;margin:4px;">Open Analytics →</a>
+    <a href="api_docs.html" class="btn-try" style="display:inline-block;text-decoration:none;margin:4px;">Explore the API →</a>
+  </div>
+
+</div></main>
+<footer><div class="footer-inner"><div class="footer-brand"><span class="logo-text">NP<span style="color:var(--green)">E</span>DATA</span><p>An open platform for Nigeria's public economic data.</p></div><div><h2>Data</h2><a href="gdp.html">GDP Growth</a><a href="inflation.html">Inflation</a><a href="exchange_rate.html">Exchange Rate</a><a href="reserves.html">FX Reserves</a></div><div><h2>Sources</h2><a href="data_sources.html#cbn">Central Bank of Nigeria (CBN)</a><a href="data_sources.html#nbs">National Bureau of Statistics (NBS)</a><a href="data_sources.html#worldbank">World Bank Open Data</a></div><div><h2>Project</h2><p>Caleb University FYP 2026</p><p>Computer Science · COSIS</p><a href="https://github.com/ANTD-CR7/nigerian-dashboard">GitHub Repository</a><a href="status.html">System Status</a></div></div><div class="footer-bottom"><span>© 2026 Taoheed Abdulmanan Olaosebikan · Caleb University</span><span>Data: CBN · NBS · World Bank</span></div></footer>
+<script src="shared.js"></script>
+</body></html>
