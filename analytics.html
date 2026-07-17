@@ -463,7 +463,7 @@ async function askQuestion(q){
   try{
     const res=await fetch(NPE_API+'/api/v1/ask',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({question:q})});
     if(res.status===503){askRender('<div class="insight-card" style="margin:0;"><div class="insight-label">AI not enabled yet</div><p>The Ask assistant needs an API key set on the server. Everything else on this page works without it — try “Analyze Any Indicator” below.</p></div>');return;}
-    if(!res.ok){askRender('<p style="color:#e05252;font-family:var(--font-mono);font-size:0.8rem;">Request failed ('+res.status+'). Please retry in a moment.</p>');return;}
+    if(!res.ok){let detail='';try{detail=(await res.json()).detail||'';}catch(e){}askRender('<p style="color:#e05252;font-family:var(--font-mono);font-size:0.8rem;">Request failed ('+res.status+')'+(detail?': '+askEsc(detail):'. Please retry in a moment.')+'</p>');return;}
     const j=await res.json();
     const pill=(name,v)=>`<span style="display:inline-block;background:rgba(0,163,98,0.12);border:1px solid rgba(0,163,98,0.3);border-radius:12px;padding:2px 10px;margin:2px;font-size:0.72rem;color:var(--green-text);">${askEsc(name)}: ${v}</span>`;
     const used=Object.entries((j.data_used&&j.data_used.indicators)||{}).map(([k,v])=>pill(v.name||k, v.latest?askEsc(String(v.latest.value))+' ('+askEsc(v.latest.obs_date)+')':'—')).join(' ');
