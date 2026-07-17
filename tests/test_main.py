@@ -291,6 +291,23 @@ def test_rate_limit_returns_429(monkeypatch):
     assert codes[0] != 429  # first few allowed
 
 
+def test_malformed_date_param_returns_422_not_500(monkeypatch):
+    monkeypatch.delenv("NPE_API_KEYS", raising=False)
+    monkeypatch.setenv("NPE_RATE_LIMIT_PER_MIN", "1000")
+    client = _client_stubbed(monkeypatch)
+    assert client.get("/api/v1/coverage?start=garbage").status_code == 422
+    assert client.get("/api/v1/coverage?end=2020-13-45").status_code == 422
+    assert client.get("/api/v1/coverage?start=2020-01-01").status_code == 200
+
+
+def test_get_reads_carry_cache_headers(monkeypatch):
+    monkeypatch.delenv("NPE_API_KEYS", raising=False)
+    monkeypatch.setenv("NPE_RATE_LIMIT_PER_MIN", "1000")
+    client = _client_stubbed(monkeypatch)
+    r = client.get("/api/v1/coverage")
+    assert "max-age" in r.headers.get("Cache-Control", "")
+
+
 # --- HATEOAS / Richardson Maturity Model Level 3 ---
 
 class _FakeRequest:

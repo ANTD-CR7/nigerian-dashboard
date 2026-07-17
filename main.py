@@ -82,7 +82,22 @@ async def gate(request: Request, call_next):
         if keys and request.headers.get("x-api-key") not in keys:
             return JSONResponse(status_code=401,
                                 content={"detail": "Missing or invalid API key. Send it in the X-API-Key header."})
-    return await call_next(request)
+        # Validate date params up front so a malformed value returns a clean 422
+        # instead of reaching the database and surfacing a 500.
+        for param in ("start", "end"):
+            val = request.query_params.get(param)
+            if val is not None:
+                try:
+                    date.fromisoformat(val)
+                except ValueError:
+                    return JSONResponse(status_code=422,
+                                        content={"detail": f"Invalid '{param}' date. Use ISO format YYYY-MM-DD."})
+    response = await call_next(request)
+    # Let browsers and CDNs cache successful GET reads briefly - cheap protection
+    # for the free tier under traffic. Data refreshes at most a few times a day.
+    if request.method == "GET" and path.startswith("/api/v1") and response.status_code == 200:
+        response.headers.setdefault("Cache-Control", "public, max-age=300")
+    return response
 
 # Credentials read from the environment when set (Render dashboard / local .env),
 # falling back to the existing anon key so this never breaks a deploy that hasn't
