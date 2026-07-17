@@ -1,0 +1,22 @@
+name: 📊 Data request
+description: Ask for a dataset or indicator to be added to NPEDATA
+title: "[Data] "
+labels: ["data-request"]
+body:
+  - type: input
+    id: indicator
+    attributes:
+      label: What data do you need?
+      placeholder: e.g. State-level inflation, CBN lending rates, monthly trade balance
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Where is it published? (a link helps a lot)
+      placeholder: e.g. https://www.cbn.gov.ng/...
+  - type: textarea
+    id: use
+    attributes:
+      label: What would you use it for?
+      description: Helps prioritise. Optional.

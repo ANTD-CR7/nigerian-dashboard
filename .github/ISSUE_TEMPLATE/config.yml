@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📈 Live dashboard
+    url: https://antd-cr7.github.io/nigerian-dashboard/
+    about: Explore the data before filing — your answer may already be here.
+  - name: 🛰️ API documentation
+    url: https://antd-cr7.github.io/nigerian-dashboard/api_docs.html
+    about: For developers integrating the open API.

@@ -1,0 +1,22 @@
+name: 🐛 Report something wrong
+description: A number looks off, a chart is broken, or a page misbehaves
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What's wrong?
+      placeholder: What did you see, and what did you expect?
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Which page or indicator?
+      placeholder: e.g. analytics.html — Lead/Lag Explorer, or the inflation chart
+  - type: input
+    id: browser
+    attributes:
+      label: Browser / device (optional)
+      placeholder: e.g. Chrome on Android
