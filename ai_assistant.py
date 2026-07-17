@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import os
+import urllib.error
 import urllib.request
 
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
@@ -78,9 +79,18 @@ def call_anthropic(user_content: str, api_key: str, model: str = None,
         },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-    text = "".join(block.get("text", "") for block in data.get("content", []))
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        # Surface the real Anthropic error (bad key, unknown model, no credit, rate limit)
+        detail = e.read().decode("utf-8", "ignore")
+        try:
+            detail = json.loads(detail).get("error", {}).get("message", detail)
+        except (ValueError, AttributeError):
+            pass
+        raise RuntimeError(f"Anthropic API {e.code}: {detail[:300]}")
+    text = "".join(block.get("text", "") for block in data.get("content", []) if block.get("type") == "text")
     return {"text": text.strip(), "model": data.get("model"), "usage": data.get("usage")}
 
 
