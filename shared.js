@@ -608,14 +608,17 @@ function npePearsonArr(x, y) {
 }
 function npeCrossCorr(x, y, maxLag) {
   var n = Math.min(x.length, y.length); x = x.slice(0, n); y = y.slice(0, n);
-  maxLag = Math.min(maxLag, n > 2 ? n - 2 : 0);
+  // Cap the lag to half the series and require a minimum overlap so a couple of
+  // points at an extreme lag can't produce a spurious r of +/-1.
+  var minOverlap = 4;
+  maxLag = Math.max(0, Math.min(maxLag, Math.floor(n / 2)));
   var results = [];
   for (var lag = -maxLag; lag <= maxLag; lag++) {
     var a, b;
     if (lag < 0) { a = x.slice(-lag); b = y.slice(0, n + lag); }
     else if (lag > 0) { a = x.slice(0, n - lag); b = y.slice(lag); }
     else { a = x; b = y; }
-    if (a.length >= 2) results.push({ lag: lag, r: npePearsonArr(a, b), n: a.length });
+    if (a.length >= minOverlap) results.push({ lag: lag, r: npePearsonArr(a, b), n: a.length });
   }
   var best = results.reduce(function (bst, c) { return Math.abs(c.r) > Math.abs(bst.r) ? c : bst; }, { lag: 0, r: 0 });
   var rel = best.lag > 0 ? 'x_leads_y' : (best.lag < 0 ? 'y_leads_x' : 'contemporaneous');
