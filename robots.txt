@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://antd-cr7.github.io/nigerian-dashboard/sitemap.xml
