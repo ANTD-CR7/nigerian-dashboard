@@ -10,6 +10,22 @@
  * Authorship provenance fingerprint (see PROVENANCE.json):
  *   3b191f211c44c1286fd5ec5cf9ddb867988c33da3ea228040c9a7b53226c6966
  */
+
+/* ─── Privacy-friendly analytics (OPT-IN) ───────────────────────────────
+   Off by default: no cookies, no tracking, nothing sent. To turn it on, sign
+   up for a free GoatCounter account (goatcounter.com), then paste your count
+   URL below, e.g. 'https://npedata.goatcounter.com/count'. Only that one line
+   enables it; leave it empty to keep the site tracking-free (and offline-safe). */
+(function () {
+  var GOATCOUNTER = '';  // <-- paste your GoatCounter count URL here to enable
+  if (!GOATCOUNTER || location.protocol === 'file:') return;  // never on offline copies
+  window.goatcounter = { no_onload: false };
+  var s = document.createElement('script');
+  s.async = true; s.src = '//gc.zgo.at/count.js';
+  s.setAttribute('data-goatcounter', GOATCOUNTER);
+  document.head.appendChild(s);
+})();
+
 (function () {
 
   /* ─── Authorship signature (provenance "DNA") ─── */
