@@ -78,6 +78,10 @@ def holt_winters(values, m: int, periods: int, ci: float = 0.95):
     short for a full seasonal cycle.
     """
     n = len(values)
+    if n == 0:
+        return {"method": "no_data", "seasonal": False, "season_length": 0,
+                "params": {"alpha": None, "beta": None, "gamma": None},
+                "residual_std_error": 0.0, "confidence": ci, "fitted": [], "forecast": []}
     grid = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     use_season = bool(m and n >= 2 * m)
     best = None
@@ -227,7 +231,11 @@ def cross_correlation(x, y, max_lag: int):
     """
     n = min(len(x), len(y))
     x, y = x[:n], y[:n]
-    max_lag = min(max_lag, n - 2) if n > 2 else 0
+    # Cap the lag so at least half the series always overlaps, and require a
+    # minimum overlap per lag - otherwise a handful of points at an extreme lag
+    # produce a spurious r of +/-1 that looks like a strong lead but is noise.
+    min_overlap = 4
+    max_lag = max(0, min(max_lag, n // 2))
     results = []
     for lag in range(-max_lag, max_lag + 1):
         if lag < 0:      # y leads x
@@ -236,9 +244,9 @@ def cross_correlation(x, y, max_lag: int):
             a, b = x[:n - lag], y[lag:]
         else:
             a, b = x, y
-        if len(a) >= 2:
+        if len(a) >= min_overlap:
             results.append({"lag": lag, "r": round(_pearson(a, b), 4), "n": len(a)})
-    best = max(results, key=lambda d: abs(d["r"])) if results else {"lag": 0, "r": 0.0}
+    best = max(results, key=lambda d: abs(d["r"])) if results else {"lag": 0, "r": 0.0, "n": n}
     if best["lag"] > 0:
         lead = "x_leads_y"
     elif best["lag"] < 0:

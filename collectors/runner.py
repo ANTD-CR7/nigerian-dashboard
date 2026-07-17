@@ -30,10 +30,17 @@ def run(connectors=None, out_dir="data/collected", write_db=False, stamp=None):
     connectors = connectors or DEFAULT_CONNECTORS
     raw = []
     per_source = {}
+    errors = {}
     for c in connectors:
-        rows = list(c.fetch())
-        per_source[c.name] = len(rows)
-        raw.extend(rows)
+        # One failing connector (e.g. a broken scraper) must not abort the whole
+        # run or lose the data from the healthy ones.
+        try:
+            rows = list(c.fetch())
+            per_source[c.name] = len(rows)
+            raw.extend(rows)
+        except Exception as exc:
+            per_source[c.name] = 0
+            errors[c.name] = f"{type(exc).__name__}: {exc}"
 
     clean, dropped = normalize(raw)
     stamp = stamp or datetime.date.today().isoformat()
@@ -45,6 +52,7 @@ def run(connectors=None, out_dir="data/collected", write_db=False, stamp=None):
         "rows": len(clean),
         "dropped_invalid": dropped,
         "per_source": per_source,
+        "errors": errors,
         "observations": clean,
     }
     path.write_text(json.dumps(snapshot, indent=2), encoding="utf-8")
@@ -57,6 +65,7 @@ def run(connectors=None, out_dir="data/collected", write_db=False, stamp=None):
         "rows": len(clean),
         "dropped": dropped,
         "per_source": per_source,
+        "errors": errors,
         "snapshot": str(path),
         "written_to_db": written,
     }

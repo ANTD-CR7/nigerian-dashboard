@@ -154,6 +154,22 @@ def test_cross_correlation_finds_lead():
     assert cc["best"]["r"] == pytest.approx(1.0, abs=1e-6)
 
 
+def test_holt_winters_empty_series_does_not_crash():
+    # regression: holt_winters([]) used to raise IndexError
+    hw = forecasting.holt_winters([], 12, 6)
+    assert hw["method"] == "no_data"
+    assert hw["forecast"] == []
+
+
+def test_cross_correlation_requires_minimum_overlap():
+    # regression: a tiny overlap at an extreme lag must not report a spurious r
+    cc = forecasting.cross_correlation([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0], 5)
+    # only 3 overlapping points -> below min overlap -> no spurious lead
+    assert cc["best"]["r"] == 0.0
+    # and the lag is capped to half the (shorter) series
+    assert cc["max_lag"] <= 1
+
+
 # --- AI "ask the data" assistant (ai_assistant.py) ---
 
 import ai_assistant
@@ -215,6 +231,26 @@ def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     assert summary["rows"] == 1
     assert summary["written_to_db"] == 0  # never writes to DB by default
     assert (tmp_path / "collected_unit.json").exists()
+
+
+def test_collector_runner_survives_a_failing_connector(tmp_path):
+    # regression: one connector raising must not abort the whole run
+    from collectors.base import Connector
+    from collectors import runner
+
+    class _Boom(Connector):
+        name = "boom"
+        def fetch(self, start_year=2015):
+            raise RuntimeError("connector exploded")
+
+    class _Good(Connector):
+        name = "good"
+        def fetch(self, start_year=2015):
+            yield {"indicator_id": "wb_gdp", "obs_date": "2023-01-01", "value": 1.0, "source": "Good"}
+
+    summary = runner.run(connectors=[_Boom(), _Good()], out_dir=str(tmp_path), write_db=False, stamp="mix")
+    assert summary["rows"] == 1                       # the good data survived
+    assert "boom" in summary["errors"]                # the failure was recorded, not fatal
 
 
 # --- Optional API-key auth + rate limiting middleware ---

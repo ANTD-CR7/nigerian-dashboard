@@ -16,6 +16,7 @@ when pandas happens to be installed.
 from __future__ import annotations
 
 import json
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -69,6 +70,10 @@ class NPEData:
                 body = resp.read().decode("utf-8")
         except urllib.error.HTTPError as e:
             raise NPEDataError(f"{e.code} {e.reason} for {url}: {e.read().decode('utf-8', 'ignore')[:200]}")
+        except urllib.error.URLError as e:
+            raise NPEDataError(f"Network error for {url}: {e.reason}")
+        except (TimeoutError, OSError) as e:
+            raise NPEDataError(f"Request failed for {url}: {e}")
         return body if raw else json.loads(body)
 
     # ---- named series ---------------------------------------------------- #

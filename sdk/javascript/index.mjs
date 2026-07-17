@@ -53,7 +53,12 @@ export class NPEData {
     }
     const headers = { Accept: "*/*" };
     if (this.apiKey) headers["X-API-Key"] = this.apiKey;
-    const res = await this.fetch(url, { headers });
+    let res;
+    try {
+      res = await this.fetch(url, { headers });
+    } catch (e) {
+      throw new NPEDataError(`Network error for ${url}: ${e.message}`);
+    }
     if (!res.ok) throw new NPEDataError(`${res.status} ${res.statusText} for ${url}`);
     return raw ? res.text() : res.json();
   }
