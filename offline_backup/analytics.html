@@ -364,6 +364,12 @@ async function initLeadLag(){
   npeFillSelect(xs, LLCAT, 'exchange_rate');
   npeFillSelect(document.getElementById('ll-y'), LLCAT, 'inflation');
   document.getElementById('ll-run').addEventListener('click', runLeadLag);
+  // Re-run when either indicator changes, and show a result immediately on load
+  // (like the other cards) so the panel is never a blank "click Analyze" prompt.
+  document.getElementById('ll-x').addEventListener('change', runLeadLag);
+  document.getElementById('ll-y').addEventListener('change', runLeadLag);
+  document.getElementById('ll-lag').addEventListener('change', runLeadLag);
+  runLeadLag();
 }
 async function runLeadLag(){
   const xid=document.getElementById('ll-x').value, yid=document.getElementById('ll-y').value;
