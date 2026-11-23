@@ -66,6 +66,14 @@ def main():
         print(f"  observations: upserted {total}/{len(observations)}")
 
     print("Seed load complete.")
+    print(
+        "Note: this script intentionally does NOT write to observation_vintages "
+        "(the Ledger) -- re-running it to reproduce a snapshot is not a real "
+        "revision, and writing one here on every reseed would record fake "
+        "history. If vintages need to catch up after seeding a fresh database, "
+        "re-run the backfill block in project/database/setup.sql -- it's "
+        "idempotent (guarded by WHERE NOT EXISTS) and safe to run anytime."
+    )
 
 
 if __name__ == "__main__":

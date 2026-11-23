@@ -86,6 +86,19 @@ def _upsert(rows) -> int:
     except ImportError:
         return 0
     client = create_client(url, key)
+    # The Ledger: record every value as a permanent vintage *before* touching
+    # observations, same ordering as the API's ingestion path. If this insert
+    # fails, the exception propagates and observations is never upserted.
+    if rows:
+        client.table("observation_vintages").insert([
+            {
+                "indicator_id": r["indicator_id"],
+                "obs_date": r["obs_date"],
+                "value": r["value"],
+                "source": r["source"],
+            }
+            for r in rows
+        ]).execute()
     client.table("observations").upsert(rows, on_conflict="indicator_id,obs_date").execute()
     return len(rows)
 

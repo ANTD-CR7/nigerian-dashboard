@@ -66,10 +66,31 @@ Collect  →  Validate  →  Standardise  →  Store  →  Analyse  →  API  �
 ```
 
 - **Storage model:** three tables — `indicators`, `data_sources`, `observations`
-  (long/tidy: one row per indicator per date).
+  (long/tidy: one row per indicator per date) — plus `observation_vintages`, an
+  append-only archive: every value ever written is kept permanently alongside any
+  later revision, timestamped. `observations` always reflects the latest value;
+  `observation_vintages` never forgets what it used to say.
+  - **Immutability:** the `anon` database role has `INSERT`/`SELECT` only on
+    `observation_vintages` — `UPDATE`/`DELETE` are revoked at the grant level and no
+    row-level policy permits them either, so the app's own write path cannot alter
+    history even by mistake. This does not hold against the table owner or a
+    service-role key (neither of which this app uses today).
+  - **Backfill honesty:** vintages created from pre-existing `observations` rows are
+    flagged `is_backfill = true` because their `recorded_at` is only an approximation
+    (when the row was inserted into this database, not its true original publish
+    date). Only vintages recorded going forward are exact.
 - **Analytics** are computed on demand (Pearson correlation, period/YoY change, trend
   direction, simple linear-regression forecast) — in the API (Python) and, for the
   compare/analytics pages, client-side in JavaScript.
+  - **`context` (disclosed statistics):** `/api/v1/analytics/{indicator_id}` also returns
+    a `context` block — percentile rank, z-score, and move-significance (flagged at 2
+    standard deviations), computed against the indicator's full history as reconstructed
+    from `observation_vintages` at request time, never against an arbitrary requested
+    date window. Classical statistics only, same "no AI/ML" principle as the rest of the
+    platform. Below a minimum of 30 observations, `context` is a refusal —
+    `{"insufficient_history": true, "observations_available": N, "minimum_required": 30}`
+    — rather than a statistically meaningless number; this affects `gdp_usd`, `gdp_growth`,
+    and `mpr` today.
 - **API** follows the Richardson Maturity Model **Level 3 (HATEOAS)**: responses include
   `_links`, and CSV exports carry an RFC 8288 `Link` header.
 
@@ -175,7 +196,7 @@ Base URL: `https://npedata-api.onrender.com` · All responses JSON with a `_link
 | GET | `/api/v1/gdp-sectors` | Real GDP by sector |
 | GET | `/api/v1/cbn-balance-sheet` | CBN balance-sheet items |
 | GET | `/api/v1/analytics` | Pearson correlation: inflation vs exchange rate |
-| GET | `/api/v1/analytics/{indicator_id}` | Latest, period & YoY change, trend, OLS forecast |
+| GET | `/api/v1/analytics/{indicator_id}` | Latest, period & YoY change, trend, OLS forecast, Rater `context` |
 | GET | `/api/v1/coverage` | Observation counts, date ranges, sources per indicator |
 | GET | `/api/v1/export/{indicator_id}` | Export one indicator as CSV |
 | POST | `/api/v1/observations` | Validate one normalised observation* |

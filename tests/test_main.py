@@ -64,6 +64,68 @@ def test_store_observation_rejects_unknown_indicator():
         main.store_observation(payload, commit=False)
 
 
+def test_store_observation_writes_vintage_before_observation(monkeypatch):
+    """The Ledger: a committed write must record a permanent vintage first,
+    then touch observations -- never the other way around, so the two
+    tables can't drift apart."""
+    monkeypatch.setattr(main, "ALLOW_DATA_WRITES", True)
+    order = []
+
+    class _Query:
+        def __init__(self, name):
+            self.name = name
+
+        def select(self, *a, **k): return self
+        def eq(self, *a, **k): return self
+        def limit(self, *a, **k): return self
+        def insert(self, *a, **k): return self
+        def update(self, *a, **k): return self
+
+        def execute(self):
+            class R:
+                data = []
+            return R()
+
+    class _SB:
+        def table(self, name):
+            order.append(name)
+            return _Query(name)
+
+    monkeypatch.setattr(main, "supabase", _SB())
+    payload = main.ObservationIn(indicator_id="inflation", obs_date="2025-01-01", value=34.8)
+    result = main.store_observation(payload, commit=True)
+
+    assert result["committed"] is True
+    assert order[0] == "observation_vintages"
+    assert order[1:] == ["observations", "observations"]
+
+
+def test_store_observation_vintage_failure_blocks_observations_write(monkeypatch):
+    """If the vintage insert fails, observations must never be touched --
+    otherwise the Ledger and the current-value table silently drift apart."""
+    monkeypatch.setattr(main, "ALLOW_DATA_WRITES", True)
+    order = []
+
+    class _FailingVintageQuery:
+        def insert(self, *a, **k): return self
+
+        def execute(self):
+            raise RuntimeError("vintage insert failed")
+
+    class _SB:
+        def table(self, name):
+            order.append(name)
+            if name == "observation_vintages":
+                return _FailingVintageQuery()
+            raise AssertionError("observations must not be touched if the vintage insert failed")
+
+    monkeypatch.setattr(main, "supabase", _SB())
+    payload = main.ObservationIn(indicator_id="inflation", obs_date="2025-01-01", value=34.8)
+    with pytest.raises(RuntimeError):
+        main.store_observation(payload, commit=True)
+    assert order == ["observation_vintages"]
+
+
 def test_analytics_for_handles_empty_series(monkeypatch):
     monkeypatch.setattr(main, "fetch", lambda *args, **kwargs: [])
     result = main.analytics_for("inflation", "2020-01-01", "2024-12-31", periods=3)
@@ -78,6 +140,7 @@ def test_analytics_for_computes_rising_trend_and_forecast(monkeypatch):
         {"obs_date": "2024-03-01", "value": 14.0},
     ]
     monkeypatch.setattr(main, "fetch", lambda *args, **kwargs: series)
+    monkeypatch.setattr(main, "fetch_as_of", lambda *args, **kwargs: series)
     result = main.analytics_for("inflation", "2024-01-01", "2024-03-31", periods=2)
     assert result["data_points"] == 3
     assert result["trend"]["direction"] == "rising"
@@ -97,9 +160,49 @@ def test_analytics_for_year_over_year_change(monkeypatch):
         {"obs_date": "2024-06-01", "value": 25.0},
     ]
     monkeypatch.setattr(main, "fetch", lambda *args, **kwargs: series)
+    monkeypatch.setattr(main, "fetch_as_of", lambda *args, **kwargs: series)
     result = main.analytics_for("inflation", "2023-01-01", "2024-12-31", periods=1)
     assert result["year_over_year_change"]["absolute"] == pytest.approx(5.0)
     assert result["year_over_year_change"]["percent"] == pytest.approx(25.0)
+
+
+def test_analytics_for_refuses_context_on_thin_history(monkeypatch):
+    """The Rater's minimum-history rule: gdp_usd, gdp_growth, and mpr are all
+    too thin in the real dataset to rate honestly -- confirm the refusal shape
+    for each, using analytics_for() directly so this runs with no network."""
+    thin_series = [{"obs_date": f"2020-0{i}-01", "value": float(i)} for i in range(1, 6)]  # 5 points
+    monkeypatch.setattr(main, "fetch", lambda *args, **kwargs: thin_series)
+    monkeypatch.setattr(main, "fetch_as_of", lambda *args, **kwargs: thin_series)
+    for indicator_id in ("gdp_usd", "gdp_growth", "mpr"):
+        result = main.analytics_for(indicator_id, "2020-01-01", "2020-12-31", periods=1)
+        assert result["context"] == {
+            "insufficient_history": True,
+            "observations_available": 5,
+            "minimum_required": 30,
+        }
+
+
+def test_analytics_for_context_on_sufficient_history(monkeypatch):
+    """A long enough series gets real Rater stats instead of a refusal."""
+    series = [{"obs_date": f"2020-{(i % 12) + 1:02d}-01", "value": 100.0 + i} for i in range(40)]
+    monkeypatch.setattr(main, "fetch", lambda *args, **kwargs: series)
+    monkeypatch.setattr(main, "fetch_as_of", lambda *args, **kwargs: series)
+    result = main.analytics_for("inflation", "2020-01-01", "2024-12-31", periods=1)
+    ctx = result["context"]
+    assert "insufficient_history" not in ctx
+    assert 0 <= ctx["percentile_rank"]["percentile"] <= 100
+    assert math.isfinite(ctx["z_score"]["z_score"])
+    assert "significant" in ctx["move_significance"]
+
+
+def test_analytics_for_context_flags_outlier_move(monkeypatch):
+    """A deliberately placed outlier move should trip move_significance."""
+    series = [{"obs_date": f"2020-{(i % 12) + 1:02d}-01", "value": 100.0} for i in range(39)]
+    series.append({"obs_date": "2024-01-01", "value": 500.0})  # sharp final jump
+    monkeypatch.setattr(main, "fetch", lambda *args, **kwargs: series)
+    monkeypatch.setattr(main, "fetch_as_of", lambda *args, **kwargs: series)
+    result = main.analytics_for("inflation", "2020-01-01", "2024-12-31", periods=1)
+    assert result["context"]["move_significance"]["significant"] is True
 
 
 # --- Forecasting & time-series engine (forecasting.py) ---
@@ -168,6 +271,61 @@ def test_cross_correlation_requires_minimum_overlap():
     assert cc["best"]["r"] == 0.0
     # and the lag is capped to half the (shorter) series
     assert cc["max_lag"] <= 1
+
+
+# --- The Rater: disclosed statistics (forecasting.py) ---
+
+
+def test_insufficient_history_flags_thin_series():
+    refusal = forecasting.insufficient_history(25)
+    assert refusal == {"insufficient_history": True, "observations_available": 25, "minimum_required": 30}
+
+
+def test_insufficient_history_passes_at_minimum():
+    assert forecasting.insufficient_history(30) is None
+    assert forecasting.insufficient_history(31) is None
+
+
+def test_percentile_rank_of_the_maximum_is_near_100():
+    # mean-rank method: the max of 5 distinct values is (4 below + 0.5 self)/5 * 100
+    pr = forecasting.percentile_rank([1.0, 2.0, 3.0, 4.0, 5.0])
+    assert pr["value"] == 5.0
+    assert pr["percentile"] == 90.0
+    assert pr["n"] == 5
+
+
+def test_percentile_rank_splits_ties_evenly():
+    # latest value (3.0) ties with the other 3.0 too -> both count as "tied" (incl. itself):
+    # (2 below + 0.5*2 tied)/4 * 100
+    pr = forecasting.percentile_rank([1.0, 2.0, 3.0, 3.0])
+    assert pr["percentile"] == pytest.approx(75.0)
+
+
+def test_z_score_of_constant_series_is_zero():
+    z = forecasting.z_score([10.0, 10.0, 10.0, 10.0])
+    assert z["std_dev"] == 0.0
+    assert z["z_score"] == 0.0
+
+
+def test_z_score_matches_hand_computed_value():
+    z = forecasting.z_score([1.0, 2.0, 3.0, 4.0, 10.0])
+    assert z["mean"] == pytest.approx(4.0)
+    assert z["value"] == 10.0
+    assert z["z_score"] > 1.5  # clearly above the pack, exact value depends on sample std-dev
+
+
+def test_move_significance_flags_an_outlier_jump():
+    # steady +1 moves, then one outlier +50 jump at the end
+    values = [float(i) for i in range(40)] + [89.0]
+    sig = forecasting.move_significance(values)
+    assert sig["significant"] is True
+    assert sig["z_score"] >= 2.0
+
+
+def test_move_significance_does_not_flag_steady_series():
+    values = [float(i) for i in range(40)]
+    sig = forecasting.move_significance(values)
+    assert sig["significant"] is False
 
 
 # --- AI "ask the data" assistant (ai_assistant.py) ---
@@ -430,6 +588,27 @@ def test_cache_size_cap_evicts_oldest(monkeypatch):
     main._cache_put(("k", "overflow"), "new")
     assert len(main._CACHE) <= main._CACHE_MAX_KEYS
     assert main._cache_get(("k", "overflow")) == "new"
+    main._CACHE.clear()
+
+
+def test_fetch_as_of_matches_fetch_output_shape(monkeypatch):
+    main._CACHE.clear()
+
+    class _RpcCall:
+        def execute(self):
+            class R:
+                data = [{"obs_date": "2024-01-01", "value": 1.0}, {"obs_date": "2024-02-01", "value": 2.5}]
+            return R()
+
+    class _SB:
+        def rpc(self, name, params):
+            assert name == "observations_as_of"
+            assert "p_indicator_id" in params and "p_as_of" in params
+            return _RpcCall()
+
+    monkeypatch.setattr(main, "supabase", _SB())
+    result = main.fetch_as_of("inflation")
+    assert result == [{"obs_date": "2024-01-01", "value": 1.0}, {"obs_date": "2024-02-01", "value": 2.5}]
     main._CACHE.clear()
 
 

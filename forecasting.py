@@ -211,6 +211,68 @@ def _variance(xs):
 
 
 # --------------------------------------------------------------------------- #
+#  The Rater: disclosed, mechanical statistics on an indicator's own vintage- #
+#  correct history. MIN_HISTORY_OBSERVATIONS is the actual precondition for   #
+#  the normal-approximation math below to be meaningful, not an arbitrary     #
+#  borrowed number - below it, these functions are not called at all.         #
+# --------------------------------------------------------------------------- #
+MIN_HISTORY_OBSERVATIONS = 30
+
+
+def insufficient_history(n: int, minimum: int = MIN_HISTORY_OBSERVATIONS) -> Optional[dict]:
+    """None if n is enough to rate; otherwise the refusal payload."""
+    if n >= minimum:
+        return None
+    return {"insufficient_history": True, "observations_available": n, "minimum_required": minimum}
+
+
+def percentile_rank(values: list) -> dict:
+    """Where the latest value sits in its own full history (mean-rank: ties
+    split evenly so the latest value doesn't bias itself toward the 100th)."""
+    n = len(values)
+    latest = values[-1]
+    below = sum(1 for v in values if v < latest)
+    tied = sum(1 for v in values if v == latest)
+    pct = (below + 0.5 * tied) / n * 100
+    return {"value": latest, "percentile": round(pct, 2), "n": n}
+
+
+def z_score(values: list) -> dict:
+    """Standard score of the latest value against the series' own mean/std-dev."""
+    n = len(values)
+    mean = _mean(values)
+    std = math.sqrt(_variance(values))
+    z = (values[-1] - mean) / std if std else 0.0
+    return {
+        "value": values[-1],
+        "mean": round(mean, 4),
+        "std_dev": round(std, 4),
+        "z_score": round(z, 4),
+        "n": n,
+    }
+
+
+def move_significance(values: list, z_threshold: float = 2.0) -> dict:
+    """Is the latest period-over-period move unusual? Builds the diff series
+    and reuses z_score on it rather than recomputing mean/std inline. Flags at
+    2 standard deviations (~95% historical range)."""
+    diffs = [values[i] - values[i - 1] for i in range(1, len(values))]
+    stats = z_score(diffs)  # "value" here is the latest diff
+    z = stats["z_score"]
+    p_two_sided = 1 - math.erf(abs(z) / math.sqrt(2))
+    return {
+        "latest_move": round(diffs[-1], 4),
+        "mean_move": stats["mean"],
+        "std_dev_move": stats["std_dev"],
+        "z_score": z,
+        "threshold": z_threshold,
+        "significant": abs(z) >= z_threshold,
+        "approx_p_value": round(p_two_sided, 4),
+        "n_moves": stats["n"],
+    }
+
+
+# --------------------------------------------------------------------------- #
 #  Lead / lag cross-correlation between two aligned series.                    #
 # --------------------------------------------------------------------------- #
 def _pearson(x, y):

@@ -19,7 +19,7 @@ import time
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 from fastapi import FastAPI, File, Form, HTTPException, Query, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -188,6 +188,26 @@ def latest(indicator_id):
     return row
 
 
+def fetch_as_of(indicator_id, as_of: Optional[datetime] = None):
+    """The Rater's input: an indicator's full history reconstructed from the
+    Ledger as it stood at `as_of` (default: now). Always the indicator's whole
+    lifetime, not a caller-chosen start/end window -- percentile rank and
+    move-significance are statements about where a value sits in its own full
+    track record, not about an arbitrary slice of it."""
+    as_of = as_of or datetime.now(timezone.utc)
+    key = ("vintage", indicator_id, as_of.strftime("%Y-%m-%dT%H:%M"))
+    cached = _cache_get(key)
+    if cached is not None:
+        return cached
+    res = supabase.rpc("observations_as_of", {
+        "p_indicator_id": indicator_id,
+        "p_as_of": as_of.isoformat(),
+    }).execute()
+    data = [{"obs_date": str(r["obs_date"]), "value": float(r["value"])} for r in (res.data or [])]
+    _cache_put(key, data)
+    return data
+
+
 def require_indicator(indicator_id: str):
     if indicator_id not in INDICATORS:
         allowed = ", ".join(INDICATORS.keys())
@@ -217,6 +237,16 @@ def store_observation(payload: ObservationIn, commit: bool = False):
         row["committed"] = False
         row["note"] = "Demo-safe mode: row normalized but not written to the live database."
         return row
+
+    # The Ledger: record this value as a permanent vintage *before* touching
+    # observations. If this insert fails, the exception propagates and
+    # observations is never written -- the two tables never drift apart.
+    supabase.table("observation_vintages").insert({
+        "indicator_id": row["indicator_id"],
+        "obs_date": row["obs_date"],
+        "value": row["value"],
+        "source": row["source"],
+    }).execute()
 
     existing = (
         supabase.table("observations")
@@ -254,6 +284,7 @@ def analytics_for(indicator_id: str, start: str, end: str, periods: int):
             "data_points": 0,
             "message": "No observations found for the selected period.",
             "forecast": [],
+            "context": forecasting.insufficient_history(0),
         }
 
     values = [point["value"] for point in points]
@@ -313,6 +344,18 @@ def analytics_for(indicator_id: str, start: str, end: str, periods: int):
     elif slope < -0.05:
         direction = "falling"
 
+    # The Rater: disclosed statistics on the indicator's full vintage-correct
+    # history (never the requested start/end window - percentile rank and
+    # move-significance describe where a value sits in its whole track
+    # record, not an arbitrary slice of it).
+    vintage_values = [p["value"] for p in fetch_as_of(indicator_id)]
+    refusal = forecasting.insufficient_history(len(vintage_values))
+    context = refusal if refusal else {
+        "percentile_rank": forecasting.percentile_rank(vintage_values),
+        "z_score": forecasting.z_score(vintage_values),
+        "move_significance": forecasting.move_significance(vintage_values),
+    }
+
     return {
         "indicator_id": indicator_id,
         "indicator": meta["name"],
@@ -332,6 +375,7 @@ def analytics_for(indicator_id: str, start: str, end: str, periods: int):
             "residual_std_error": hw["residual_std_error"],
             "confidence": hw["confidence"],
         },
+        "context": context,
     }
 
 
