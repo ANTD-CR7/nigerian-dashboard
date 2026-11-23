@@ -884,6 +884,7 @@ def test_fetch_as_of_matches_fetch_output_shape(monkeypatch):
     main._CACHE.clear()
 
     class _RpcCall:
+        def range(self, *a): return self
         def execute(self):
             class R:
                 data = [{"obs_date": "2024-01-01", "value": 1.0}, {"obs_date": "2024-02-01", "value": 2.5}]
@@ -911,6 +912,7 @@ def test_fetch_uses_cache(monkeypatch):
         def gte(self, *a): return self
         def lte(self, *a): return self
         def order(self, *a): return self
+        def range(self, *a): return self
         def execute(self):
             calls["n"] += 1
             class R: data = [{"obs_date": "2024-01-01", "value": 1, "source": "T"}]
@@ -922,4 +924,46 @@ def test_fetch_uses_cache(monkeypatch):
     b = main.fetch("inflation", "2024-01-01", "2024-12-31")
     assert a == b
     assert calls["n"] == 1  # second call served from cache
+    main._CACHE.clear()
+
+
+def test_fetch_paginates_past_the_1000_row_cap(monkeypatch):
+    """Regression: this Supabase project caps a single response at 1,000 rows
+    regardless of how the query is built -- confirmed live against the daily
+    oil series (3,997 real rows, silently truncated to 1,000, with `latest`
+    landing on a stale date because the cutoff happens after ascending sort).
+    fetch() must keep paging via .range() until a short page signals the end."""
+    main._CACHE.clear()
+    requested_ranges = []
+
+    class _Q:
+        def select(self, *a): return self
+        def eq(self, *a): return self
+        def gte(self, *a): return self
+        def lte(self, *a): return self
+        def order(self, *a): return self
+        def range(self, start, end):
+            requested_ranges.append((start, end))
+            self._start = start
+            return self
+        def execute(self):
+            # Two full 1,000-row pages, then a short final page of 200 --
+            # mirrors the real shape (e.g. 2,200 total observations).
+            if self._start == 0:
+                page = [{"obs_date": f"d{i}", "value": i} for i in range(1000)]
+            elif self._start == 1000:
+                page = [{"obs_date": f"d{i}", "value": i} for i in range(1000, 2000)]
+            else:
+                page = [{"obs_date": f"d{i}", "value": i} for i in range(2000, 2200)]
+            class R: pass
+            R.data = page
+            return R()
+
+    class _SB:
+        def table(self, *a): return _Q()
+
+    monkeypatch.setattr(main, "supabase", _SB())
+    data = main.fetch("cbn_crude_oil_price_daily", "2000-01-01", "2026-12-31")
+    assert len(data) == 2200
+    assert requested_ranges == [(0, 999), (1000, 1999), (2000, 2999)]
     main._CACHE.clear()

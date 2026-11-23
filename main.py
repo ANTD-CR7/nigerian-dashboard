@@ -175,12 +175,36 @@ def _cache_put(key, data):
     _CACHE[key] = (time.time(), data)
 
 
+_PAGE_SIZE = 1000
+
+
+def _paginate(make_request, page_size: int = _PAGE_SIZE):
+    """Accumulate every row from a paginated query/RPC call. This Supabase
+    project caps a single response at page_size rows regardless of how the
+    query is built -- confirmed live: a 3,997-row indicator (the daily oil
+    series) was silently truncated to 1,000, with `latest` landing on a
+    2024 date because the cutoff happens after ascending sort, dropping the
+    newest rows, not the oldest. `make_request` must return a FRESH
+    query/RPC builder each call (e.g. a lambda), since .range() is applied
+    to -- and consumes -- one builder per page."""
+    rows = []
+    offset = 0
+    while True:
+        page = make_request().range(offset, offset + page_size - 1).execute().data or []
+        rows.extend(page)
+        if len(page) < page_size:
+            break
+        offset += page_size
+    return rows
+
+
 def fetch(indicator_id, start="2020-01-01", end="2026-12-31"):
     key = ("series", indicator_id, start, end)
     cached = _cache_get(key)
     if cached is not None:
         return cached
-    data = supabase.table("observations").select("obs_date,value,source").eq("indicator_id", indicator_id).gte("obs_date", start).lte("obs_date", end).order("obs_date").execute().data
+    data = _paginate(lambda: supabase.table("observations").select("obs_date,value,source")
+                      .eq("indicator_id", indicator_id).gte("obs_date", start).lte("obs_date", end).order("obs_date"))
     _cache_put(key, data)
     return data
 
@@ -207,11 +231,11 @@ def fetch_as_of(indicator_id, as_of: Optional[datetime] = None):
     cached = _cache_get(key)
     if cached is not None:
         return cached
-    res = supabase.rpc("observations_as_of", {
+    rpc_rows = _paginate(lambda: supabase.rpc("observations_as_of", {
         "p_indicator_id": indicator_id,
         "p_as_of": as_of.isoformat(),
-    }).execute()
-    data = [{"obs_date": str(r["obs_date"]), "value": float(r["value"])} for r in (res.data or [])]
+    }))
+    data = [{"obs_date": str(r["obs_date"]), "value": float(r["value"])} for r in rpc_rows]
     _cache_put(key, data)
     return data
 
@@ -458,9 +482,10 @@ def fetch_parallel(indicator_ids, start, end):
         if cached is not None:
             return ind, cached
         client = _thread_client()
-        res = client.table("observations").select("obs_date,value,source").eq("indicator_id", ind).gte("obs_date", start).lte("obs_date", end).order("obs_date").execute()
-        _cache_put(key, res.data)
-        return ind, res.data
+        data = _paginate(lambda: client.table("observations").select("obs_date,value,source")
+                          .eq("indicator_id", ind).gte("obs_date", start).lte("obs_date", end).order("obs_date"))
+        _cache_put(key, data)
+        return ind, data
     with ThreadPoolExecutor(max_workers=min(len(indicator_ids), 5)) as executor:
         return dict(executor.map(_one, indicator_ids))
 
