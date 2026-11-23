@@ -11,12 +11,14 @@
 
 from __future__ import annotations
 
+import datetime
 import json
 import urllib.request
 
 from .base import Connector
 
 URL = "https://www.cbn.gov.ng/api/GetAllCrudeOilPrices"
+DAILY_URL = "https://www.cbn.gov.ng/api/GetAllDailyCrude"
 
 # CBN field -> npedata indicator_id
 SERIES = {
@@ -52,3 +54,36 @@ class CBNOilConnector(Connector):
                     "value": float(value),
                     "source": self.source_label,
                 }
+
+
+class CBNDailyOilConnector(Connector):
+    """CBN's separate daily crude oil price page -- different endpoint, date
+    format (DD/MM/YYYY vs tyear/tmonth), and cadence from CBNOilConnector, so
+    kept as its own class rather than folded into fetch() above. Note: this
+    series and cbn_crude_oil_price (the monthly one) diverge substantially on
+    overlapping dates despite both being CBN-sourced -- a known, documented
+    discrepancy, not reconciled here."""
+    name = "cbn_oil_daily"
+    source_label = "CBN"
+
+    def __init__(self, timeout: float = 30.0):
+        self.timeout = timeout
+
+    def _get(self):
+        req = urllib.request.Request(DAILY_URL, headers={"User-Agent": "npedata-collector/1.0"})
+        with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+
+    def fetch(self, start_year: int = 2015):
+        rows = self._get()
+        for row in rows:
+            price = row.get("crudeOilPrice")
+            if price is None:
+                continue
+            obs_date = datetime.datetime.strptime(row["postDate"], "%d/%m/%Y").date().isoformat()
+            yield {
+                "indicator_id": "cbn_crude_oil_price_daily",
+                "obs_date": obs_date,
+                "value": float(price),
+                "source": self.source_label,
+            }

@@ -424,6 +424,24 @@ def test_cbn_oil_connector_skips_null_fields_without_dropping_siblings(monkeypat
     assert ids == {"cbn_crude_oil_price", "cbn_oil_export_volume"}  # domProd skipped, others kept
 
 
+def test_cbn_daily_oil_connector_converts_date_format(monkeypatch):
+    from collectors import cbn_oil
+
+    payload = [
+        {"id": 5020, "postDate": "23/11/2026", "crudeOilPrice": "92.8800"},
+        {"id": 5019, "postDate": "22/11/2026", "crudeOilPrice": None},  # skipped
+    ]
+    monkeypatch.setattr(cbn_oil.CBNDailyOilConnector, "_get", lambda self: payload)
+    rows = list(cbn_oil.CBNDailyOilConnector().fetch())
+    assert len(rows) == 1
+    assert rows[0] == {
+        "indicator_id": "cbn_crude_oil_price_daily",
+        "obs_date": "2026-11-23",
+        "value": pytest.approx(92.88),
+        "source": "CBN",
+    }
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner
@@ -475,6 +493,54 @@ def test_collector_runner_upsert_writes_vintage_before_observation(monkeypatch):
 
     assert written == 1
     assert order == ["observation_vintages", "observations"]
+
+
+def test_collector_runner_upsert_chunks_large_batches(monkeypatch):
+    """A connector with more rows than the chunk size (e.g. the daily oil
+    series, ~4,000 rows) must not be sent as one oversized request -- and the
+    vintage-before-observations ordering must still hold within each chunk."""
+    from collectors import runner
+
+    monkeypatch.setenv("NPE_COLLECT_WRITE", "true")
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.setenv("SUPABASE_KEY", "test-key")
+
+    calls = []  # (table_name, batch_size) in call order
+
+    class _Query:
+        def __init__(self, name):
+            self.name = name
+
+        def insert(self, payload):
+            calls.append((self.name, len(payload)))
+            return self
+
+        def upsert(self, payload, on_conflict=None):
+            calls.append((self.name, len(payload)))
+            return self
+
+        def execute(self):
+            class R:
+                data = []
+            return R()
+
+    class _FakeClient:
+        def table(self, name):
+            return _Query(name)
+
+    monkeypatch.setattr("supabase.create_client", lambda url, key: _FakeClient())
+
+    rows = [{"indicator_id": "cbn_crude_oil_price_daily", "obs_date": f"2020-01-{(i % 28) + 1:02d}",
+             "value": float(i), "source": "CBN"} for i in range(1200)]
+    written = runner._upsert(rows)
+
+    assert written == 1200
+    # 1200 rows at chunk size 500 -> 3 chunks of 500, 500, 200
+    assert calls == [
+        ("observation_vintages", 500), ("observations", 500),
+        ("observation_vintages", 500), ("observations", 500),
+        ("observation_vintages", 200), ("observations", 200),
+    ]
 
 
 def test_collector_runner_survives_a_failing_connector(tmp_path):

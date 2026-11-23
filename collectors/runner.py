@@ -21,10 +21,10 @@ from pathlib import Path
 
 from .base import normalize
 from .world_bank import WorldBankConnector
-from .cbn_oil import CBNOilConnector
+from .cbn_oil import CBNOilConnector, CBNDailyOilConnector
 from .sources_scaffold import CBNConnector, NBSConnector
 
-DEFAULT_CONNECTORS = [WorldBankConnector(), CBNOilConnector(), CBNConnector(), NBSConnector()]
+DEFAULT_CONNECTORS = [WorldBankConnector(), CBNOilConnector(), CBNDailyOilConnector(), CBNConnector(), NBSConnector()]
 
 
 def run(connectors=None, out_dir="data/collected", write_db=False, stamp=None):
@@ -73,6 +73,11 @@ def run(connectors=None, out_dir="data/collected", write_db=False, stamp=None):
     return summary
 
 
+def _chunked(rows, size=500):
+    for i in range(0, len(rows), size):
+        yield rows[i:i + size]
+
+
 def _upsert(rows) -> int:
     """Upsert observations into Supabase. Guarded twice: requires the explicit
     flag AND credentials; otherwise it is a no-op."""
@@ -87,20 +92,25 @@ def _upsert(rows) -> int:
     except ImportError:
         return 0
     client = create_client(url, key)
-    # The Ledger: record every value as a permanent vintage *before* touching
-    # observations, same ordering as the API's ingestion path. If this insert
-    # fails, the exception propagates and observations is never upserted.
-    if rows:
-        client.table("observation_vintages").insert([
-            {
-                "indicator_id": r["indicator_id"],
-                "obs_date": r["obs_date"],
-                "value": r["value"],
-                "source": r["source"],
-            }
-            for r in rows
-        ]).execute()
-    client.table("observations").upsert(rows, on_conflict="indicator_id,obs_date").execute()
+    # Chunked at 500 (matches project/database/seed/load_seed.py's
+    # already-proven-safe batch size) so a large connector (e.g. a daily
+    # series with thousands of rows) doesn't send one oversized request.
+    # Each chunk still does vintages-then-observations before the next chunk
+    # starts: the Ledger ordering guarantee now holds per-chunk rather than
+    # only across the whole batch -- strictly safer, not a regression, since
+    # every earlier chunk is already safely committed if a later one fails.
+    for batch in _chunked(rows):
+        if batch:
+            client.table("observation_vintages").insert([
+                {
+                    "indicator_id": r["indicator_id"],
+                    "obs_date": r["obs_date"],
+                    "value": r["value"],
+                    "source": r["source"],
+                }
+                for r in batch
+            ]).execute()
+            client.table("observations").upsert(batch, on_conflict="indicator_id,obs_date").execute()
     return len(rows)
 
 

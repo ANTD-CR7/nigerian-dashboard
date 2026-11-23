@@ -135,6 +135,7 @@ INDICATORS = {
     "cbn_crude_oil_price": {"name": "Crude Oil Price (Bonny Light)", "unit": "USD per Barrel", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "cbn_oil_domestic_production": {"name": "Crude Oil Domestic Production", "unit": "Million Barrels Per Day", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "cbn_oil_export_volume": {"name": "Crude Oil Export Volume", "unit": "Million Barrels Per Day", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_crude_oil_price_daily": {"name": "Crude Oil Price (Daily)", "unit": "USD per Barrel", "source": "CBN", "frequency": "daily", "period_months": 1},
 }
 
 
