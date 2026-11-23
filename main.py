@@ -130,6 +130,8 @@ INDICATORS = {
     "cbn_annual_total_assets": {"name": "CBN Total Assets (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
     "wb_inflation": {"name": "Inflation, Consumer Prices (World Bank)", "unit": "Percent (%)", "source": "World Bank", "frequency": "annual", "period_months": 12},
     "wb_gdp_growth": {"name": "GDP Growth, Annual (World Bank)", "unit": "Percent (%)", "source": "World Bank", "frequency": "annual", "period_months": 12},
+    "imf_inflation": {"name": "Inflation, Average Consumer Prices (IMF)", "unit": "Percent (%)", "source": "IMF", "frequency": "annual", "period_months": 12},
+    "imf_gdp_growth": {"name": "GDP Growth, Annual (IMF)", "unit": "Percent (%)", "source": "IMF", "frequency": "annual", "period_months": 12},
 }
 
 
