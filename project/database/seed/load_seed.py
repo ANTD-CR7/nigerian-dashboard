@@ -55,6 +55,11 @@ def main():
     print(f"data_sources: upserted {len(data_sources)} rows")
 
     indicators = read_csv("indicators.csv")
+    # csv.DictReader gives "" for a blank concept cell, not None -- left as "",
+    # the Reconciler's /api/v1/reconcile index (which filters "concept IS NOT
+    # NULL") would treat every untagged indicator as one bogus "" concept.
+    for row in indicators:
+        row["concept"] = row.get("concept") or None
     client.table("indicators").upsert(indicators, on_conflict="id").execute()
     print(f"indicators: upserted {len(indicators)} rows")
 

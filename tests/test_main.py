@@ -557,6 +557,143 @@ def test_hypermedia_related_and_extra_links_resolve():
     assert links["export_csv"]["href"].endswith("/api/v1/export/inflation")
 
 
+# --- The Reconciler: concept divergence (main.py) ---
+
+class _FakeQuery:
+    def __init__(self, rows):
+        self.rows = rows
+        self._filter = None
+
+    def select(self, *a, **k):
+        return self
+
+    def eq(self, field, value):
+        self._filter = (field, value)
+        return self
+
+    def execute(self):
+        class R:
+            pass
+        r = R()
+        if self._filter:
+            field, value = self._filter
+            r.data = [row for row in self.rows if row.get(field) == value]
+        else:
+            r.data = list(self.rows)
+        return r
+
+
+class _FakeSupabase:
+    def __init__(self, indicator_rows):
+        self.indicator_rows = indicator_rows
+
+    def table(self, name):
+        assert name == "indicators"
+        return _FakeQuery(self.indicator_rows)
+
+
+def _client_for_reconcile(monkeypatch, indicator_rows, series_map):
+    monkeypatch.setattr(main, "supabase", _FakeSupabase(indicator_rows))
+    monkeypatch.setattr(main, "fetch_as_of", lambda iid, *a, **k: series_map.get(iid, []))
+    monkeypatch.delenv("NPE_API_KEYS", raising=False)
+    monkeypatch.setenv("NPE_RATE_LIMIT_PER_MIN", "1000")
+    main._rate_state.clear()
+    return TestClient(main.app)
+
+
+def test_reconcile_concept_aligns_by_date_and_computes_spread(monkeypatch):
+    monkeypatch.setattr(main, "supabase", _FakeSupabase([
+        {"id": "a", "name": "A", "source": "X", "concept": "test_concept"},
+        {"id": "b", "name": "B", "source": "Y", "concept": "test_concept"},
+    ]))
+    series = {
+        "a": [{"obs_date": "2020-01-01", "value": 10.0}, {"obs_date": "2021-01-01", "value": 12.0},
+              {"obs_date": "2022-01-01", "value": 14.0}, {"obs_date": "2023-01-01", "value": 99.0}],
+        "b": [{"obs_date": "2020-01-01", "value": 11.0}, {"obs_date": "2021-01-01", "value": 12.5},
+              {"obs_date": "2022-01-01", "value": 13.0}],
+    }
+    monkeypatch.setattr(main, "fetch_as_of", lambda iid, *a, **k: series[iid])
+    members, rows = main.reconcile_concept("test_concept")
+    assert len(rows) == 3  # 2023 excluded -- only "a" has it
+    first = rows[0]
+    assert first["obs_date"] == "2020-01-01"
+    assert first["values"] == {"a": 10.0, "b": 11.0}
+    assert first["spread"]["absolute"] == pytest.approx(1.0)
+    assert first["spread"]["max_minus_min"] == pytest.approx(1.0)
+
+
+def test_reconcile_concept_degrades_absolute_for_three_or_more_sources(monkeypatch):
+    monkeypatch.setattr(main, "supabase", _FakeSupabase([
+        {"id": "a", "name": "A", "source": "X", "concept": "c3"},
+        {"id": "b", "name": "B", "source": "Y", "concept": "c3"},
+        {"id": "c", "name": "C", "source": "Z", "concept": "c3"},
+    ]))
+    series = {
+        "a": [{"obs_date": "2020-01-01", "value": 10.0}],
+        "b": [{"obs_date": "2020-01-01", "value": 12.0}],
+        "c": [{"obs_date": "2020-01-01", "value": 8.0}],
+    }
+    monkeypatch.setattr(main, "fetch_as_of", lambda iid, *a, **k: series[iid])
+    _, rows = main.reconcile_concept("c3")
+    assert rows[0]["spread"]["absolute"] is None
+    assert rows[0]["spread"]["max_minus_min"] == pytest.approx(4.0)
+
+
+def test_reconcile_endpoint_404_for_unknown_concept(monkeypatch):
+    client = _client_for_reconcile(
+        monkeypatch, [{"id": "a", "name": "A", "source": "X", "concept": "known_concept"}], {}
+    )
+    r = client.get("/api/v1/reconcile/not_a_real_concept")
+    assert r.status_code == 404
+    assert "known_concept" in r.json()["detail"]
+
+
+def test_reconcile_endpoint_returns_divergence(monkeypatch):
+    indicator_rows = [
+        {"id": "a", "name": "A", "source": "X", "concept": "known_concept"},
+        {"id": "b", "name": "B", "source": "Y", "concept": "known_concept"},
+    ]
+    series = {
+        "a": [{"obs_date": "2020-01-01", "value": 10.0}],
+        "b": [{"obs_date": "2020-01-01", "value": 15.0}],
+    }
+    client = _client_for_reconcile(monkeypatch, indicator_rows, series)
+    r = client.get("/api/v1/reconcile/known_concept")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["concept"] == "known_concept"
+    assert body["n"] == 1
+    assert body["observations"][0]["spread"]["max_minus_min"] == pytest.approx(5.0)
+
+
+def test_reconcile_index_groups_concepts(monkeypatch):
+    indicator_rows = [
+        {"id": "a", "name": "A", "source": "X", "concept": "c1"},
+        {"id": "b", "name": "B", "source": "Y", "concept": "c1"},
+        {"id": "c", "name": "C", "source": "Z", "concept": None},
+    ]
+    client = _client_for_reconcile(monkeypatch, indicator_rows, {})
+    r = client.get("/api/v1/reconcile")
+    assert r.status_code == 200
+    concepts = {c["concept"]: c["indicators"] for c in r.json()["concepts"]}
+    assert set(concepts.keys()) == {"c1"}
+    assert len(concepts["c1"]) == 2
+
+
+def test_reconcile_endpoint_422_when_no_overlap(monkeypatch):
+    indicator_rows = [
+        {"id": "a", "name": "A", "source": "X", "concept": "no_overlap"},
+        {"id": "b", "name": "B", "source": "Y", "concept": "no_overlap"},
+    ]
+    series = {
+        "a": [{"obs_date": "2020-01-01", "value": 10.0}],
+        "b": [{"obs_date": "2021-01-01", "value": 11.0}],
+    }
+    client = _client_for_reconcile(monkeypatch, indicator_rows, series)
+    r = client.get("/api/v1/reconcile/no_overlap")
+    assert r.status_code == 422
+
+
 def test_api_links_catalog_paths_are_absolute_v1_routes():
     for name, path in main.API_LINKS.items():
         assert path.startswith("/api/v1/"), f"{name} -> {path}"

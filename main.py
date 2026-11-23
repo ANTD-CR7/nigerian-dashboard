@@ -217,6 +217,46 @@ def require_indicator(indicator_id: str):
     return INDICATORS[indicator_id]
 
 
+def require_concept(concept: str):
+    """The Reconciler: indicators from different institutions, hand-tagged as
+    describing the same real-world concept via indicators.concept. Manually
+    curated, never inferred -- ambiguity tolerance here is zero."""
+    rows = supabase.table("indicators").select("id,name,source").eq("concept", concept).execute().data
+    if not rows:
+        known_rows = supabase.table("indicators").select("concept").execute().data
+        known = sorted({r["concept"] for r in known_rows if r["concept"]})
+        raise HTTPException(status_code=404, detail=f"Unknown concept. Use one of: {', '.join(known)}")
+    return rows
+
+
+def reconcile_concept(concept: str):
+    """For a concept, fetch every member indicator's full vintage-correct
+    history, align by exact obs_date, and report the disagreement at each
+    shared date -- never a winner, never an average."""
+    members = require_concept(concept)
+    series = {m["id"]: {r["obs_date"]: r["value"] for r in fetch_as_of(m["id"])} for m in members}
+    common = sorted(set.intersection(*(set(s) for s in series.values())))
+    if not common:
+        ids = ", ".join(series)
+        raise HTTPException(status_code=422, detail=f"No overlapping obs_date values between: {ids}")
+
+    rows = []
+    for d in common:
+        values = {iid: series[iid][d] for iid in series}
+        vals = list(values.values())
+        rows.append({
+            "obs_date": d,
+            "values": values,
+            "spread": {
+                "max_minus_min": round(max(vals) - min(vals), 4),
+                # Only well-defined for exactly two sources -- |a-b| is ambiguous
+                # (which minus which?) once a third source joins the concept.
+                "absolute": round(abs(vals[0] - vals[1]), 4) if len(vals) == 2 else None,
+            },
+        })
+    return members, rows
+
+
 def add_months(value: date, months: int) -> date:
     month = value.month - 1 + months
     year = value.year + month // 12
@@ -440,6 +480,7 @@ API_LINKS = {
     "analytics": "/api/v1/analytics",
     "leadlag": "/api/v1/leadlag?x=exchange_rate&y=inflation",
     "coverage": "/api/v1/coverage",
+    "reconcile_index": "/api/v1/reconcile",
 }
 
 
@@ -477,7 +518,8 @@ def root(request: Request):
             "/api/v1/interest-rate", "/api/v1/fx-reserves", "/api/v1/currency-circulation",
             "/api/v1/nfem", "/api/v1/multicurrency", "/api/v1/gdp-sectors",
             "/api/v1/cbn-balance-sheet", "/api/v1/analytics", "/api/v1/analytics/{indicator_id}",
-            "/api/v1/coverage", "/api/v1/export/{indicator_id}",
+            "/api/v1/coverage", "/api/v1/export/{indicator_id}", "/api/v1/reconcile",
+            "/api/v1/reconcile/{concept}",
         ],
         "data_writes_enabled": ALLOW_DATA_WRITES,
         "_links": hypermedia(request, "/", related=list(API_LINKS)),
@@ -510,7 +552,9 @@ Read endpoints (GET, all under /api/v1/): /summary, /gdp, /inflation, /exchange-
 /fx-reserves, /currency-circulation, /nfem, /multicurrency, /gdp-sectors, /cbn-balance-sheet, /analytics,
 /analytics/{indicator_id} (trend + Holt-Winters forecast), /forecast/{indicator_id} (Holt-Winters with
 95% prediction intervals), /decompose/{indicator_id} (seasonal decomposition), /leadlag (lead/lag
-cross-correlation), /coverage, /export/{indicator_id} (CSV).
+cross-correlation), /reconcile (which concepts have more than one institution's figure tracked),
+/reconcile/{concept} (where two institutions disagree on the same concept, at every shared date --
+never a winner, never an average), /coverage, /export/{indicator_id} (CSV).
 Most accept optional start/end date query params (ISO 8601). Interactive docs at /docs.
 
 A demo-safe data-ingestion path also exists (POST /api/v1/observations, /api/v1/ingest/csv) for the
@@ -769,6 +813,38 @@ def _leadlag_text(x, y, cc):
     if cc["relationship"] == "y_leads_x":
         return f"{y} appears to lead {x} by {abs(lag)} period(s) (r={r}). This is association, not proven causation."
     return f"{x} and {y} co-move contemporaneously (r={r}, no lead detected). Association, not proven causation."
+
+
+@app.get("/api/v1/reconcile")
+def list_concepts(request: Request):
+    """The Reconciler's index: which concepts have more than one institution's
+    figure tracked, and who tracks each one."""
+    rows = supabase.table("indicators").select("concept,id,name").execute().data
+    grouped: dict = {}
+    for r in rows:
+        if r["concept"]:
+            grouped.setdefault(r["concept"], []).append({"id": r["id"], "name": r["name"]})
+    return {
+        "concepts": [{"concept": c, "indicators": members} for c, members in grouped.items()],
+        "_links": hypermedia(request, "/api/v1/reconcile"),
+    }
+
+
+@app.get("/api/v1/reconcile/{concept}")
+def reconcile(request: Request, concept: str):
+    """The Reconciler: where two institutions report the same concept, this
+    is their disagreement at every date both published a value -- never a
+    winner, never an average."""
+    members, rows = reconcile_concept(concept)
+    return {
+        "concept": concept,
+        "indicators": members,
+        "n": len(rows),
+        "period": f"{rows[0]['obs_date']} to {rows[-1]['obs_date']}",
+        "observations": rows,
+        "source": ", ".join(sorted({m["source"] for m in members})),
+        "_links": hypermedia(request, f"/api/v1/reconcile/{concept}", related=["reconcile_index"]),
+    }
 
 
 class AskRequest(BaseModel):
