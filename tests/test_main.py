@@ -195,6 +195,23 @@ def test_analytics_for_context_on_sufficient_history(monkeypatch):
     assert "significant" in ctx["move_significance"]
 
 
+def test_analytics_for_degrades_gracefully_when_ledger_rpc_fails(monkeypatch):
+    """A Ledger/RPC hiccup must not take down the rest of analytics_for() --
+    trend, forecast, and everything else that worked before the Rater existed
+    must still return, with context degraded instead of the whole call 500ing."""
+    series = [{"obs_date": "2024-01-01", "value": 10.0}, {"obs_date": "2024-02-01", "value": 12.0}]
+    monkeypatch.setattr(main, "fetch", lambda *args, **kwargs: series)
+
+    def _broken_fetch_as_of(*args, **kwargs):
+        raise RuntimeError("RPC unavailable")
+
+    monkeypatch.setattr(main, "fetch_as_of", _broken_fetch_as_of)
+    result = main.analytics_for("inflation", "2024-01-01", "2024-03-31", periods=1)
+    assert result["data_points"] == 2
+    assert result["trend"]["direction"] in ("rising", "falling", "stable")
+    assert result["context"] == {"error": "context temporarily unavailable"}
+
+
 def test_analytics_for_context_flags_outlier_move(monkeypatch):
     """A deliberately placed outlier move should trip move_significance."""
     series = [{"obs_date": f"2020-{(i % 12) + 1:02d}-01", "value": 100.0} for i in range(39)]
@@ -389,6 +406,43 @@ def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     assert summary["rows"] == 1
     assert summary["written_to_db"] == 0  # never writes to DB by default
     assert (tmp_path / "collected_unit.json").exists()
+
+
+def test_collector_runner_upsert_writes_vintage_before_observation(monkeypatch):
+    """The Ledger's vintage-first ordering must hold in the automated
+    collector path too, not just the API's manual ingestion path."""
+    from collectors import runner
+
+    monkeypatch.setenv("NPE_COLLECT_WRITE", "true")
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.setenv("SUPABASE_KEY", "test-key")
+
+    order = []
+
+    class _Query:
+        def __init__(self, name):
+            self.name = name
+
+        def insert(self, *a, **k): return self
+        def upsert(self, *a, **k): return self
+
+        def execute(self):
+            class R:
+                data = []
+            return R()
+
+    class _FakeClient:
+        def table(self, name):
+            order.append(name)
+            return _Query(name)
+
+    monkeypatch.setattr("supabase.create_client", lambda url, key: _FakeClient())
+
+    rows = [{"indicator_id": "inflation", "obs_date": "2025-01-01", "value": 34.8, "source": "NBS"}]
+    written = runner._upsert(rows)
+
+    assert written == 1
+    assert order == ["observation_vintages", "observations"]
 
 
 def test_collector_runner_survives_a_failing_connector(tmp_path):

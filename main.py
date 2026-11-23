@@ -347,14 +347,19 @@ def analytics_for(indicator_id: str, start: str, end: str, periods: int):
     # The Rater: disclosed statistics on the indicator's full vintage-correct
     # history (never the requested start/end window - percentile rank and
     # move-significance describe where a value sits in its whole track
-    # record, not an arbitrary slice of it).
-    vintage_values = [p["value"] for p in fetch_as_of(indicator_id)]
-    refusal = forecasting.insufficient_history(len(vintage_values))
-    context = refusal if refusal else {
-        "percentile_rank": forecasting.percentile_rank(vintage_values),
-        "z_score": forecasting.z_score(vintage_values),
-        "move_significance": forecasting.move_significance(vintage_values),
-    }
+    # record, not an arbitrary slice of it). Isolated in its own try/except:
+    # a Ledger/RPC hiccup must degrade this one field, not take down trend,
+    # forecast, and everything else that worked before the Rater existed.
+    try:
+        vintage_values = [p["value"] for p in fetch_as_of(indicator_id)]
+        refusal = forecasting.insufficient_history(len(vintage_values))
+        context = refusal if refusal else {
+            "percentile_rank": forecasting.percentile_rank(vintage_values),
+            "z_score": forecasting.z_score(vintage_values),
+            "move_significance": forecasting.move_significance(vintage_values),
+        }
+    except Exception:
+        context = {"error": "context temporarily unavailable"}
 
     return {
         "indicator_id": indicator_id,
