@@ -132,6 +132,9 @@ INDICATORS = {
     "wb_gdp_growth": {"name": "GDP Growth, Annual (World Bank)", "unit": "Percent (%)", "source": "World Bank", "frequency": "annual", "period_months": 12},
     "imf_inflation": {"name": "Inflation, Average Consumer Prices (IMF)", "unit": "Percent (%)", "source": "IMF", "frequency": "annual", "period_months": 12},
     "imf_gdp_growth": {"name": "GDP Growth, Annual (IMF)", "unit": "Percent (%)", "source": "IMF", "frequency": "annual", "period_months": 12},
+    "cbn_crude_oil_price": {"name": "Crude Oil Price (Bonny Light)", "unit": "USD per Barrel", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_oil_domestic_production": {"name": "Crude Oil Domestic Production", "unit": "Million Barrels Per Day", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_oil_export_volume": {"name": "Crude Oil Export Volume", "unit": "Million Barrels Per Day", "source": "CBN", "frequency": "monthly", "period_months": 1},
 }
 
 

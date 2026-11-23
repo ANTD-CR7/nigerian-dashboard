@@ -392,6 +392,38 @@ def test_collector_normalize_dedups_and_drops_invalid():
     assert dropped == 2
 
 
+def test_cbn_oil_connector_yields_all_three_series(monkeypatch):
+    from collectors import cbn_oil
+
+    payload = [
+        {"id": 1, "tyear": 2026, "tmonth": 10, "period": "October 2026",
+         "crudeOilPrice": "127.27", "domProd": "1.51", "crudeOilExp": "1.06"},
+    ]
+    monkeypatch.setattr(cbn_oil.CBNOilConnector, "_get", lambda self: payload)
+    rows = list(cbn_oil.CBNOilConnector().fetch())
+    assert len(rows) == 3
+    by_id = {r["indicator_id"]: r for r in rows}
+    assert by_id["cbn_crude_oil_price"]["value"] == pytest.approx(127.27)
+    assert by_id["cbn_oil_domestic_production"]["value"] == pytest.approx(1.51)
+    assert by_id["cbn_oil_export_volume"]["value"] == pytest.approx(1.06)
+    for r in rows:
+        assert r["obs_date"] == "2026-10-01"
+        assert r["source"] == "CBN"
+
+
+def test_cbn_oil_connector_skips_null_fields_without_dropping_siblings(monkeypatch):
+    from collectors import cbn_oil
+
+    payload = [
+        {"id": 2, "tyear": 2020, "tmonth": 3, "period": "March 2020",
+         "crudeOilPrice": "33.1", "domProd": None, "crudeOilExp": "0.95"},
+    ]
+    monkeypatch.setattr(cbn_oil.CBNOilConnector, "_get", lambda self: payload)
+    rows = list(cbn_oil.CBNOilConnector().fetch())
+    ids = {r["indicator_id"] for r in rows}
+    assert ids == {"cbn_crude_oil_price", "cbn_oil_export_volume"}  # domProd skipped, others kept
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner

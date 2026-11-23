@@ -21,9 +21,10 @@ from pathlib import Path
 
 from .base import normalize
 from .world_bank import WorldBankConnector
+from .cbn_oil import CBNOilConnector
 from .sources_scaffold import CBNConnector, NBSConnector
 
-DEFAULT_CONNECTORS = [WorldBankConnector(), CBNConnector(), NBSConnector()]
+DEFAULT_CONNECTORS = [WorldBankConnector(), CBNOilConnector(), CBNConnector(), NBSConnector()]
 
 
 def run(connectors=None, out_dir="data/collected", write_db=False, stamp=None):
