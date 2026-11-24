@@ -835,6 +835,41 @@ def test_collector_runner_upsert_chunks_large_batches(monkeypatch):
     ]
 
 
+def test_collector_runner_write_failure_in_one_connector_does_not_abort_others(tmp_path, monkeypatch):
+    """Writing is per-connector: one connector's write raising (e.g. the known
+    wb_gdp_usd numeric overflow) must not lose another connector's data for
+    the same run -- this matters most for the unattended weekly cron."""
+    from collectors.base import Connector
+    from collectors import runner
+
+    class _Good(Connector):
+        name = "good"
+        source_label = "Good"
+        def fetch(self, start_year=2015):
+            yield {"indicator_id": "wb_inflation", "obs_date": "2023-01-01", "value": 24.66, "source": "Mock"}
+
+    class _Bad(Connector):
+        name = "bad"
+        source_label = "Bad"
+        def fetch(self, start_year=2015):
+            yield {"indicator_id": "wb_gdp_usd", "obs_date": "2023-01-01", "value": 1e20, "source": "Mock"}
+
+    def fake_upsert(rows):
+        if any(r["indicator_id"] == "wb_gdp_usd" for r in rows):
+            raise RuntimeError("numeric field overflow")
+        return len(rows)
+
+    monkeypatch.setenv("NPE_COLLECT_WRITE", "true")
+    monkeypatch.setattr(runner, "_upsert", fake_upsert)
+
+    summary = runner.run(connectors=[_Good(), _Bad()], out_dir=str(tmp_path), write_db=True, stamp="unit2")
+
+    assert summary["rows"] == 2  # both connectors' rows still land in the snapshot
+    assert summary["written_to_db"] == 1  # only the good connector's row actually wrote
+    assert "bad" in summary["write_errors"]
+    assert "good" not in summary["write_errors"]
+
+
 def test_collector_runner_survives_a_failing_connector(tmp_path):
     # regression: one connector raising must not abort the whole run
     from collectors.base import Connector

@@ -42,44 +42,59 @@ DEFAULT_CONNECTORS = [
 
 def run(connectors=None, out_dir="data/collected", write_db=False, stamp=None):
     connectors = connectors or DEFAULT_CONNECTORS
-    raw = []
     per_source = {}
     errors = {}
+    write_errors = {}
+    all_clean = []
+    total_dropped = 0
+    written = 0
+
     for c in connectors:
         # One failing connector (e.g. a broken scraper) must not abort the whole
         # run or lose the data from the healthy ones.
         try:
             rows = list(c.fetch())
-            per_source[c.name] = len(rows)
-            raw.extend(rows)
         except Exception as exc:
             per_source[c.name] = 0
             errors[c.name] = f"{type(exc).__name__}: {exc}"
+            continue
 
-    clean, dropped = normalize(raw)
+        clean, dropped = normalize(rows)
+        per_source[c.name] = len(clean)
+        total_dropped += dropped
+        all_clean.extend(clean)
+
+        # Writing is per-connector too, for the same reason: one connector's
+        # bad batch (e.g. a numeric overflow) must not abort every other
+        # connector's write in the same run -- this matters most for the
+        # weekly scheduled run, where nobody is watching it live.
+        if write_db:
+            try:
+                written += _upsert(clean)
+            except Exception as exc:
+                write_errors[c.name] = f"{type(exc).__name__}: {exc}"
+
     stamp = stamp or datetime.date.today().isoformat()
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     path = out / f"collected_{stamp}.json"
     snapshot = {
         "collected_at": stamp,
-        "rows": len(clean),
-        "dropped_invalid": dropped,
+        "rows": len(all_clean),
+        "dropped_invalid": total_dropped,
         "per_source": per_source,
         "errors": errors,
-        "observations": clean,
+        "write_errors": write_errors,
+        "observations": all_clean,
     }
     path.write_text(json.dumps(snapshot, indent=2), encoding="utf-8")
 
-    written = 0
-    if write_db:
-        written = _upsert(clean)
-
     summary = {
-        "rows": len(clean),
-        "dropped": dropped,
+        "rows": len(all_clean),
+        "dropped": total_dropped,
         "per_source": per_source,
         "errors": errors,
+        "write_errors": write_errors,
         "snapshot": str(path),
         "written_to_db": written,
     }
