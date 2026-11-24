@@ -122,7 +122,29 @@ class CBNNominalGDPConnector(Connector):
                 if month is None:
                     continue
                 obs_date = f"{year}-{month}-01"
+
+            # basic_prices + net_taxes_on_products == market_prices is a hard
+            # national-accounts identity, true in 103 of 104 live rows. The one
+            # exception (2023 Q4: netTaxesOnProducts="176023.00" vs an expected
+            # ~1760.22) is a dropped decimal point in CBN's raw feed -- same
+            # corruption class as the interbank/OMO fixes earlier this session.
+            # Caught here using the identity as corroborating evidence; only the
+            # corrupted field is skipped, not the whole row (basic_prices and
+            # market_prices for that date are internally consistent with each
+            # other and are kept).
+            skip_net_taxes = False
+            try:
+                basic = float(str(row.get("gdPatCurrentBasicPrices")).replace(",", "."))
+                market = float(str(row.get("gdPatCurrentMarketPrices")).replace(",", "."))
+                taxes = float(str(row.get("netTaxesOnProducts")).replace(",", "."))
+                if abs((basic + taxes) - market) > max(1.0, market * 0.01):
+                    skip_net_taxes = True
+            except (TypeError, ValueError):
+                pass
+
             for field, indicator_id in FIELD_MAP.items():
+                if field == "netTaxesOnProducts" and skip_net_taxes:
+                    continue
                 raw = row.get(field)
                 if raw is None or str(raw).strip() == "":
                     continue

@@ -836,6 +836,30 @@ def test_cbn_nominal_gdp_connector_annual_vs_quarterly_and_field_mapping(monkeyp
     assert "2024-01-01" in by_date and len([d for d in by_date if d.startswith("2024")]) == 2  # Annual(999) never landed
 
 
+def test_cbn_nominal_gdp_connector_drops_net_taxes_inconsistent_with_identity(monkeypatch):
+    """Regression: basic_prices + net_taxes_on_products == market_prices is a
+    hard national-accounts identity, true in 103 of 104 live rows. The one
+    exception (2023 Q4) has netTaxesOnProducts="176023.00" vs an expected
+    ~1760.22 -- a dropped decimal point in CBN's raw feed. Only the
+    corrupted field should be dropped; basic_prices/market_prices (which
+    are consistent with each other) must still be kept."""
+    from collectors import cbn_nominal_gdp as gdp
+
+    payload = [
+        {"tyear": "2023", "period": "Q4", "gdPatCurrentBasicPrices": "65908.26",
+         "netTaxesOnProducts": "176023.00", "gdPatCurrentMarketPrices": "67668.48"},
+        {"tyear": "2023", "period": "Q3", "gdPatCurrentBasicPrices": "60658.60",
+         "netTaxesOnProducts": "1395.76", "gdPatCurrentMarketPrices": "62054.36"},
+    ]
+    monkeypatch.setattr(gdp, "_get", lambda url: payload)
+    rows = list(gdp.CBNNominalGDPConnector().fetch())
+
+    q4 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2023-10-01"}
+    assert q4 == {"gdp_cp_basic_prices": pytest.approx(65908.26), "gdp_cp_market_prices": pytest.approx(67668.48)}
+    q3 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2023-07-01"}
+    assert q3["gdp_cp_net_taxes_on_products"] == pytest.approx(1395.76)  # consistent row: kept
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner
