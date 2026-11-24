@@ -442,6 +442,38 @@ def test_cbn_daily_oil_connector_converts_date_format(monkeypatch):
     }
 
 
+def test_cbn_discount_window_connector_merges_naming_variants(monkeypatch):
+    from collectors import cbn_discount_window as cdw
+
+    payload = [
+        {"id": 1, "ratedate": "05/06/2007", "ratetype": "Standing Lending Rate", "amount": "14.0000"},
+        {"id": 2, "ratedate": "19/03/2013", "ratetype": "Standing LendingRate", "amount": "14.5000"},
+        {"id": 3, "ratedate": "27/02/2001", "ratetype": "1-7 Day", "amount": "17.0000"},
+        {"id": 4, "ratedate": "18/04/2006", "ratetype": "1-7 Days", "amount": "11.0990"},
+    ]
+    monkeypatch.setattr(cdw.CBNDiscountWindowConnector, "_get", lambda self: payload)
+    rows = list(cdw.CBNDiscountWindowConnector().fetch())
+    assert len(rows) == 4
+    ids = {r["indicator_id"] for r in rows}
+    # both naming variants of each series collapse to the same indicator_id
+    assert ids == {"cbn_standing_lending_rate", "cbn_repo_rate_1_7d"}
+
+
+def test_cbn_discount_window_connector_skips_unmapped_and_null(monkeypatch):
+    from collectors import cbn_discount_window as cdw
+
+    payload = [
+        {"id": 1, "ratedate": "05/06/2007", "ratetype": "Monetary Policy Rate", "amount": "12.5000"},
+        {"id": 2, "ratedate": "05/06/2007", "ratetype": "Some Future CBN Rate", "amount": "9.9000"},  # unmapped
+        {"id": 3, "ratedate": "05/06/2007", "ratetype": "Standing Deposit Rate", "amount": None},  # null
+    ]
+    monkeypatch.setattr(cdw.CBNDiscountWindowConnector, "_get", lambda self: payload)
+    rows = list(cdw.CBNDiscountWindowConnector().fetch())
+    assert len(rows) == 1
+    assert rows[0]["indicator_id"] == "mpr"  # backfills the existing indicator directly
+    assert rows[0]["value"] == pytest.approx(12.5)
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner
