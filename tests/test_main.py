@@ -539,6 +539,62 @@ def test_cbn_money_market_connector_excludes_mpr_and_mrr(monkeypatch):
     assert "cbn_interbank_call_rate" in ids
 
 
+def test_cbn_ntb_connector_merges_tenor_spelling_variants(monkeypatch):
+    from collectors import cbn_securities as cs
+
+    payload = [
+        {"auctionDate": "May-15-2024", "tenor": "91", "rateDescription": "Issue", "rate": "17.5000"},
+        {"auctionDate": "June-12-2024", "tenor": "91 DAY", "rateDescription": "Issue", "rate": "18.0000"},
+        {"auctionDate": "July-10-2024", "tenor": "91Day", "rateDescription": "Issue", "rate": "18.2000"},
+    ]
+    monkeypatch.setattr(cs, "_get", lambda url: payload)
+    rows = list(cs.CBNNTBConnector().fetch())
+    assert len(rows) == 3
+    assert all(r["indicator_id"] == "cbn_ntb_91d" for r in rows)
+    assert rows[0]["obs_date"] == "2024-05-15"
+
+
+def test_cbn_ntb_connector_excludes_non_issue_and_off_tenor_and_zero_rate(monkeypatch):
+    from collectors import cbn_securities as cs
+
+    payload = [
+        {"auctionDate": "May-15-2024", "tenor": "91", "rateDescription": "Maginal", "rate": "17.5000"},  # wrong rateDescription
+        {"auctionDate": "May-15-2024", "tenor": "49", "rateDescription": "Issue", "rate": "10.0000"},  # off-tenor noise
+        {"auctionDate": "May-15-2024", "tenor": "182", "rateDescription": "Issue", "rate": "0.0000"},  # zero rate
+    ]
+    monkeypatch.setattr(cs, "_get", lambda url: payload)
+    rows = list(cs.CBNNTBConnector().fetch())
+    assert rows == []
+
+
+def test_cbn_fgn_bond_connector_excludes_omo_contamination_and_merges_variants(monkeypatch):
+    from collectors import cbn_securities as cs
+
+    payload = [
+        {"auctionDate": "June-19-2023", "tenor": "49", "auction": "OMO", "rateDescription": "Issue", "rate": "8.0000"},  # contaminated, no "year"
+        {"auctionDate": "June-19-2023", "tenor": "10 Year", "rateDescription": "Issue", "rate": "13.9000"},
+        {"auctionDate": "July-17-2023", "tenor": "10YEAR", "rateDescription": "Issue", "rate": "14.1000"},
+        {"auctionDate": "August-14-2023", "tenor": "10-Year", "rateDescription": "Maginal", "rate": "14.3000"},  # wrong rateDescription
+    ]
+    monkeypatch.setattr(cs, "_get", lambda url: payload)
+    rows = list(cs.CBNFGNBondConnector().fetch())
+    assert len(rows) == 2
+    assert all(r["indicator_id"] == "cbn_fgn_bond_10y" for r in rows)
+
+
+def test_cbn_nofr_connector_parses_date_and_value(monkeypatch):
+    from collectors import cbn_nofr as nofr
+
+    payload = [
+        {"ratedate": "November-23-2026", "nofr": "20.00"},
+        {"ratedate": "November-22-2026", "nofr": ""},  # blank, skipped
+    ]
+    monkeypatch.setattr(nofr, "_get", lambda url: payload)
+    rows = list(nofr.CBNNOFRConnector().fetch())
+    assert len(rows) == 1
+    assert rows[0] == {"indicator_id": "cbn_nofr", "obs_date": "2026-11-23", "value": pytest.approx(20.0), "source": "CBN"}
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner

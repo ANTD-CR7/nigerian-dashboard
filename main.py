@@ -188,6 +188,17 @@ INDICATORS = {
     "cbn_deposit_rate_12m": {"name": "Deposit Rate (12-Month)", "unit": "Percent (%)", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "cbn_prime_lending_rate": {"name": "Prime Lending Rate", "unit": "Percent (%)", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "cbn_max_lending_rate": {"name": "Maximum Lending Rate", "unit": "Percent (%)", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_ntb_91d": {"name": "Treasury Bill Rate (91-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
+    "cbn_ntb_182d": {"name": "Treasury Bill Rate (182-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
+    "cbn_ntb_364d": {"name": "Treasury Bill Rate (364-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
+    "cbn_fgn_bond_5y": {"name": "FGN Bond Rate (5-Year)", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
+    "cbn_fgn_bond_7y": {"name": "FGN Bond Rate (7-Year)", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
+    "cbn_fgn_bond_10y": {"name": "FGN Bond Rate (10-Year)", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
+    "cbn_fgn_bond_15y": {"name": "FGN Bond Rate (15-Year)", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
+    "cbn_fgn_bond_20y": {"name": "FGN Bond Rate (20-Year)", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
+    "cbn_fgn_bond_25y": {"name": "FGN Bond Rate (25-Year)", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
+    "cbn_fgn_bond_30y": {"name": "FGN Bond Rate (30-Year)", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
+    "cbn_nofr": {"name": "Nigerian Overnight Financing Rate", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
 }
 
 
