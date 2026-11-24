@@ -860,6 +860,35 @@ def test_cbn_nominal_gdp_connector_drops_net_taxes_inconsistent_with_identity(mo
     assert q3["gdp_cp_net_taxes_on_products"] == pytest.approx(1395.76)  # consistent row: kept
 
 
+def test_cbn_real_gdp_connector_quarter_end_dates_and_reused_ids(monkeypatch):
+    """Mirrors the Nominal GDP connector's annual/quarterly collision
+    avoidance, but with quarter-END dates (matching the existing
+    gdp_agriculture/etc ids' established convention, not gdp_growth's
+    quarter-start) so refreshing those 7 reused ids correctly overwrites
+    their existing rows instead of creating parallel duplicates."""
+    from collectors import cbn_real_gdp as rgdp
+
+    payload = [
+        {"tyear": "2005", "period": "Annual", "agriculture": "100.0", "gdPatCurrentBasicPrices": "500.0"},
+        {"tyear": "2024", "period": "Annual", "agriculture": "999.0", "gdPatCurrentBasicPrices": "999.0"},
+        {"tyear": "2024", "period": "Q1", "agriculture": "3851.89", "gdPatCurrentBasicPrices": "18278.21",
+         "netTaxesOnProducts": "218.96", "gdPatCurrentMarketPrices": "18497.17"},
+    ]
+    monkeypatch.setattr(rgdp, "_get", lambda url: payload)
+    rows = list(rgdp.CBNRealGDPConnector().fetch())
+
+    by_date = {}
+    for r in rows:
+        by_date.setdefault(r["obs_date"], {})[r["indicator_id"]] = r["value"]
+
+    assert by_date["2005-12-31"] == {"gdp_agriculture": pytest.approx(100.0), "gdp_real_basic_prices": pytest.approx(500.0)}
+    q1 = by_date["2024-03-31"]
+    assert q1["gdp_agriculture"] == pytest.approx(3851.89)  # reused existing id, not a new gdp_real_ id
+    assert q1["gdp_real_basic_prices"] == pytest.approx(18278.21)
+    assert q1["gdp_real_net_taxes_on_products"] == pytest.approx(218.96)  # identity holds, kept
+    assert len([d for d in by_date if d.startswith("2024")]) == 1  # Annual(999) never landed
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner

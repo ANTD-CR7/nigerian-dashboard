@@ -309,6 +309,70 @@ INDICATORS = {
     "gdp_cp_basic_prices": {"name": "GDP at Current Basic Prices", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
     "gdp_cp_net_taxes_on_products": {"name": "Net Taxes on Products (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
     "gdp_cp_market_prices": {"name": "GDP at Current Market Prices", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    # Real GDP at constant basic prices (full sector/sub-sector detail,
+    # CBN GetAllRealGDP). 7 of these ids (gdp_agriculture, gdp_industry,
+    # gdp_manufacturing, gdp_construction, gdp_trade, gdp_services,
+    # gdp_telecommunicationsAndInformationServices) are pre-existing --
+    # they had live observation data but no INDICATORS entry at all (same
+    # gap pattern as the multicurrency/wb_* ids found earlier this
+    # session). The other 50 use gdp_real_* (parallel to gdp_cp_*).
+    "gdp_agriculture": {"name": "Agriculture (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_crop_production": {"name": "Crop Production (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_livestock": {"name": "Livestock (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_forestry": {"name": "Forestry (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_fishing": {"name": "Fishing (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_industry": {"name": "Industry (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_mining_and_quarrying": {"name": "Mining and Quarrying (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_crude_petroleum_and_natural_gas": {"name": "Crude Petroleum and Natural Gas (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_coal_mining": {"name": "Coal Mining (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_metal_ores": {"name": "Metal Ores (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_quarrying_and_other_minerals": {"name": "Quarrying and Other Minerals (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_manufacturing": {"name": "Manufacturing (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_oil_refining": {"name": "Oil Refining (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_cement": {"name": "Cement (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_food_beverage_and_tobacco": {"name": "Food, Beverage and Tobacco (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_textile_apparel_and_footwear": {"name": "Textile, Apparel and Footwear (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_wood_and_wood_products": {"name": "Wood and Wood Products (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_pulp_paper_and_paper_products": {"name": "Pulp, Paper and Paper Products (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_chemical_and_pharmaceutical_products": {"name": "Chemical and Pharmaceutical Products (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_non_metallic_products": {"name": "Non-Metallic Products (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_plastic_and_rubber_products": {"name": "Plastic and Rubber Products (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_electrical_and_electronics": {"name": "Electrical and Electronics (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_basic_metal_iron_and_steel": {"name": "Basic Metal, Iron and Steel (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_motor_vehicles_and_assembly": {"name": "Motor Vehicles and Assembly (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_other_manufacturing": {"name": "Other Manufacturing (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_electricity_gas_steam_and_air_con": {"name": "Electricity, Gas, Steam and Air Conditioning (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_water_supply_sewage_waste": {"name": "Water Supply, Sewage and Waste (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_construction": {"name": "Construction (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_services": {"name": "Services (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_trade": {"name": "Trade (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_accommodation_and_food_services": {"name": "Accommodation and Food Services (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_transportation_and_storage": {"name": "Transportation and Storage (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_road_transport": {"name": "Road Transport (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_rail_transport_and_pipelines": {"name": "Rail Transport and Pipelines (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_water_transport": {"name": "Water Transport (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_air_transport": {"name": "Air Transport (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_transport_services": {"name": "Transport Services (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_post_and_courier_services": {"name": "Post and Courier Services (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_information_and_communication": {"name": "Information and Communication (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_telecommunicationsAndInformationServices": {"name": "Telecommunications and Information Services (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_publishing": {"name": "Publishing (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_motion_pictures_recording_music": {"name": "Motion Pictures, Sound Recording and Music Production (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_broadcasting": {"name": "Broadcasting (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_arts_entertainment_and_recreation": {"name": "Arts, Entertainment and Recreation (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_finance_and_insurance": {"name": "Finance and Insurance (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_financial_institutions": {"name": "Financial Institutions (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_insurance": {"name": "Insurance (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_real_estate": {"name": "Real Estate (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_professional_sci_and_tech_services": {"name": "Professional, Scientific and Technical Services (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_admin_and_support_services": {"name": "Administrative and Support Services; Business Services (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_public_administration": {"name": "Public Administration (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_education": {"name": "Education (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_human_health_and_social_services": {"name": "Human Health and Social Services (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_other_services": {"name": "Other Services (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_basic_prices": {"name": "GDP at Constant Basic Prices", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_net_taxes_on_products": {"name": "Net Taxes on Products (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_real_market_prices": {"name": "GDP at Constant Market Prices", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
     # Multicurrency cross rates (CBN GetAllExchangeRates). These 33 ids already
     # existed in the live `indicators` table and had observation data from the
     # original one-time ETL, but had no INDICATORS entry here -- meaning
@@ -913,6 +977,19 @@ def get_gdp_current_prices(request: Request, start: Optional[str] = Query(defaul
             "data": {i: fetched[i] for i in ids if i not in ("gdp_cp_basic_prices", "gdp_cp_net_taxes_on_products", "gdp_cp_market_prices")},
             "unit": "Naira Billions, current prices", "source": "NBS (via CBN GetAllNominalGDP)",
             "_links": hypermedia(request, "/api/v1/gdp-current-prices", indicator="gdp_cp_basic_prices", related=["gdp", "gdp_sectors", "coverage"])}
+
+
+@app.get("/api/v1/gdp-real")
+def get_gdp_real(request: Request, start: Optional[str] = Query(default="2010-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+    """Full GDP-by-sector breakdown at constant (real) basic prices --
+    supersedes the partial, stale /gdp-sectors with the live source those
+    7 ids were originally one-time-seeded from."""
+    ids = ["gdp_agriculture", "gdp_real_crop_production", "gdp_real_livestock", "gdp_real_forestry", "gdp_real_fishing", "gdp_industry", "gdp_real_mining_and_quarrying", "gdp_real_crude_petroleum_and_natural_gas", "gdp_real_coal_mining", "gdp_real_metal_ores", "gdp_real_quarrying_and_other_minerals", "gdp_manufacturing", "gdp_real_oil_refining", "gdp_real_cement", "gdp_real_food_beverage_and_tobacco", "gdp_real_textile_apparel_and_footwear", "gdp_real_wood_and_wood_products", "gdp_real_pulp_paper_and_paper_products", "gdp_real_chemical_and_pharmaceutical_products", "gdp_real_non_metallic_products", "gdp_real_plastic_and_rubber_products", "gdp_real_electrical_and_electronics", "gdp_real_basic_metal_iron_and_steel", "gdp_real_motor_vehicles_and_assembly", "gdp_real_other_manufacturing", "gdp_real_electricity_gas_steam_and_air_con", "gdp_real_water_supply_sewage_waste", "gdp_construction", "gdp_services", "gdp_trade", "gdp_real_accommodation_and_food_services", "gdp_real_transportation_and_storage", "gdp_real_road_transport", "gdp_real_rail_transport_and_pipelines", "gdp_real_water_transport", "gdp_real_air_transport", "gdp_real_transport_services", "gdp_real_post_and_courier_services", "gdp_real_information_and_communication", "gdp_telecommunicationsAndInformationServices", "gdp_real_publishing", "gdp_real_motion_pictures_recording_music", "gdp_real_broadcasting", "gdp_real_arts_entertainment_and_recreation", "gdp_real_finance_and_insurance", "gdp_real_financial_institutions", "gdp_real_insurance", "gdp_real_real_estate", "gdp_real_professional_sci_and_tech_services", "gdp_real_admin_and_support_services", "gdp_real_public_administration", "gdp_real_education", "gdp_real_human_health_and_social_services", "gdp_real_other_services", "gdp_real_basic_prices", "gdp_real_net_taxes_on_products", "gdp_real_market_prices"]
+    fetched = fetch_parallel(ids, start, end)
+    return {"headline": {"basic_prices": fetched["gdp_real_basic_prices"], "net_taxes_on_products": fetched["gdp_real_net_taxes_on_products"], "market_prices": fetched["gdp_real_market_prices"]},
+            "data": {i: fetched[i] for i in ids if i not in ("gdp_real_basic_prices", "gdp_real_net_taxes_on_products", "gdp_real_market_prices")},
+            "unit": "Naira Billions, constant prices", "source": "NBS (via CBN GetAllRealGDP)",
+            "_links": hypermedia(request, "/api/v1/gdp-real", indicator="gdp_real_basic_prices", related=["gdp", "gdp_sectors", "gdp_current_prices", "coverage"])}
 
 
 @app.get("/api/v1/cbn-balance-sheet")
