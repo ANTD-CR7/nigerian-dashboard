@@ -1042,6 +1042,37 @@ def test_cbn_reserves_connector_scales_to_usd_billions_and_keeps_percent_asis(mo
     assert nov22["reserves_blocked"] == pytest.approx(0.0)  # genuine zero, kept
 
 
+def test_cbn_assets_liabilities_connector_maps_fields_and_handles_gaps(monkeypatch):
+    """Refreshes 4 existing ids (cbn_total_assets/cbn_total_liabilities/
+    cbn_gold/cbn_currency_issued, confirmed same source via exact value
+    match) plus 19 new ones. cbnInstruments is blank for 166/229 live
+    rows -- introduced partway through the dataset's history, skipped
+    per-field. 4 live rows share an exact date -- last-write-wins."""
+    from collectors import cbn_assets_liabilities as al
+
+    payload = [
+        {"payDate": "30/11/2023", "gold": "1319505729.0000", "convertible": "26587373902.0000",
+         "cbnInstruments": "14763351573.0000", "totalAss": "81041451311.0000", "totalLia": "81041451311.0000",
+         "cinC": "3348147818.0000"},
+        {"payDate": "31/01/2005", "gold": "19009.0000", "convertible": "2571287235.0000",
+         "cbnInstruments": "", "totalAss": "3488065553.0000", "totalLia": "3488065554.0000", "cinC": "522327945.0000"},
+        # Duplicate date -- last write wins
+        {"payDate": "30/11/2023", "gold": "999.0000", "convertible": "999.0000",
+         "cbnInstruments": "999.0000", "totalAss": "999.0000", "totalLia": "999.0000", "cinC": "999.0000"},
+    ]
+    monkeypatch.setattr(al, "_get", lambda url: payload)
+    rows = list(al.CBNAssetsLiabilitiesConnector().fetch())
+
+    nov2023 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2023-11-30"}
+    assert nov2023["cbn_gold"] == pytest.approx(999.0)  # 3rd row overwrites the 1st
+    assert nov2023["cbn_total_assets"] == pytest.approx(999.0)
+    assert nov2023["cbn_currency_issued"] == pytest.approx(999.0)
+
+    jan2005 = {r["indicator_id"] for r in rows if r["obs_date"] == "2005-01-31"}
+    assert "cbn_instruments_outstanding" not in jan2005  # blank, skipped
+    assert "cbn_gold" in jan2005  # other fields for that date still present
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner
