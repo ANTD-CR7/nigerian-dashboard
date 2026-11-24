@@ -240,6 +240,14 @@ INDICATORS = {
     "cbn_net_clearing": {"name": "Net Clearing (Lagos/Abuja)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
     "cbn_ndic_premium": {"name": "NDIC Premium (Debit/Credit)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
     "cbn_other_major_flow": {"name": "Other Major (Debit/Credit)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    # CBN OMO auctions, aggregated per auction date (tenor field is too
+    # continuous/messy for a fixed-bucket scheme like NTB's 91/182/364).
+    "cbn_omo_rate_avg": {"name": "OMO Average Rate", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_omo_total_subscription": {"name": "OMO Total Subscription", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_omo_total_successful": {"name": "OMO Total Successful Bids", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_omo_amt_offered": {"name": "OMO Amount Offered", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_omo_total_repaid": {"name": "OMO Total Repaid", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_omo_net_value": {"name": "OMO Net Value", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
     # Multicurrency cross rates (CBN GetAllExchangeRates). These 33 ids already
     # existed in the live `indicators` table and had observation data from the
     # original one-time ETL, but had no INDICATORS entry here -- meaning

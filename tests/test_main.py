@@ -770,6 +770,43 @@ def test_cbn_financial_data_connector_maps_all_fields_and_skips_blanks(monkeypat
     assert partial_day == {"cbn_banks_opening_balance": pytest.approx(69012.74), "cbn_standing_lending_facility_flow": pytest.approx(8500.0)}
 
 
+def test_cbn_omo_connector_aggregates_per_auction_date(monkeypatch):
+    """OMO's tenor field is too continuous/messy (299 distinct day-counts)
+    for a fixed-bucket scheme -- instead this aggregates across whatever
+    tenors were offered on each auction date."""
+    from collectors import cbn_omo as omo
+
+    payload = [
+        # 2026-11-10: two tenors, both real rates -- sums + averages
+        {"auctionDate": "November-10-2026", "rateDescription": "Issue", "tenor": "91",
+         "totalSubscription": "100.0", "totalSuccessful": "80.0", "amtOffered": "90.0",
+         "totalAmtRepaid": "10.0", "netValue": "70.0", "rate": "17.0000"},
+        {"auctionDate": "November-10-2026", "rateDescription": "Issue", "tenor": "182",
+         "totalSubscription": "50.0", "totalSuccessful": "40.0", "amtOffered": "",
+         "totalAmtRepaid": "5.0", "netValue": "35.0", "rate": "19.0000"},
+        # Non-Issue row for the same date, must be excluded entirely
+        {"auctionDate": "November-10-2026", "rateDescription": "Stop", "tenor": "91",
+         "totalSubscription": "999.0", "totalSuccessful": "999.0", "amtOffered": "999.0",
+         "totalAmtRepaid": "999.0", "netValue": "999.0", "rate": "99.0000"},
+        # 2026-11-03: a single tenor with rate 0 (no real bids) -- rate must be omitted
+        {"auctionDate": "November-03-2026", "rateDescription": "Issue", "tenor": "35",
+         "totalSubscription": "20.0", "totalSuccessful": "0.0", "amtOffered": "20.0",
+         "totalAmtRepaid": "0.0", "netValue": "0.0", "rate": "0.0000"},
+    ]
+    monkeypatch.setattr(omo, "_get", lambda url: payload)
+    rows = list(omo.CBNOMOConnector().fetch())
+
+    day1 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2026-11-10"}
+    assert day1 == {
+        "cbn_omo_total_subscription": pytest.approx(150.0), "cbn_omo_total_successful": pytest.approx(120.0),
+        "cbn_omo_amt_offered": pytest.approx(90.0), "cbn_omo_total_repaid": pytest.approx(15.0),
+        "cbn_omo_net_value": pytest.approx(105.0), "cbn_omo_rate_avg": pytest.approx(18.0),
+    }
+    day2 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2026-11-03"}
+    assert "cbn_omo_rate_avg" not in day2
+    assert day2["cbn_omo_total_subscription"] == pytest.approx(20.0)
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner
