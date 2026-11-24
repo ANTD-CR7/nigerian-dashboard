@@ -973,6 +973,33 @@ def test_cbn_monthly_avg_fx_connector_maps_all_fields_and_skips_blanks(monkeypat
     assert jan2004["cbn_usd_bdc_rate"] == pytest.approx(147.65)
 
 
+def test_cbn_reserves_connector_scales_to_usd_billions_and_keeps_percent_asis(monkeypatch):
+    """Refreshes 4 existing ids (fx_reserves/reserves_liquid/reserves_
+    blocked/reserves_block_pct). The feed's gross/liquid/blocked are raw
+    USD; existing data is in USD Billions, so these are divided by 1e9.
+    blockPercent is already a plain percent on both sides -- no scaling."""
+    from collectors import cbn_reserves as res
+
+    payload = [
+        {"moveDate": "23/11/2026", "gross": "54358521234.2800", "liquid": "53866389255.2100",
+         "blocked": "492131979.0700", "blockPercent": "0.9100"},
+        {"moveDate": "22/11/2026", "gross": "54000000000.0000", "liquid": "", "blocked": "0.0000", "blockPercent": "0.0000"},
+    ]
+    monkeypatch.setattr(res, "_get", lambda url: payload)
+    rows = list(res.CBNReservesConnector().fetch())
+
+    nov23 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2026-11-23"}
+    assert nov23 == {
+        "fx_reserves": pytest.approx(54.3585212342800, rel=1e-6),
+        "reserves_liquid": pytest.approx(53.8663892552100, rel=1e-6),
+        "reserves_blocked": pytest.approx(0.4921319790700, rel=1e-6),
+        "reserves_block_pct": pytest.approx(0.91),
+    }
+    nov22 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2026-11-22"}
+    assert "reserves_liquid" not in nov22  # blank, skipped
+    assert nov22["reserves_blocked"] == pytest.approx(0.0)  # genuine zero, kept
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner
