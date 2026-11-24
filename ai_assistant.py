@@ -40,15 +40,20 @@ def key_configured() -> bool:
 
 
 def match_indicators(question: str, indicators: dict, limit: int = 6) -> list[str]:
-    """Pick indicators whose id or name tokens appear in the question."""
+    """Pick indicators whose id or name tokens appear in the question.
+
+    Curated aliases run FIRST, not last: with dozens of similarly-named
+    indicators now in the platform (the inflation breakdown, CBN money
+    market/discount-window families), a generic substring scan can match
+    many near-duplicates of one concept mentioned in the question (e.g.
+    seven different "inflation_*" indicators) and fill the whole `limit`
+    before a different concept the question also mentions (e.g. "naira" ->
+    exchange_rate) ever gets a chance, since that only happens via alias
+    fallback. Running aliases first guarantees each distinct concept the
+    question names gets represented before the generic scan piles on
+    near-duplicates of whichever concept happens to match the most names."""
     q = question.lower()
     hits = []
-    for iid, meta in indicators.items():
-        name = str(meta.get("name", "")).lower()
-        toks = [iid.replace("_", " "), iid] + [t for t in name.split() if len(t) > 3]
-        if any(t and t in q for t in toks):
-            hits.append(iid)
-    # a few sensible fallbacks by keyword
     aliases = {
         "inflation": "inflation", "naira": "exchange_rate", "exchange": "exchange_rate",
         "dollar": "exchange_rate", "gdp": "gdp", "growth": "gdp", "reserves": "fx_reserves",
@@ -56,6 +61,15 @@ def match_indicators(question: str, indicators: dict, limit: int = 6) -> list[st
     }
     for kw, iid in aliases.items():
         if kw in q and iid in indicators and iid not in hits:
+            hits.append(iid)
+    for iid, meta in indicators.items():
+        if len(hits) >= limit:
+            break
+        if iid in hits:
+            continue
+        name = str(meta.get("name", "")).lower()
+        toks = [iid.replace("_", " "), iid] + [t for t in name.split() if len(t) > 3]
+        if any(t and t in q for t in toks):
             hits.append(iid)
     return hits[:limit]
 

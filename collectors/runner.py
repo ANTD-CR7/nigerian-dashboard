@@ -23,11 +23,13 @@ from .base import normalize
 from .world_bank import WorldBankConnector
 from .cbn_oil import CBNOilConnector, CBNDailyOilConnector
 from .cbn_discount_window import CBNDiscountWindowConnector
+from .cbn_macro_indicators import CBNMoneyAndCreditConnector, CBNMoneyMarketConnector
 from .sources_scaffold import CBNConnector, NBSConnector
 
 DEFAULT_CONNECTORS = [
     WorldBankConnector(), CBNOilConnector(), CBNDailyOilConnector(),
-    CBNDiscountWindowConnector(), CBNConnector(), NBSConnector(),
+    CBNDiscountWindowConnector(), CBNMoneyAndCreditConnector(), CBNMoneyMarketConnector(),
+    CBNConnector(), NBSConnector(),
 ]
 
 

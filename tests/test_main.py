@@ -491,6 +491,54 @@ def test_cbn_discount_window_connector_skips_unmapped_and_null(monkeypatch):
     assert rows[0]["value"] == pytest.approx(12.5)
 
 
+def test_cbn_money_and_credit_connector_handles_annual_era_quirk(monkeypatch):
+    from collectors import cbn_macro_indicators as cmi
+
+    payload = [
+        {"tyear": 1965, "tmonth": 1965, "moneySupply_M2": "500.00", "currencyInCirculation": "250.00",
+         "moneySupply_M3": None, "cbnBills": None, "quasiMoney": "1", "narrowMoney": "1",
+         "currencyOutsideBanks": "1", "demandDeposits": "1", "netForeignAssets": "1",
+         "netDomesticAssets": "1", "netDomesticCredit": "1", "creditToGovernment": "1",
+         "creditToGovernmentFed": None, "mirrorAccounts": None, "creditToPrivateSector": "1",
+         "otherAssetsNet": "1", "baseMoney": "1", "bankReserves": "1", "specialInterventionReserves": None},
+        {"tyear": 2024, "tmonth": 6, "moneySupply_M2": "500.00", "currencyInCirculation": "250.00",
+         "moneySupply_M3": "1", "cbnBills": "1", "quasiMoney": "1", "narrowMoney": "1",
+         "currencyOutsideBanks": "1", "demandDeposits": "1", "netForeignAssets": "1",
+         "netDomesticAssets": "1", "netDomesticCredit": "1", "creditToGovernment": "1",
+         "creditToGovernmentFed": "1", "mirrorAccounts": "1", "creditToPrivateSector": "1",
+         "otherAssetsNet": "1", "baseMoney": "1", "bankReserves": "1", "specialInterventionReserves": "1"},
+    ]
+    monkeypatch.setattr(cmi, "_get", lambda url: payload)
+    rows = list(cmi.CBNMoneyAndCreditConnector().fetch())
+    ids = {r["indicator_id"] for r in rows}
+    assert "cbn_currency_in_circulation" not in ids and "currency_circulation_full" not in ids  # excluded duplicate
+    annual_row = next(r for r in rows if r["indicator_id"] == "cbn_money_supply_m2" and r["obs_date"] == "1965-12-31")
+    monthly_row = next(r for r in rows if r["indicator_id"] == "cbn_money_supply_m2" and r["obs_date"] == "2024-06-01")
+    assert annual_row["value"] == pytest.approx(500.0)
+    assert monthly_row["value"] == pytest.approx(500.0)
+    # null-heavy fields correctly skipped for the annual-era row only
+    assert not any(r["indicator_id"] == "cbn_money_supply_m3" and r["obs_date"] == "1965-12-31" for r in rows)
+    assert any(r["indicator_id"] == "cbn_money_supply_m3" and r["obs_date"] == "2024-06-01" for r in rows)
+
+
+def test_cbn_money_market_connector_excludes_mpr_and_mrr(monkeypatch):
+    from collectors import cbn_macro_indicators as cmi
+
+    payload = [
+        {"tyear": 2025, "tmonth": 11, "interBankCallRate": "20.00", "mrr": "", "mpr": "27.00",
+         "treasuryBill": "16.24", "savingsDeposit": "5.36", "oneMonthDeposit": "12.20",
+         "threeMonthsDeposit": "10.33", "sixMonthsDeposit": "8.33", "twelveMonthsDeposit": "10.50",
+         "primeLending": "19.04", "maxLending": "32.62"},
+    ]
+    monkeypatch.setattr(cmi, "_get", lambda url: payload)
+    rows = list(cmi.CBNMoneyMarketConnector().fetch())
+    ids = {r["indicator_id"] for r in rows}
+    assert len(rows) == 9  # 11 fields minus mrr (null) and mpr (deliberately excluded)
+    assert "mpr" not in ids
+    assert "mrr" not in ids
+    assert "cbn_interbank_call_rate" in ids
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner
