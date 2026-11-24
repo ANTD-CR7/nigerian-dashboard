@@ -582,17 +582,59 @@ def test_cbn_fgn_bond_connector_excludes_omo_contamination_and_merges_variants(m
     assert all(r["indicator_id"] == "cbn_fgn_bond_10y" for r in rows)
 
 
-def test_cbn_nofr_connector_parses_date_and_value(monkeypatch):
+def test_cbn_nofr_connector_maps_all_fields_and_dedups_duplicate_dates(monkeypatch):
+    """Switched from GetAllNOF_RatesGRAPH (CBN's limited recent-window
+    endpoint, only ~18 rows) to the full GetAllNOF_Rates endpoint (157
+    rows back to April 2026) -- recovers ~139 days of history this
+    connector was silently dropping every day it ran. Also adds 4 richer
+    fields (volume, min/max rate, variation range) from the same feed."""
     from collectors import cbn_nofr as nofr
 
     payload = [
-        {"ratedate": "November-23-2026", "nofr": "20.00"},
-        {"ratedate": "November-22-2026", "nofr": ""},  # blank, skipped
+        {"ratedate": "November-23-2026", "nofr": "20.00", "dailyVolume": "4753692.91",
+         "minimumRate": "20.00", "maximumRate": "20.25", "dailyVariationRange": "0.25"},
+        {"ratedate": "November-22-2026", "nofr": "", "dailyVolume": "1.0",
+         "minimumRate": "1.0", "maximumRate": "1.0", "dailyVariationRange": "1.0"},  # nofr blank, skipped
+        # Duplicate date (confirmed live, 2 rows share a date) -- last write wins
+        {"ratedate": "November-23-2026", "nofr": "21.00", "dailyVolume": "1.0",
+         "minimumRate": "1.0", "maximumRate": "1.0", "dailyVariationRange": "1.0"},
     ]
     monkeypatch.setattr(nofr, "_get", lambda url: payload)
     rows = list(nofr.CBNNOFRConnector().fetch())
-    assert len(rows) == 1
-    assert rows[0] == {"indicator_id": "cbn_nofr", "obs_date": "2026-11-23", "value": pytest.approx(20.0), "source": "CBN"}
+
+    nov23 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2026-11-23"}
+    assert nov23 == {
+        "cbn_nofr": pytest.approx(21.0),  # 3rd row overwrites the 1st for the same date
+        "cbn_nofr_volume": pytest.approx(1.0), "cbn_nofr_min_rate": pytest.approx(1.0),
+        "cbn_nofr_max_rate": pytest.approx(1.0), "cbn_nofr_variation_range": pytest.approx(1.0),
+    }
+    nov22 = {r["indicator_id"] for r in rows if r["obs_date"] == "2026-11-22"}
+    assert "cbn_nofr" not in nov22
+    assert "cbn_nofr_volume" in nov22
+
+
+def test_cbn_nofri_connector_maps_fields_and_skips_ramp_up_blanks(monkeypatch):
+    """thirtyDay_NOFR/ninetyDay_NOFR/oneEightyDay_NOFR are blank until
+    enough days accumulate -- confirmed live, each field's blank count
+    matches its own window length exactly, not corruption."""
+    from collectors import cbn_nofri as nofri
+
+    payload = [
+        {"ratedate": "November-23-2026", "nofrIndex": "1.14069231113", "thirtyDay_NOFR": "20.15",
+         "ninetyDay_NOFR": "21.17", "oneEightyDay_NOFR": "22.48", "nofr": ""},
+        {"ratedate": "April-13-2026", "nofrIndex": "1.00000000000", "thirtyDay_NOFR": "",
+         "ninetyDay_NOFR": "", "oneEightyDay_NOFR": "", "nofr": "22.00"},
+    ]
+    monkeypatch.setattr(nofri, "_get", lambda url: payload)
+    rows = list(nofri.CBNNOFRIConnector().fetch())
+
+    nov23 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2026-11-23"}
+    assert nov23 == {
+        "cbn_nofri": pytest.approx(1.14069231113), "cbn_nofr_30d_term": pytest.approx(20.15),
+        "cbn_nofr_90d_term": pytest.approx(21.17), "cbn_nofr_180d_term": pytest.approx(22.48),
+    }
+    apr13 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2026-04-13"}
+    assert apr13 == {"cbn_nofri": pytest.approx(1.0)}  # term rates blank (ramp-up), skipped
 
 
 def test_cbn_interbank_connector_merges_obb_and_excludes_unmapped(monkeypatch):

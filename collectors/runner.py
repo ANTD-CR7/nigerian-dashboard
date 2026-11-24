@@ -26,6 +26,7 @@ from .cbn_discount_window import CBNDiscountWindowConnector
 from .cbn_macro_indicators import CBNMoneyAndCreditConnector, CBNMoneyMarketConnector
 from .cbn_securities import CBNNTBConnector, CBNFGNBondConnector
 from .cbn_nofr import CBNNOFRConnector
+from .cbn_nofri import CBNNOFRIConnector
 from .cbn_interbank import CBNInterbankRatesConnector
 from .cbn_exchange_rates import CBNExchangeRatesConnector
 from .cbn_nfem import CBNNFEMConnector
@@ -42,7 +43,7 @@ from .sources_scaffold import CBNConnector, NBSConnector
 DEFAULT_CONNECTORS = [
     WorldBankConnector(), CBNOilConnector(), CBNDailyOilConnector(),
     CBNDiscountWindowConnector(), CBNMoneyAndCreditConnector(), CBNMoneyMarketConnector(),
-    CBNNTBConnector(), CBNFGNBondConnector(), CBNNOFRConnector(), CBNInterbankRatesConnector(),
+    CBNNTBConnector(), CBNFGNBondConnector(), CBNNOFRConnector(), CBNNOFRIConnector(), CBNInterbankRatesConnector(),
     CBNExchangeRatesConnector(), CBNNFEMConnector(), CBNFinancialDataConnector(), CBNOMOConnector(),
     CBNNominalGDPConnector(), CBNRealGDPConnector(), CBNInflationConnector(), CBNIntPaymentsConnector(),
     CBNMonthlyAvgFXConnector(), CBNReservesConnector(),
