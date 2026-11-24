@@ -33,6 +33,7 @@ from .cbn_financial_data import CBNFinancialDataConnector
 from .cbn_omo import CBNOMOConnector
 from .cbn_nominal_gdp import CBNNominalGDPConnector
 from .cbn_real_gdp import CBNRealGDPConnector
+from .cbn_inflation import CBNInflationConnector
 from .sources_scaffold import CBNConnector, NBSConnector
 
 DEFAULT_CONNECTORS = [
@@ -40,7 +41,7 @@ DEFAULT_CONNECTORS = [
     CBNDiscountWindowConnector(), CBNMoneyAndCreditConnector(), CBNMoneyMarketConnector(),
     CBNNTBConnector(), CBNFGNBondConnector(), CBNNOFRConnector(), CBNInterbankRatesConnector(),
     CBNExchangeRatesConnector(), CBNNFEMConnector(), CBNFinancialDataConnector(), CBNOMOConnector(),
-    CBNNominalGDPConnector(), CBNRealGDPConnector(),
+    CBNNominalGDPConnector(), CBNRealGDPConnector(), CBNInflationConnector(),
     CBNConnector(), NBSConnector(),
 ]
 

@@ -889,6 +889,33 @@ def test_cbn_real_gdp_connector_quarter_end_dates_and_reused_ids(monkeypatch):
     assert len([d for d in by_date if d.startswith("2024")]) == 1  # Annual(999) never landed
 
 
+def test_cbn_inflation_connector_maps_all_fields_and_formats_dates(monkeypatch):
+    """Refreshes 8 existing NBS indicator ids (confirmed same source via
+    exact value match against the live DB) -- no new ids, just freshness."""
+    from collectors import cbn_inflation as infl
+
+    payload = [
+        {"tyear": 2026, "tmonth": 3, "allItemsYearOn": "15.38", "allItemsAverage": "20.05",
+         "foodYearOn": "14.31", "foodAverage": "18.21", "allItemsLessFrmProdYearOn": "15.66",
+         "allItemsLessFrmProdAverage": "20.86", "allItemsLessFrmProdAndEnergyYearOn": "16.21",
+         "allItemsLessFrmProdAndEnergyAvg": "21.09"},
+        {"tyear": 2026, "tmonth": 10, "allItemsYearOn": "14.06", "allItemsAverage": ""},
+    ]
+    monkeypatch.setattr(infl, "_get", lambda url: payload)
+    rows = list(infl.CBNInflationConnector().fetch())
+
+    march = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2026-03-01"}
+    assert march == {
+        "inflation": pytest.approx(15.38), "inflation_avg": pytest.approx(20.05),
+        "inflation_food": pytest.approx(14.31), "inflation_food_avg": pytest.approx(18.21),
+        "inflation_core": pytest.approx(15.66), "inflation_core_avg": pytest.approx(20.86),
+        "inflation_core_energy": pytest.approx(16.21), "inflation_core_energy_avg": pytest.approx(21.09),
+    }
+    # single-digit month formatted with leading zero; blank field skipped per-field
+    october = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2026-10-01"}
+    assert october == {"inflation": pytest.approx(14.06)}
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner
