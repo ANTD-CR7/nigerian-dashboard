@@ -120,10 +120,18 @@ INDICATORS = {
     "gdp_growth": {"name": "GDP Growth Rate", "unit": "Percent (%)", "source": "NBS", "frequency": "quarterly", "period_months": 3},
     "gdp_usd": {"name": "Nominal GDP", "unit": "USD Billions", "source": "World Bank", "frequency": "annual", "period_months": 12},
     "inflation": {"name": "Headline Inflation Rate", "unit": "Percent (%)", "source": "NBS", "frequency": "monthly", "period_months": 1},
-    "exchange_rate": {"name": "Exchange Rate", "unit": "Naira per USD", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "exchange_rate": {"name": "Exchange Rate", "unit": "Naira per USD", "source": "CBN", "frequency": "daily", "period_months": 1},
     "mpr": {"name": "Monetary Policy Rate", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
     "fx_reserves": {"name": "FX Reserves (Gross)", "unit": "USD Billions", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "nfem_closing": {"name": "NFEM Closing Rate", "unit": "Naira per USD", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "nfem_highest": {"name": "NFEM Highest Rate", "unit": "Naira per USD", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "nfem_lowest": {"name": "NFEM Lowest Rate", "unit": "Naira per USD", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "nfem_weighted_avg": {"name": "NFEM Weighted Average Rate", "unit": "Naira per USD", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "nfem_simple_avg": {"name": "NFEM Simple Average Rate", "unit": "Naira per USD", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "nfem_deals_count": {"name": "NFEM Number of Deals", "unit": "Count", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "nfem_deals_count_interbank": {"name": "NFEM Number of Interbank Deals", "unit": "Count", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "nfem_total_turnover": {"name": "NFEM Total Turnover", "unit": "USD", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "nfem_interbank_turnover": {"name": "NFEM Interbank Turnover", "unit": "USD", "source": "CBN", "frequency": "daily", "period_months": 1},
     "currency_circulation_full": {"name": "Currency in Circulation", "unit": "Naira Millions", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "cbn_total_assets": {"name": "CBN Total Assets", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "cbn_total_liabilities": {"name": "CBN Total Liabilities", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
@@ -207,6 +215,50 @@ INDICATORS = {
     "cbn_interbank_rate_90d": {"name": "Interbank Rate (90-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
     "cbn_interbank_rate_180d": {"name": "Interbank Rate (180-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
     "cbn_interbank_rate_360d": {"name": "Interbank Rate (360-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
+    # Multicurrency cross rates (CBN GetAllExchangeRates). These 33 ids already
+    # existed in the live `indicators` table and had observation data from the
+    # original one-time ETL, but had no INDICATORS entry here -- meaning
+    # /api/v1/analytics/usd_buying 404'd as "Unknown indicator" even though the
+    # data existed. dkk_* and jpy_* (Danish Krone, Yen) are genuinely new.
+    "aed_buying": {"name": "UAE DIRHAM Buying Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "aed_central": {"name": "UAE DIRHAM Central Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "aed_selling": {"name": "UAE DIRHAM Selling Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cfa_buying": {"name": "CFA Buying Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cfa_central": {"name": "CFA Central Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cfa_selling": {"name": "CFA Selling Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "chf_buying": {"name": "SWISS FRANC Buying Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "chf_central": {"name": "SWISS FRANC Central Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "chf_selling": {"name": "SWISS FRANC Selling Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cny_buying": {"name": "YUAN/RENMINBI Buying Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cny_central": {"name": "YUAN/RENMINBI Central Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cny_selling": {"name": "YUAN/RENMINBI Selling Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "dkk_buying": {"name": "DANISH KRONA Buying Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "dkk_central": {"name": "DANISH KRONA Central Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "dkk_selling": {"name": "DANISH KRONA Selling Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "eur_buying": {"name": "EURO Buying Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "eur_central": {"name": "EURO Central Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "eur_selling": {"name": "EURO Selling Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "gbp_buying": {"name": "POUNDS STERLING Buying Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "gbp_central": {"name": "POUNDS STERLING Central Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "gbp_selling": {"name": "POUNDS STERLING Selling Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "jpy_buying": {"name": "YEN Buying Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "jpy_central": {"name": "YEN Central Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "jpy_selling": {"name": "YEN Selling Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "sar_buying": {"name": "RIYAL Buying Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "sar_central": {"name": "RIYAL Central Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "sar_selling": {"name": "RIYAL Selling Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "sdr_buying": {"name": "SDR Buying Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "sdr_central": {"name": "SDR Central Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "sdr_selling": {"name": "SDR Selling Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "usd_buying": {"name": "US DOLLAR Buying Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "usd_central": {"name": "US DOLLAR Central Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "usd_selling": {"name": "US DOLLAR Selling Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "waua_buying": {"name": "WAUA Buying Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "waua_central": {"name": "WAUA Central Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "waua_selling": {"name": "WAUA Selling Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "zar_buying": {"name": "SOUTH AFRICAN RAND Buying Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "zar_central": {"name": "SOUTH AFRICAN RAND Central Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "zar_selling": {"name": "SOUTH AFRICAN RAND Selling Rate", "unit": "NGN", "source": "CBN", "frequency": "daily", "period_months": 1},
 }
 
 
@@ -728,13 +780,20 @@ def get_currency_circulation(request: Request, start: Optional[str] = Query(defa
 
 @app.get("/api/v1/nfem")
 def get_nfem(request: Request, start: Optional[str] = Query(default="2024-12-01"), end: Optional[str] = Query(default="2026-12-31")):
-    return {"closing": fetch("nfem_closing", start, end), "highest": fetch("nfem_highest", start, end), "lowest": fetch("nfem_lowest", start, end), "weighted_avg": fetch("nfem_weighted_avg", start, end), "unit": "NGN per USD", "source": "CBN NFEM", "coverage": "December 2024 to April 2026",
+    fields = {
+        "closing": "nfem_closing", "highest": "nfem_highest", "lowest": "nfem_lowest",
+        "weighted_avg": "nfem_weighted_avg", "simple_avg": "nfem_simple_avg",
+        "deals_count": "nfem_deals_count", "deals_count_interbank": "nfem_deals_count_interbank",
+        "total_turnover": "nfem_total_turnover", "interbank_turnover": "nfem_interbank_turnover",
+    }
+    fetched = fetch_parallel(list(fields.values()), start, end)
+    return {**{k: fetched[v] for k, v in fields.items()}, "unit": "NGN per USD", "source": "CBN NFEM",
             "_links": hypermedia(request, "/api/v1/nfem", indicator="nfem_closing", related=["exchange_rate", "multicurrency", "coverage"])}
 
 
 @app.get("/api/v1/multicurrency")
 def get_multicurrency(request: Request, currency: Optional[str] = Query(default=None), start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
-    currencies = ["usd", "gbp", "eur", "cny", "chf", "zar", "aed", "sar", "sdr", "cfa", "waua"]
+    currencies = ["usd", "gbp", "eur", "cny", "chf", "zar", "aed", "sar", "sdr", "cfa", "waua", "dkk", "jpy"]
     if currency and currency.lower() in currencies:
         currencies = [currency.lower()]
     rates = ["buying", "central", "selling"]

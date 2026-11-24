@@ -669,6 +669,71 @@ def test_cbn_interbank_connector_drops_values_inconsistent_with_cbn_range(monkey
     assert dates == {"2002-05-02": pytest.approx(22.13), "2017-04-12": pytest.approx(130.0)}
 
 
+def test_cbn_exchange_rates_connector_normalizes_currency_labels(monkeypatch):
+    """Currency labels are messy across 25 years of CBN data: whitespace,
+    a pre/post-2012 naming change (KRONER/KRONA), singular/plural drift
+    (POUND/POUNDS STERLING), and an alternate full name (JAPANESE YEN).
+    NAIRA/POESO are noise, not real currencies, and must be excluded."""
+    from collectors import cbn_exchange_rates as fx
+
+    payload = [
+        {"ratedate": "2026-11-23", "currency": "US DOLLAR", "buyingrate": "1393.0109", "centralrate": "1393.5109", "sellingrate": "1394.0109"},
+        {"ratedate": "2012-08-28", "currency": "POUND STERLING", "buyingrate": "1.0", "centralrate": "2.0", "sellingrate": "3.0"},
+        {"ratedate": "2008-03-07", "currency": "DANISH KRONER", "buyingrate": "1.0", "centralrate": "2.0", "sellingrate": "3.0"},
+        {"ratedate": "2012-08-16", "currency": "JAPANESE YEN", "buyingrate": "1.0", "centralrate": "2.0", "sellingrate": "3.0"},
+        {"ratedate": "2012-08-07", "currency": "CFA ", "buyingrate": "1.0", "centralrate": "2.0", "sellingrate": "3.0"},
+        {"ratedate": "2008-10-31", "currency": "NAIRA", "buyingrate": "1.0", "centralrate": "1.0", "sellingrate": "1.0"},
+        {"ratedate": "2004-12-10", "currency": "POESO", "buyingrate": "1.0", "centralrate": "1.0", "sellingrate": "1.0"},
+    ]
+    monkeypatch.setattr(fx, "_get", lambda url: payload)
+    rows = list(fx.CBNExchangeRatesConnector().fetch())
+    ids = {r["indicator_id"] for r in rows}
+    assert "gbp_buying" in ids and "dkk_buying" in ids and "jpy_buying" in ids and "cfa_buying" in ids
+    assert not any(i.startswith("naira") or i.startswith("poeso") for i in ids)
+    usd_rows = {r["indicator_id"]: r["value"] for r in rows if r["indicator_id"].startswith("usd_") or r["indicator_id"] == "exchange_rate"}
+    assert usd_rows == {"usd_buying": pytest.approx(1393.0109), "usd_central": pytest.approx(1393.5109), "usd_selling": pytest.approx(1394.0109), "exchange_rate": pytest.approx(1393.5109)}
+
+
+def test_cbn_exchange_rates_connector_skips_malformed_numeric_field(monkeypatch):
+    from collectors import cbn_exchange_rates as fx
+
+    payload = [{"ratedate": "2026-11-23", "currency": "EURO", "buyingrate": "1500.0", "centralrate": "garbled", "sellingrate": "1502.0"}]
+    monkeypatch.setattr(fx, "_get", lambda url: payload)
+    rows = list(fx.CBNExchangeRatesConnector().fetch())
+    ids = {r["indicator_id"] for r in rows}
+    assert ids == {"eur_buying", "eur_selling"}
+
+
+def test_cbn_nfem_connector_maps_all_fields_and_skips_blanks(monkeypatch):
+    from collectors import cbn_nfem as nfem
+
+    payload = [
+        {
+            "ratedate": "November-23-2026", "closingrate": "1393.0000", "highestrate": "1403.0000",
+            "lowestrate": "1390.2000", "weightedAvgRate": "1394.0125", "simpleAvgRate": "1394.7451",
+            "noOfDeals": "459", "noOfDeals_InterBank": "223",
+            "nfeM_Total_Turnover": "1965128275.8500", "interBank_Total_Turnover": "931232671.1300",
+        },
+        {
+            "ratedate": "December-02-2024", "closingrate": "1660.0000", "highestrate": "1678.0000",
+            "lowestrate": "1650.0000", "weightedAvgRate": "1661.1225", "simpleAvgRate": "1662.7719",
+            "noOfDeals": "0", "noOfDeals_InterBank": "", "nfeM_Total_Turnover": "", "interBank_Total_Turnover": "",
+        },
+    ]
+    monkeypatch.setattr(nfem, "_get", lambda url: payload)
+    rows = list(nfem.CBNNFEMConnector().fetch())
+    full_day = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2026-11-23"}
+    assert full_day == {
+        "nfem_closing": pytest.approx(1393.0), "nfem_highest": pytest.approx(1403.0),
+        "nfem_lowest": pytest.approx(1390.2), "nfem_weighted_avg": pytest.approx(1394.0125),
+        "nfem_simple_avg": pytest.approx(1394.7451), "nfem_deals_count": pytest.approx(459.0),
+        "nfem_deals_count_interbank": pytest.approx(223.0), "nfem_total_turnover": pytest.approx(1965128275.85),
+        "nfem_interbank_turnover": pytest.approx(931232671.13),
+    }
+    partial_day = {r["indicator_id"] for r in rows if r["obs_date"] == "2024-12-02"}
+    assert partial_day == {"nfem_closing", "nfem_highest", "nfem_lowest", "nfem_weighted_avg", "nfem_simple_avg", "nfem_deals_count"}
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner

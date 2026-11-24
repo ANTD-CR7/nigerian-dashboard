@@ -27,12 +27,15 @@ from .cbn_macro_indicators import CBNMoneyAndCreditConnector, CBNMoneyMarketConn
 from .cbn_securities import CBNNTBConnector, CBNFGNBondConnector
 from .cbn_nofr import CBNNOFRConnector
 from .cbn_interbank import CBNInterbankRatesConnector
+from .cbn_exchange_rates import CBNExchangeRatesConnector
+from .cbn_nfem import CBNNFEMConnector
 from .sources_scaffold import CBNConnector, NBSConnector
 
 DEFAULT_CONNECTORS = [
     WorldBankConnector(), CBNOilConnector(), CBNDailyOilConnector(),
     CBNDiscountWindowConnector(), CBNMoneyAndCreditConnector(), CBNMoneyMarketConnector(),
     CBNNTBConnector(), CBNFGNBondConnector(), CBNNOFRConnector(), CBNInterbankRatesConnector(),
+    CBNExchangeRatesConnector(), CBNNFEMConnector(),
     CBNConnector(), NBSConnector(),
 ]
 
