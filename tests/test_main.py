@@ -648,6 +648,27 @@ def test_cbn_interbank_connector_skips_missing_data_markers_and_handles_percent(
     assert rows[0] == {"indicator_id": "cbn_obb_rate", "obs_date": "2026-11-19", "value": pytest.approx(18.50), "source": "CBN"}
 
 
+def test_cbn_interbank_connector_drops_values_inconsistent_with_cbn_range(monkeypatch):
+    """Regression: 8 rows (out of 18,084) have a weightedaverage that parses
+    fine as a number but is a transcription error -- e.g. "222.19" on
+    May-03-2002, a stray leading "2" (real value ~22.19). CBN's own `range`
+    field for that row corroborates this: dropped only when weightedaverage
+    lands more than 3x outside it, never for a legitimate value that's
+    merely absent a range (no false drops on ordinary rows)."""
+    from collectors import cbn_interbank as ib
+
+    payload = [
+        {"ratedate": "May-03-2002", "ratetype": "Call Rate", "weightedaverage": "222.19", "range": "18.7500-31.0000"},
+        {"ratedate": "May-02-2002", "ratetype": "Call Rate", "weightedaverage": "22.13", "range": "19.0000-30.0000"},
+        {"ratedate": "April-12-2017", "ratetype": "Call Rate", "weightedaverage": "130.0000", "range": "130.0000 - 130.0000"},
+    ]
+    monkeypatch.setattr(ib, "_get", lambda url: payload)
+    rows = list(ib.CBNInterbankRatesConnector().fetch())
+    assert len(rows) == 2
+    dates = {r["obs_date"]: r["value"] for r in rows}
+    assert dates == {"2002-05-02": pytest.approx(22.13), "2017-04-12": pytest.approx(130.0)}
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner

@@ -27,6 +27,18 @@
 # row that still doesn't parse -- the same resilience already used
 # elsewhere in this codebase (drop invalid rows, never crash the whole run
 # over a handful of bad ones).
+#
+# A further 8 rows parse fine as numbers but are transcription errors --
+# e.g. "222.19" on May-03-2002, a stray leading "2" with every neighbouring
+# day and CBN's own reported `range` field agreeing the real value is near
+# 22.19. CBN's `range` field (min-max for that day, separate from
+# weightedaverage) is corroborating evidence, not a guess: when
+# weightedaverage lands more than 3x outside the row's own range, it's
+# dropped rather than "corrected" by guesswork -- same drop-don't-guess
+# philosophy as the rest of this file. Verified this doesn't also flag
+# genuine triple-digit crisis-period spikes (CBN interbank rates really did
+# hit 100-300% in 2016-2018): those rows' weightedaverage sits inside (or
+# very close to) their own reported range, so they pass the check untouched.
 
 from __future__ import annotations
 
@@ -77,6 +89,37 @@ def _parse_rate(raw) -> float | None:
         return None
 
 
+def _range_bounds(raw) -> tuple[float, float] | None:
+    """CBN's own reported (low, high) for the row, used only as corroborating
+    evidence to catch a corrupted weightedaverage -- None if it doesn't
+    parse as a clean two-sided range."""
+    if not raw:
+        return None
+    parts = str(raw).replace("%", "").strip().split("-")
+    if len(parts) != 2:
+        return None
+    try:
+        lo, hi = float(parts[0]), float(parts[1])
+    except ValueError:
+        return None
+    return (min(lo, hi), max(lo, hi))
+
+
+def _consistent_with_range(value: float, range_raw) -> bool:
+    """True unless CBN's own range field for the same row corroborates that
+    weightedaverage is a transcription error (more than 3x outside it).
+    Rates genuinely swung into triple digits during 2016-2018 liquidity
+    crises -- those rows' value sits inside/near their own range, so this
+    only catches the rarer case where weightedaverage itself is garbled."""
+    bounds = _range_bounds(range_raw)
+    if bounds is None:
+        return True
+    lo, hi = bounds
+    if lo <= 0:
+        return True
+    return lo / 3 <= value <= hi * 3
+
+
 class CBNInterbankRatesConnector(Connector):
     name = "cbn_interbank"
     source_label = "CBN"
@@ -88,6 +131,8 @@ class CBNInterbankRatesConnector(Connector):
                 continue
             value = _parse_rate(row.get("weightedaverage"))
             if value is None:
+                continue
+            if not _consistent_with_range(value, row.get("range")):
                 continue
             obs_date = datetime.datetime.strptime(row["ratedate"], "%B-%d-%Y").date().isoformat()
             yield {"indicator_id": indicator_id, "obs_date": obs_date, "value": value, "source": "CBN"}
