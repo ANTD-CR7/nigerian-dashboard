@@ -26,11 +26,15 @@ CREATE TABLE IF NOT EXISTS data_sources (
 -- Step 3: Create the observations table
 -- This is the main table - every single data point goes here
 -- One row = one value for one indicator at one point in time
+-- DECIMAL(20, 4): wide enough for a raw-dollar macro figure (e.g. a
+-- country's GDP in current US$, ~10^11-10^12) without overflowing --
+-- DECIMAL(15, 4) only fit values under 10^11 and broke on Nigeria's own
+-- GDP in current US$ (~4.5x10^11).
 CREATE TABLE IF NOT EXISTS observations (
     id           SERIAL PRIMARY KEY,
     indicator_id VARCHAR(50) REFERENCES indicators(id),
     obs_date     DATE NOT NULL,
-    value        DECIMAL(15, 4) NOT NULL,
+    value        DECIMAL(20, 4) NOT NULL,
     source       VARCHAR(20) NOT NULL,
     created_at   TIMESTAMP DEFAULT NOW()
 );
@@ -79,7 +83,7 @@ CREATE TABLE IF NOT EXISTS observation_vintages (
     id            BIGSERIAL PRIMARY KEY,
     indicator_id  VARCHAR(50) NOT NULL REFERENCES indicators(id),
     obs_date      DATE NOT NULL,
-    value         DECIMAL(15, 4) NOT NULL,
+    value         DECIMAL(20, 4) NOT NULL,
     source        VARCHAR(20) NOT NULL,
     recorded_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     is_backfill   BOOLEAN NOT NULL DEFAULT FALSE,

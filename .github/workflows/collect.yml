@@ -1,13 +1,16 @@
 name: Collect source data
 
-# Automated data collection. Runs weekly (and on demand). By default it only
-# produces a reviewable JSON snapshot artifact -- it does NOT write to the
-# database. To let it upsert into Supabase, set the repo secrets and flip
-# NPE_COLLECT_WRITE to "true".
+# Automated data collection. Runs daily (and on demand) -- several CBN
+# connectors publish daily (interbank rates, exchange rates, NFEM), so a
+# weekly cadence left them up to 6 days stale before this was changed from
+# weekly to daily. CBN doesn't publish on weekends, so those days are
+# harmless no-ops. By default this only produces a reviewable JSON snapshot
+# artifact -- it does NOT write to the database. To let it upsert into
+# Supabase, set the repo secrets and flip NPE_COLLECT_WRITE to "true".
 
 on:
   schedule:
-    - cron: "17 5 * * 1"   # every Monday 05:17 UTC
+    - cron: "17 5 * * *"   # every day at 05:17 UTC
   workflow_dispatch: {}
 
 jobs:
