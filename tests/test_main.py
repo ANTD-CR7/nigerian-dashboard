@@ -595,6 +595,59 @@ def test_cbn_nofr_connector_parses_date_and_value(monkeypatch):
     assert rows[0] == {"indicator_id": "cbn_nofr", "obs_date": "2026-11-23", "value": pytest.approx(20.0), "source": "CBN"}
 
 
+def test_cbn_interbank_connector_merges_obb_and_excludes_unmapped(monkeypatch):
+    from collectors import cbn_interbank as ib
+
+    payload = [
+        {"ratedate": "November-23-2026", "ratetype": "OBB Rate", "weightedaverage": "20.0000"},
+        {"ratedate": "November-22-2026", "ratetype": "OBB", "weightedaverage": "19.5000"},  # stray variant, merges
+        {"ratedate": "November-23-2026", "ratetype": "Call Rate", "weightedaverage": "20.0000"},
+        {"ratedate": "November-23-2026", "ratetype": "4-7 Days", "weightedaverage": "18.0000"},  # unmapped, excluded
+        {"ratedate": "November-23-2026", "ratetype": "7-Day", "weightedaverage": ""},  # blank, excluded
+    ]
+    monkeypatch.setattr(ib, "_get", lambda url: payload)
+    rows = list(ib.CBNInterbankRatesConnector().fetch())
+    assert len(rows) == 3
+    ids = {r["indicator_id"] for r in rows}
+    assert ids == {"cbn_obb_rate", "cbn_interbank_call_rate_daily"}
+    obb_rows = [r for r in rows if r["indicator_id"] == "cbn_obb_rate"]
+    assert len(obb_rows) == 2
+    assert {r["obs_date"] for r in obb_rows} == {"2026-11-23", "2026-11-22"}
+
+
+def test_cbn_interbank_connector_normalizes_comma_decimal_typo(monkeypatch):
+    """Regression: 3 real rows (out of 18,084) use a comma as the decimal
+    separator (e.g. "16,27"), a data-entry typo, not a thousands separator."""
+    from collectors import cbn_interbank as ib
+
+    payload = [{"ratedate": "October-26-2022", "ratetype": "OBB Rate", "weightedaverage": "16,27"}]
+    monkeypatch.setattr(ib, "_get", lambda url: payload)
+    rows = list(ib.CBNInterbankRatesConnector().fetch())
+    assert len(rows) == 1
+    assert rows[0]["value"] == pytest.approx(16.27)
+
+
+def test_cbn_interbank_connector_skips_missing_data_markers_and_handles_percent(monkeypatch):
+    """Regression: weightedaverage is messy across 18,084 live rows -- "NIL"/"-"/
+    "N"/"NL" are missing-data markers (4,660 rows), some rows have a trailing "%",
+    and a handful are genuinely corrupted (e.g. a range string) and must be
+    skipped rather than crash the run."""
+    from collectors import cbn_interbank as ib
+
+    payload = [
+        {"ratedate": "November-23-2026", "ratetype": "OBB Rate", "weightedaverage": "NIL"},
+        {"ratedate": "November-22-2026", "ratetype": "OBB Rate", "weightedaverage": "-"},
+        {"ratedate": "November-21-2026", "ratetype": "OBB Rate", "weightedaverage": "N"},
+        {"ratedate": "November-20-2026", "ratetype": "OBB Rate", "weightedaverage": "NL"},
+        {"ratedate": "November-19-2026", "ratetype": "OBB Rate", "weightedaverage": "18.50%"},
+        {"ratedate": "November-18-2026", "ratetype": "OBB Rate", "weightedaverage": "3.00-6.00"},
+    ]
+    monkeypatch.setattr(ib, "_get", lambda url: payload)
+    rows = list(ib.CBNInterbankRatesConnector().fetch())
+    assert len(rows) == 1
+    assert rows[0] == {"indicator_id": "cbn_obb_rate", "obs_date": "2026-11-19", "value": pytest.approx(18.50), "source": "CBN"}
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner

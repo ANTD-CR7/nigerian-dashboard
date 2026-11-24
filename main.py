@@ -199,6 +199,14 @@ INDICATORS = {
     "cbn_fgn_bond_25y": {"name": "FGN Bond Rate (25-Year)", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
     "cbn_fgn_bond_30y": {"name": "FGN Bond Rate (30-Year)", "unit": "Percent (%)", "source": "CBN", "frequency": "policy decision", "period_months": 2},
     "cbn_nofr": {"name": "Nigerian Overnight Financing Rate", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_obb_rate": {"name": "Open Buy Back (OBB) Rate", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_interbank_call_rate_daily": {"name": "Interbank Call Rate (Daily)", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_interbank_rate_7d": {"name": "Interbank Rate (7-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_interbank_rate_30d": {"name": "Interbank Rate (30-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_interbank_rate_60d": {"name": "Interbank Rate (60-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_interbank_rate_90d": {"name": "Interbank Rate (90-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_interbank_rate_180d": {"name": "Interbank Rate (180-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_interbank_rate_360d": {"name": "Interbank Rate (360-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
 }
 
 
