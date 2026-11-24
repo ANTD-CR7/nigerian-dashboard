@@ -794,6 +794,8 @@ API_LINKS = {
     "nfem": "/api/v1/nfem",
     "multicurrency": "/api/v1/multicurrency",
     "gdp_sectors": "/api/v1/gdp-sectors",
+    "gdp_current_prices": "/api/v1/gdp-current-prices",
+    "gdp_real": "/api/v1/gdp-real",
     "cbn_balance_sheet": "/api/v1/cbn-balance-sheet",
     "analytics": "/api/v1/analytics",
     "leadlag": "/api/v1/leadlag?x=exchange_rate&y=inflation",

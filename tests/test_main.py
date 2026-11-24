@@ -1137,6 +1137,30 @@ def test_hypermedia_related_and_extra_links_resolve():
     assert links["export_csv"]["href"].endswith("/api/v1/export/inflation")
 
 
+def test_every_related_hypermedia_name_is_registered_in_api_links():
+    """Regression: hypermedia()'s related-link lookup is a plain dict index
+    (API_LINKS[name]), which raises KeyError -- a 500 -- for any name not
+    registered there. /api/v1/gdp-real referenced "gdp_current_prices" in
+    its related list before that key existed in API_LINKS, and no test
+    caught it since nothing exercised the endpoint end-to-end. Statically
+    scans main.py's source for every related=[...] literal and checks each
+    name against API_LINKS, so a future endpoint can't ship the same bug."""
+    import ast
+
+    with open(main.__file__, encoding="utf-8") as f:
+        tree = ast.parse(f.read())
+
+    missing = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.keyword) and node.arg == "related" and isinstance(node.value, ast.List):
+            for elt in node.value.elts:
+                if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
+                    if elt.value not in main.API_LINKS:
+                        missing.append(elt.value)
+
+    assert not missing, f"related=[...] names not registered in API_LINKS: {missing}"
+
+
 # --- The Reconciler: concept divergence (main.py) ---
 
 class _FakeQuery:
