@@ -945,6 +945,34 @@ def test_cbn_int_payments_connector_skips_zero_total_only_when_implausible(monke
     assert jan2026["cbn_int_payments_total"] == pytest.approx(405326698.37)
 
 
+def test_cbn_monthly_avg_fx_connector_maps_all_fields_and_skips_blanks(monkeypatch):
+    """bdcDollar (bureau-de-change/parallel market rate) is the genuinely
+    new field here -- nowhere else on the platform tracks the parallel
+    market. daswdasDollar is blank for real historical-regime reasons
+    (74/208 live rows), skipped per-field without dropping the rest."""
+    from collectors import cbn_monthly_avg_fx as mavg
+
+    payload = [
+        {"tyear": 2021, "tmonth": 4, "daswdasDollar": "", "ifemDollar": "381.00", "bdcDollar": "481.60",
+         "pounds": "527.48", "euro": "456.43", "cfaFr": "0.69"},
+        {"tyear": 2004, "tmonth": 1, "daswdasDollar": "136.08", "ifemDollar": "137.76", "bdcDollar": "147.65",
+         "pounds": "247.93", "euro": "171.67", "cfaFr": "0.16"},
+    ]
+    monkeypatch.setattr(mavg, "_get", lambda url: payload)
+    rows = list(mavg.CBNMonthlyAvgFXConnector().fetch())
+
+    april2021 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2021-04-01"}
+    assert "cbn_usd_wdas_rate" not in april2021  # blank, skipped
+    assert april2021 == {
+        "cbn_usd_ifem_rate": pytest.approx(381.00), "cbn_usd_bdc_rate": pytest.approx(481.60),
+        "cbn_gbp_monthly_avg": pytest.approx(527.48), "cbn_eur_monthly_avg": pytest.approx(456.43),
+        "cbn_cfa_monthly_avg": pytest.approx(0.69),
+    }
+    jan2004 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2004-01-01"}
+    assert jan2004["cbn_usd_wdas_rate"] == pytest.approx(136.08)
+    assert jan2004["cbn_usd_bdc_rate"] == pytest.approx(147.65)
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner

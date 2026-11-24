@@ -379,6 +379,15 @@ INDICATORS = {
     "cbn_total_direct_remittances": {"name": "Total Direct Remittances", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "cbn_debt_service_payments": {"name": "Debt Service/Payments", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "cbn_int_payments_total": {"name": "International Payments Total", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    # CBN Monthly Average Exchange Rates of the Naira (frozen source,
+    # Jan 2004 - Apr 2021). cbn_usd_bdc_rate is the parallel/black-market
+    # rate, not captured anywhere else on the platform.
+    "cbn_usd_wdas_rate": {"name": "USD Rate (Official/WDAS, Monthly Avg)", "unit": "NGN", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_usd_ifem_rate": {"name": "USD Rate (Interbank/IFEM, Monthly Avg)", "unit": "NGN", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_usd_bdc_rate": {"name": "USD Rate (Bureau-de-Change/Parallel Market, Monthly Avg)", "unit": "NGN", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_gbp_monthly_avg": {"name": "GBP Rate (Monthly Avg)", "unit": "NGN", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_eur_monthly_avg": {"name": "EUR Rate (Monthly Avg)", "unit": "NGN", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_cfa_monthly_avg": {"name": "CFA Rate (Monthly Avg)", "unit": "NGN", "source": "CBN", "frequency": "monthly", "period_months": 1},
     # Multicurrency cross rates (CBN GetAllExchangeRates). These 33 ids already
     # existed in the live `indicators` table and had observation data from the
     # original one-time ETL, but had no INDICATORS entry here -- meaning
