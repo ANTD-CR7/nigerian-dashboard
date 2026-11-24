@@ -734,6 +734,42 @@ def test_cbn_nfem_connector_maps_all_fields_and_skips_blanks(monkeypatch):
     assert partial_day == {"nfem_closing", "nfem_highest", "nfem_lowest", "nfem_weighted_avg", "nfem_simple_avg", "nfem_deals_count"}
 
 
+def test_cbn_financial_data_connector_maps_all_fields_and_skips_blanks(monkeypatch):
+    from collectors import cbn_financial_data as fd
+
+    payload = [
+        {
+            "recDate": "24/11/2026", "opeBal": "217257.6900", "rediscBills": "0.0000",
+            "slFacility": "0.0000", "sdFacility": "3659692.9100", "repo": "0.0000",
+            "revRepo": "0.0000", "omoSales": "0.0000", "omoRepay": "1887625.0600",
+            "pmSales": "0.0000", "pmRepay": "0.0000", "crr": "0.0000", "netWdas": "0.0000",
+            "statAlloc": "0.0000", "jvCash": "0.0000", "netClr": "0.0000",
+            "ndicPrem": "0.0000", "oMajor": "0.0000",
+        },
+        {
+            "recDate": "02/11/2009", "opeBal": "69012.7400", "rediscBills": "",
+            "slFacility": "8500.0000", "sdFacility": None,
+        },
+    ]
+    monkeypatch.setattr(fd, "_get", lambda url: payload)
+    rows = list(fd.CBNFinancialDataConnector().fetch())
+
+    full_day = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2026-11-24"}
+    assert full_day == {
+        "cbn_banks_opening_balance": pytest.approx(217257.69), "cbn_rediscounted_bills": pytest.approx(0.0),
+        "cbn_standing_lending_facility_flow": pytest.approx(0.0), "cbn_standing_deposit_facility_flow": pytest.approx(3659692.91),
+        "cbn_repo_flow": pytest.approx(0.0), "cbn_reverse_repo_flow": pytest.approx(0.0),
+        "cbn_omo_sales": pytest.approx(0.0), "cbn_omo_repayment": pytest.approx(1887625.06),
+        "cbn_primary_market_sales": pytest.approx(0.0), "cbn_primary_market_repayment": pytest.approx(0.0),
+        "cbn_crr_flow": pytest.approx(0.0), "cbn_net_wdas": pytest.approx(0.0),
+        "cbn_statutory_allocations": pytest.approx(0.0), "cbn_jv_cash_call": pytest.approx(0.0),
+        "cbn_net_clearing": pytest.approx(0.0), "cbn_ndic_premium": pytest.approx(0.0),
+        "cbn_other_major_flow": pytest.approx(0.0),
+    }
+    partial_day = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2009-11-02"}
+    assert partial_day == {"cbn_banks_opening_balance": pytest.approx(69012.74), "cbn_standing_lending_facility_flow": pytest.approx(8500.0)}
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner

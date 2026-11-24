@@ -220,6 +220,26 @@ INDICATORS = {
     "cbn_interbank_rate_90d": {"name": "Interbank Rate (90-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
     "cbn_interbank_rate_180d": {"name": "Interbank Rate (180-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
     "cbn_interbank_rate_360d": {"name": "Interbank Rate (360-Day)", "unit": "Percent (%)", "source": "CBN", "frequency": "daily", "period_months": 1},
+    # CBN Financial Data (daily banking-system liquidity flows). Net Naira
+    # flow amounts, distinct from the policy rates above (cbn_standing_
+    # lending_rate, cbn_repurchase_rate, cbn_reverse_repo_rate etc.).
+    "cbn_banks_opening_balance": {"name": "Opening Balances of Banks/Discount Houses", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_rediscounted_bills": {"name": "Rediscounted Bills", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_standing_lending_facility_flow": {"name": "Standing Lending Facility (Net Flow)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_standing_deposit_facility_flow": {"name": "Standing Deposit Facility (Net Flow)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_repo_flow": {"name": "Repo (Net Flow)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_reverse_repo_flow": {"name": "Reverse Repo (Net Flow)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_omo_sales": {"name": "OMO Sales/Under-Writing by MMDs", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_omo_repayment": {"name": "OMO Repayment", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_primary_market_sales": {"name": "Primary Market Sales (NTBs, FGN Bonds)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_primary_market_repayment": {"name": "Primary Market Repayment", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_crr_flow": {"name": "CRR (Debit/Credit)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_net_wdas": {"name": "Net Foreign Exchange Auction (WDAS)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_statutory_allocations": {"name": "Statutory Allocations (FAAC, VAT, etc.)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_jv_cash_call": {"name": "Joint Venture Cash Call Payment", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_net_clearing": {"name": "Net Clearing (Lagos/Abuja)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_ndic_premium": {"name": "NDIC Premium (Debit/Credit)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    "cbn_other_major_flow": {"name": "Other Major (Debit/Credit)", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
     # Multicurrency cross rates (CBN GetAllExchangeRates). These 33 ids already
     # existed in the live `indicators` table and had observation data from the
     # original one-time ETL, but had no INDICATORS entry here -- meaning
