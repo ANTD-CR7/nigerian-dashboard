@@ -128,9 +128,26 @@ def test_store_observation_vintage_failure_blocks_observations_write(monkeypatch
 
 def test_analytics_for_handles_empty_series(monkeypatch):
     monkeypatch.setattr(main, "fetch", lambda *args, **kwargs: [])
+    monkeypatch.setattr(main, "fetch_as_of", lambda *args, **kwargs: [])
     result = main.analytics_for("inflation", "2020-01-01", "2024-12-31", periods=3)
     assert result["data_points"] == 0
     assert result["forecast"] == []
+    assert result["context"] == {"insufficient_history": True, "observations_available": 0, "minimum_required": 30}
+
+
+def test_analytics_for_computes_context_even_when_window_has_no_data(monkeypatch):
+    """Regression: an indicator whose entire real history falls outside the
+    requested start/end window (several historical CBN series added this
+    session end before 2020, the default window's start) must still get a
+    real Rater context from its full vintage history, not a hardcoded zero."""
+    monkeypatch.setattr(main, "fetch", lambda *args, **kwargs: [])  # nothing in the 2020-2026 window
+    full_history = [{"obs_date": f"20{10 + i // 12:02d}-{(i % 12) + 1:02d}-01", "value": float(i)} for i in range(40)]
+    monkeypatch.setattr(main, "fetch_as_of", lambda *args, **kwargs: full_history)
+    result = main.analytics_for("inflation", "2020-01-01", "2024-12-31", periods=3)
+    assert result["data_points"] == 0
+    ctx = result["context"]
+    assert "insufficient_history" not in ctx
+    assert ctx["percentile_rank"]["n"] == 40
 
 
 def test_analytics_for_computes_rising_trend_and_forecast(monkeypatch):
