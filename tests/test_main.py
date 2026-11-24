@@ -1073,6 +1073,49 @@ def test_cbn_assets_liabilities_connector_maps_fields_and_handles_gaps(monkeypat
     assert "cbn_gold" in jan2005  # other fields for that date still present
 
 
+def test_cbn_five_year_statement_connector_combines_both_endpoints(monkeypatch):
+    """Combines GetAllFiveYearStatement (1972-2012) and
+    GetAllFiveYearStatementPre1972 (1960-1971) into one series. Refreshes
+    5 existing ids (confirmed same source via exact value match) plus 29
+    new ones. "appro" is never yielded even when present -- it's not
+    displayed anywhere on CBN's own page and is blank in all live rows."""
+    from collectors import cbn_five_year_statement as fys
+
+    payload_main = [
+        {"date": "31 December, 2012", "year": "2012", "extReserve": "6994308.0000",
+         "holdingsSDR": "399753.0000", "totalAss": "13200475.0000", "subLia": "12996798.0000",
+         "totalLia": "13200475.0000", "surplus": "100386.0000", "totalIncome": "305606.0000",
+         "appro": ""},
+    ]
+    payload_pre1972 = [
+        {"date": "31 December, 1960", "year": "1960", "extReserve": "77561.0000",
+         "holdingsSDR": "", "totalAss": "82444.0000", "subLia": "80993.0000",
+         "totalLia": "82444.0000", "surplus": "1188.0000", "totalIncome": "1188.0000",
+         "appro": "999.0000"},  # even if present, must never be yielded
+    ]
+
+    def fake_get(url):
+        if url == fys.URL_MAIN:
+            return payload_main
+        if url == fys.URL_PRE1972:
+            return payload_pre1972
+        raise AssertionError(f"unexpected url {url}")
+
+    monkeypatch.setattr(fys, "_get", fake_get)
+    rows = list(fys.CBNFiveYearStatementConnector().fetch())
+
+    y2012 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2012-12-31"}
+    assert y2012 == {
+        "cbn_annual_ext_reserve": pytest.approx(6994308.0), "cbn_annual_sdr_holdings": pytest.approx(399753.0),
+        "cbn_annual_total_assets": pytest.approx(13200475.0), "cbn_annual_liabilities_subtotal": pytest.approx(12996798.0),
+        "cbn_annual_total_liabilities_equity": pytest.approx(13200475.0), "cbn_annual_surplus": pytest.approx(100386.0),
+        "cbn_annual_total_income": pytest.approx(305606.0),
+    }
+    y1960 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "1960-12-31"}
+    assert "cbn_annual_sdr_holdings" not in y1960  # blank, skipped
+    assert all(v != pytest.approx(999.0) for v in y1960.values())  # "appro"=999 never surfaces under any id
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner

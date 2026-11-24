@@ -139,6 +139,44 @@ INDICATORS = {
     "cbn_total_assets": {"name": "CBN Total Assets", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "cbn_total_liabilities": {"name": "CBN Total Liabilities", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "cbn_annual_total_assets": {"name": "CBN Total Assets (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    # CBN Five Year Financial Statements (frozen source, 1960-2012).
+    # cbn_annual_ext_reserve/cbn_annual_cin_c/cbn_annual_surplus/
+    # cbn_annual_total_income had live data from the original ETL but
+    # no INDICATORS entry at all (same gap pattern found repeatedly
+    # this session). The other 29 are genuinely new.
+    "cbn_annual_ext_reserve": {"name": "CBN External Reserves (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_sdr_holdings": {"name": "Holdings of Special Drawing Rights (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_fed_govt_securities": {"name": "Fed Govt. Securities (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_rediscount_advances": {"name": "Rediscount & Loans/Advances (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_other_assets": {"name": "Other Assets (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_other_securities": {"name": "Other Securities / Investments (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_exchange_diff_promissory_notes": {"name": "Exchange Difference on Promissory Notes (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_fixed_assets": {"name": "Fixed Assets (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_deposits": {"name": "Deposits (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_instruments_issued": {"name": "CBN Instruments Issued (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_cin_c": {"name": "CBN Currency in Circulation (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_imf_sdr_allocation": {"name": "IMF Allocation for SDR (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_trade_debt_promissory_notes": {"name": "Trade Debt Promissory Notes (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_other_foreign_currency_liabilities": {"name": "Other Foreign Currency Liabilities (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_other_financial_liabilities": {"name": "Other Financial Liabilities (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_liabilities_subtotal": {"name": "Total Liabilities (Annual, Subtotal)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_share_capital": {"name": "Share Capital (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_general_reserve_fund": {"name": "General Reserve Fund (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_assets_revaluation_reserve": {"name": "Assets Revaluation Reserve (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_currency_revaluation_reserve": {"name": "Currency Revaluation Reserve (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_reserve_fund_inv_manager": {"name": "Reserve Fund Inv. Manager (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_total_capital_reserves": {"name": "Total Capital & Reserves (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_total_liabilities_equity": {"name": "Total Liabilities & Equity (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_contingent_liabilities": {"name": "Contingent Liabilities (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_total_income": {"name": "CBN Annual Total Income", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_provision_bad_debt": {"name": "Provision for Bad Debt (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_operating_expenses": {"name": "Operating Expenses (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_provisions_net": {"name": "Provisions, Net (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_exceptional_items": {"name": "Exceptional Items (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_surplus": {"name": "CBN Annual Surplus", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_transfer_general_reserve": {"name": "Transfer to General Reserve (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_surplus_to_fgn": {"name": "Surplus Available to F.G.N. (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
+    "cbn_annual_total_appropriation": {"name": "Total Appropriation (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
     # CBN Statement of Assets & Liabilities (frozen source, Jan 2005 -
     # Nov 2023). cbn_gold/cbn_currency_issued had live data from the
     # original ETL but no INDICATORS entry at all (same gap pattern
