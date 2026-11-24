@@ -807,6 +807,35 @@ def test_cbn_omo_connector_aggregates_per_auction_date(monkeypatch):
     assert day2["cbn_omo_total_subscription"] == pytest.approx(20.0)
 
 
+def test_cbn_nominal_gdp_connector_annual_vs_quarterly_and_field_mapping(monkeypatch):
+    """1981-2009 has only Annual rows; 2010-2024 has both Annual and
+    Q1-Q4 rows for the same year, which would collide on obs_date if both
+    were kept. Quarterly is used for 2010+, Annual only as a pre-2010
+    fallback -- the 2010+ Annual row must be skipped entirely."""
+    from collectors import cbn_nominal_gdp as gdp
+
+    payload = [
+        # Pre-2010: only Annual exists, must be kept
+        {"tyear": "2005", "period": "Annual", "agriculture": "100.0", "gdPatCurrentBasicPrices": "500.0"},
+        # 2010+: Annual row must be skipped (quarterly rows cover it)
+        {"tyear": "2024", "period": "Annual", "agriculture": "999.0", "gdPatCurrentBasicPrices": "999.0"},
+        {"tyear": "2024", "period": "Q1", "agriculture": "10137.04", "gdPatCurrentBasicPrices": "58855.14"},
+        {"tyear": "2024", "period": "Q3", "agriculture": "", "gdPatCurrentBasicPrices": "60000.0"},
+    ]
+    monkeypatch.setattr(gdp, "_get", lambda url: payload)
+    rows = list(gdp.CBNNominalGDPConnector().fetch())
+
+    by_date = {}
+    for r in rows:
+        by_date.setdefault(r["obs_date"], {})[r["indicator_id"]] = r["value"]
+
+    assert by_date["2005-01-01"] == {"gdp_cp_agriculture": pytest.approx(100.0), "gdp_cp_basic_prices": pytest.approx(500.0)}
+    assert by_date["2024-01-01"] == {"gdp_cp_agriculture": pytest.approx(10137.04), "gdp_cp_basic_prices": pytest.approx(58855.14)}
+    # Q3: blank agriculture skipped per-field, basic_prices still present
+    assert by_date["2024-07-01"] == {"gdp_cp_basic_prices": pytest.approx(60000.0)}
+    assert "2024-01-01" in by_date and len([d for d in by_date if d.startswith("2024")]) == 2  # Annual(999) never landed
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner

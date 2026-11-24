@@ -248,6 +248,67 @@ INDICATORS = {
     "cbn_omo_amt_offered": {"name": "OMO Amount Offered", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
     "cbn_omo_total_repaid": {"name": "OMO Total Repaid", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
     "cbn_omo_net_value": {"name": "OMO Net Value", "unit": "Naira Millions", "source": "CBN", "frequency": "daily", "period_months": 1},
+    # Nominal GDP at current basic prices (full sector/sub-sector detail,
+    # CBN GetAllNominalGDP). gdp_cp_* avoids collision with the existing
+    # gdp_agriculture/etc ids, which are at constant prices -- a different
+    # basis, and themselves a stale ETL leftover with no active connector.
+    "gdp_cp_agriculture": {"name": "Agriculture (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_crop_production": {"name": "Crop Production (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_livestock": {"name": "Livestock (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_forestry": {"name": "Forestry (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_fishing": {"name": "Fishing (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_industry": {"name": "Industry (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_mining_and_quarrying": {"name": "Mining and Quarrying (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_crude_petroleum_and_natural_gas": {"name": "Crude Petroleum and Natural Gas (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_coal_mining": {"name": "Coal Mining (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_metal_ores": {"name": "Metal Ores (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_quarrying_and_other_minerals": {"name": "Quarrying and Other Minerals (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_manufacturing": {"name": "Manufacturing (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_oil_refining": {"name": "Oil Refining (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_cement": {"name": "Cement (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_food_beverage_and_tobacco": {"name": "Food, Beverage and Tobacco (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_textile_apparel_and_footwear": {"name": "Textile, Apparel and Footwear (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_wood_and_wood_products": {"name": "Wood and Wood Products (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_pulp_paper_and_paper_products": {"name": "Pulp, Paper and Paper Products (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_chemical_and_pharmaceutical_products": {"name": "Chemical and Pharmaceutical Products (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_non_metallic_products": {"name": "Non-Metallic Products (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_plastic_and_rubber_products": {"name": "Plastic and Rubber Products (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_electrical_and_electronics": {"name": "Electrical and Electronics (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_basic_metal_iron_and_steel": {"name": "Basic Metal, Iron and Steel (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_motor_vehicles_and_assembly": {"name": "Motor Vehicles and Assembly (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_other_manufacturing": {"name": "Other Manufacturing (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_electricity_gas_steam_and_air_con": {"name": "Electricity, Gas, Steam and Air Conditioning (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_water_supply_sewage_waste": {"name": "Water Supply, Sewage and Waste (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_construction": {"name": "Construction (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_services": {"name": "Services (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_trade": {"name": "Trade (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_accommodation_and_food_services": {"name": "Accommodation and Food Services (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_transportation_and_storage": {"name": "Transportation and Storage (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_road_transport": {"name": "Road Transport (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_rail_transport_and_pipelines": {"name": "Rail Transport and Pipelines (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_water_transport": {"name": "Water Transport (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_air_transport": {"name": "Air Transport (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_transport_services": {"name": "Transport Services (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_post_and_courier_services": {"name": "Post and Courier Services (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_information_and_communication": {"name": "Information and Communication (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_telecommunications_and_information_services": {"name": "Telecommunications and Information Services (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_publishing": {"name": "Publishing (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_motion_pictures_recording_music": {"name": "Motion Pictures, Sound Recording and Music Production (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_broadcasting": {"name": "Broadcasting (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_arts_entertainment_and_recreation": {"name": "Arts, Entertainment and Recreation (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_finance_and_insurance": {"name": "Finance and Insurance (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_financial_institutions": {"name": "Financial Institutions (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_insurance": {"name": "Insurance (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_real_estate": {"name": "Real Estate (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_professional_sci_and_tech_services": {"name": "Professional, Scientific and Technical Services (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_admin_and_support_services": {"name": "Administrative and Support Services; Business Services (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_public_administration": {"name": "Public Administration (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_education": {"name": "Education (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_human_health_and_social_services": {"name": "Human Health and Social Services (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_other_services": {"name": "Other Services (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_basic_prices": {"name": "GDP at Current Basic Prices", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_net_taxes_on_products": {"name": "Net Taxes on Products (Current Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    "gdp_cp_market_prices": {"name": "GDP at Current Market Prices", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
     # Multicurrency cross rates (CBN GetAllExchangeRates). These 33 ids already
     # existed in the live `indicators` table and had observation data from the
     # original one-time ETL, but had no INDICATORS entry here -- meaning
@@ -840,6 +901,18 @@ def get_gdp_sectors(request: Request, start: Optional[str] = Query(default="2020
     sectors = ["gdp_agriculture", "gdp_industry", "gdp_services", "gdp_manufacturing", "gdp_telecommunicationsAndInformationServices", "gdp_construction", "gdp_trade"]
     return {"data": {s: fetch(s, start, end) for s in sectors}, "unit": "Naira Billions constant prices", "source": "NBS GDP Report",
             "_links": hypermedia(request, "/api/v1/gdp-sectors", related=["gdp", "coverage"])}
+
+
+@app.get("/api/v1/gdp-current-prices")
+def get_gdp_current_prices(request: Request, start: Optional[str] = Query(default="2010-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+    """Full GDP-by-sector breakdown at current (nominal) basic prices --
+    distinct from /gdp-sectors, which is at constant prices."""
+    ids = ["gdp_cp_agriculture", "gdp_cp_crop_production", "gdp_cp_livestock", "gdp_cp_forestry", "gdp_cp_fishing", "gdp_cp_industry", "gdp_cp_mining_and_quarrying", "gdp_cp_crude_petroleum_and_natural_gas", "gdp_cp_coal_mining", "gdp_cp_metal_ores", "gdp_cp_quarrying_and_other_minerals", "gdp_cp_manufacturing", "gdp_cp_oil_refining", "gdp_cp_cement", "gdp_cp_food_beverage_and_tobacco", "gdp_cp_textile_apparel_and_footwear", "gdp_cp_wood_and_wood_products", "gdp_cp_pulp_paper_and_paper_products", "gdp_cp_chemical_and_pharmaceutical_products", "gdp_cp_non_metallic_products", "gdp_cp_plastic_and_rubber_products", "gdp_cp_electrical_and_electronics", "gdp_cp_basic_metal_iron_and_steel", "gdp_cp_motor_vehicles_and_assembly", "gdp_cp_other_manufacturing", "gdp_cp_electricity_gas_steam_and_air_con", "gdp_cp_water_supply_sewage_waste", "gdp_cp_construction", "gdp_cp_services", "gdp_cp_trade", "gdp_cp_accommodation_and_food_services", "gdp_cp_transportation_and_storage", "gdp_cp_road_transport", "gdp_cp_rail_transport_and_pipelines", "gdp_cp_water_transport", "gdp_cp_air_transport", "gdp_cp_transport_services", "gdp_cp_post_and_courier_services", "gdp_cp_information_and_communication", "gdp_cp_telecommunications_and_information_services", "gdp_cp_publishing", "gdp_cp_motion_pictures_recording_music", "gdp_cp_broadcasting", "gdp_cp_arts_entertainment_and_recreation", "gdp_cp_finance_and_insurance", "gdp_cp_financial_institutions", "gdp_cp_insurance", "gdp_cp_real_estate", "gdp_cp_professional_sci_and_tech_services", "gdp_cp_admin_and_support_services", "gdp_cp_public_administration", "gdp_cp_education", "gdp_cp_human_health_and_social_services", "gdp_cp_other_services", "gdp_cp_basic_prices", "gdp_cp_net_taxes_on_products", "gdp_cp_market_prices"]
+    fetched = fetch_parallel(ids, start, end)
+    return {"headline": {"basic_prices": fetched["gdp_cp_basic_prices"], "net_taxes_on_products": fetched["gdp_cp_net_taxes_on_products"], "market_prices": fetched["gdp_cp_market_prices"]},
+            "data": {i: fetched[i] for i in ids if i not in ("gdp_cp_basic_prices", "gdp_cp_net_taxes_on_products", "gdp_cp_market_prices")},
+            "unit": "Naira Billions, current prices", "source": "NBS (via CBN GetAllNominalGDP)",
+            "_links": hypermedia(request, "/api/v1/gdp-current-prices", indicator="gdp_cp_basic_prices", related=["gdp", "gdp_sectors", "coverage"])}
 
 
 @app.get("/api/v1/cbn-balance-sheet")
