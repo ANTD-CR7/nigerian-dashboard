@@ -373,6 +373,12 @@ INDICATORS = {
     "gdp_real_basic_prices": {"name": "GDP at Constant Basic Prices", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
     "gdp_real_net_taxes_on_products": {"name": "Net Taxes on Products (Constant Prices)", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
     "gdp_real_market_prices": {"name": "GDP at Constant Market Prices", "unit": "Naira Billions", "source": "NBS", "frequency": "quarterly", "period_months": 3},
+    # CBN International Payments (monthly). "total" meant something
+    # broader pre-~2007 than loc+remit+debt; captured as-is, not corrected.
+    "cbn_letters_of_credit": {"name": "Letters of Credit", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_total_direct_remittances": {"name": "Total Direct Remittances", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_debt_service_payments": {"name": "Debt Service/Payments", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_int_payments_total": {"name": "International Payments Total", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
     # Multicurrency cross rates (CBN GetAllExchangeRates). These 33 ids already
     # existed in the live `indicators` table and had observation data from the
     # original one-time ETL, but had no INDICATORS entry here -- meaning

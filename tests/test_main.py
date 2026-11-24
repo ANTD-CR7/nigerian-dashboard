@@ -916,6 +916,35 @@ def test_cbn_inflation_connector_maps_all_fields_and_formats_dates(monkeypatch):
     assert october == {"inflation": pytest.approx(14.06)}
 
 
+def test_cbn_int_payments_connector_skips_zero_total_only_when_implausible(monkeypatch):
+    """total==0 while loc/remit/debt are substantial that same month is a
+    reporting gap (confirmed: 12 live rows, all 2021), not a genuine zero
+    -- but loc/remit/debt themselves are legitimately zero elsewhere in
+    the series and must NOT be dropped just for being zero."""
+    from collectors import cbn_int_payments as ip
+
+    payload = [
+        # Reporting gap: total==0 but components are substantial -> total dropped
+        {"payDate": "31/10/2021", "loc": "28166758.97", "remit": "51744067.49", "debt": "85230779.22", "total": "0.00"},
+        # Genuine zero debt service that month -> debt kept as a real 0
+        {"payDate": "30/11/2020", "loc": "77476113.30", "remit": "92200548.05", "debt": "0.00", "total": "169676661.35"},
+        # Normal row, recent convention: total == sum
+        {"payDate": "31/01/2026", "loc": "41049830.07", "remit": "107469745.76", "debt": "256807122.54", "total": "405326698.37"},
+    ]
+    monkeypatch.setattr(ip, "_get", lambda url: payload)
+    rows = list(ip.CBNIntPaymentsConnector().fetch())
+
+    oct2021 = {r["indicator_id"] for r in rows if r["obs_date"] == "2021-10-31"}
+    assert "cbn_int_payments_total" not in oct2021
+    assert oct2021 == {"cbn_letters_of_credit", "cbn_total_direct_remittances", "cbn_debt_service_payments"}
+
+    nov2020 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2020-11-30"}
+    assert nov2020["cbn_debt_service_payments"] == pytest.approx(0.0)  # kept, not dropped
+
+    jan2026 = {r["indicator_id"]: r["value"] for r in rows if r["obs_date"] == "2026-01-31"}
+    assert jan2026["cbn_int_payments_total"] == pytest.approx(405326698.37)
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner
