@@ -27,7 +27,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
-          pip install supabase >/dev/null 2>&1 || true
+          pip install supabase openpyxl >/dev/null 2>&1 || true
           python -m collectors.runner ${{ vars.NPE_COLLECT_WRITE == 'true' && '--write' || '' }}
       - name: Upload snapshot artifact
         uses: actions/upload-artifact@v4

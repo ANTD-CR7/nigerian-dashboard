@@ -1116,6 +1116,184 @@ def test_cbn_five_year_statement_connector_combines_both_endpoints(monkeypatch):
     assert all(v != pytest.approx(999.0) for v in y1960.values())  # "appro"=999 never surfaces under any id
 
 
+def _make_cpi_workbook(title_row=1, old_era_header=False):
+    """Builds a minimal Table-5 workbook matching one of NBS's two
+    confirmed layouts. old_era_header=True reproduces the pre-rebase file
+    (title 6 rows lower, "Food"/"All Items" header split across two rows)
+    -- both have identical column positions (B=state, C/D=12mo-ago,
+    E/F=prior month, G/H=current month Food/All Items)."""
+    import datetime
+    import io
+    import openpyxl
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Table-5"
+
+    r = title_row
+    ws.cell(r, 1, "Table 5 Combined Urban And Rural State Consumer Price Index")
+    r += 1
+    ws.cell(r, 2, "(Base Period: 2024 = 100)")
+    r += 1
+    date_row = r
+    ws.cell(date_row, 3, datetime.datetime(2024, 11, 1))
+    ws.cell(date_row, 5, datetime.datetime(2025, 9, 1))
+    ws.cell(date_row, 7, datetime.datetime(2025, 10, 3))  # stray non-day-1 glitch
+    r += 1
+    header_row = r
+    ws.cell(header_row, 2, "State")
+    if old_era_header:
+        ws.cell(header_row, 3, "Food"); ws.cell(header_row, 4, "All")
+        r += 1
+        ws.cell(r, 4, "Items")
+    else:
+        ws.cell(header_row, 3, "Food"); ws.cell(header_row, 4, "All Items")
+    r += 1
+    data_row = r
+    ws.cell(data_row, 2, "Lagos")
+    ws.cell(data_row, 3, 140.0); ws.cell(data_row, 4, 150.0)
+    ws.cell(data_row, 5, 142.0); ws.cell(data_row, 6, 152.0)
+    ws.cell(data_row, 7, 145.0); ws.cell(data_row, 8, 155.0)
+    r += 1
+    ws.cell(r, 2, "Nassarawa")  # alternate spelling, must map to nasarawa
+    ws.cell(r, 3, 100.0); ws.cell(r, 4, 110.0)
+    ws.cell(r, 5, 101.0); ws.cell(r, 6, 111.0)
+    ws.cell(r, 7, 102.0); ws.cell(r, 8, 112.0)
+    r += 1
+    ws.cell(r, 2, "Atlantis")  # unmapped state, must be skipped not crash
+    ws.cell(r, 3, 1.0); ws.cell(r, 4, 1.0); ws.cell(r, 5, 1.0)
+    ws.cell(r, 6, 1.0); ws.cell(r, 7, 1.0); ws.cell(r, 8, 1.0)
+    r += 1
+    ws.cell(r, 2, "      Note:   Indices may not be used for inter-state comparison")
+    r += 1
+    ws.cell(r, 2, None)  # trailing blank row
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+def test_nbs_get_retries_past_a_transient_failure(monkeypatch):
+    """Diagnosed in production: DNS resolution itself hung for 4-9x the
+    stated urlopen timeout, so urlopen's own timeout argument doesn't
+    reliably bound wall-clock time -- _get() must retry rather than trust
+    a single attempt, and must eventually give up and raise if every
+    attempt fails."""
+    from collectors import nbs_cpi_state as nbs
+
+    calls = []
+
+    def flaky(url, timeout):
+        calls.append(url)
+        if len(calls) < 3:
+            raise TimeoutError("simulated hang")
+        return b"ok"
+
+    monkeypatch.setattr(nbs, "_get_once", flaky)
+    monkeypatch.setattr(nbs.time, "sleep", lambda s: None)
+
+    assert nbs._get("http://x", timeout=1.0, attempts=3, backoff=0.01) == b"ok"
+    assert len(calls) == 3
+
+    calls.clear()
+    with pytest.raises(TimeoutError):
+        nbs._get("http://x", timeout=1.0, attempts=2, backoff=0.01)
+    assert len(calls) == 2
+
+
+def test_nbs_cpi_state_connector_new_era_layout(monkeypatch):
+    """New-era files (post Nov-2024 rebasing): title at row 1, single
+    header row, data starts row 5. Only the 3 index-level date columns are
+    collected (12mo-ago, prior-month, current-month) -- not %-changes."""
+    from collectors import nbs_cpi_state as nbs
+
+    xlsx_bytes = _make_cpi_workbook(title_row=1, old_era_header=False)
+    resources = {"resources": [
+        {"title": "October 2025 CPI Tables", "filename": "cpi_1New_Oct25.xlsx", "url": "http://x/cpi.xlsx"},
+    ]}
+
+    def fake_get(url, timeout=90.0):
+        if url == nbs.RESOURCES_URL:
+            import json
+            return json.dumps(resources).encode()
+        assert url == "http://x/cpi.xlsx"
+        return xlsx_bytes
+
+    monkeypatch.setattr(nbs, "_get", fake_get)
+    rows = list(nbs.NBSCPIStateConnector().fetch())
+
+    by_id = {(r["indicator_id"], r["obs_date"]): r["value"] for r in rows}
+    assert by_id[("nbs_cpi_lagos_food", "2024-11-01")] == pytest.approx(140.0)
+    assert by_id[("nbs_cpi_lagos_all", "2024-11-01")] == pytest.approx(150.0)
+    assert by_id[("nbs_cpi_lagos_food", "2025-09-01")] == pytest.approx(142.0)
+    # the stray 2025-10-03 date cell normalizes to day 01, not day 03
+    assert by_id[("nbs_cpi_lagos_food", "2025-10-01")] == pytest.approx(145.0)
+    assert ("nbs_cpi_lagos_food", "2025-10-03") not in by_id
+    # "Nassarawa" (alternate spelling) maps to the same id as "Nasarawa"
+    assert by_id[("nbs_cpi_nasarawa_food", "2024-11-01")] == pytest.approx(100.0)
+    # an unmapped state name is skipped, not raised
+    assert not any("atlantis" in iid for iid, _ in by_id)
+
+
+def test_nbs_cpi_state_connector_old_era_layout(monkeypatch):
+    """Old-era files (pre-rebase): title shifted 6 rows down, header split
+    across two rows ("Food"/"All" then "Items" on the next row). Same
+    column positions as the new era -- only the row offset differs."""
+    from collectors import nbs_cpi_state as nbs
+
+    xlsx_bytes = _make_cpi_workbook(title_row=7, old_era_header=True)
+    resources = {"resources": [
+        {"title": "November 2024 CPI Tables", "filename": "cpi_1NewNov_2024.xlsx", "url": "http://x/cpi.xlsx"},
+    ]}
+
+    def fake_get(url, timeout=90.0):
+        if url == nbs.RESOURCES_URL:
+            import json
+            return json.dumps(resources).encode()
+        return xlsx_bytes
+
+    monkeypatch.setattr(nbs, "_get", fake_get)
+    rows = list(nbs.NBSCPIStateConnector().fetch())
+
+    by_id = {(r["indicator_id"], r["obs_date"]): r["value"] for r in rows}
+    assert by_id[("nbs_cpi_lagos_food", "2025-10-01")] == pytest.approx(145.0)
+    assert by_id[("nbs_cpi_lagos_all", "2025-10-01")] == pytest.approx(155.0)
+
+
+def test_nbs_cpi_state_connector_extracts_xlsx_from_zip_and_skips_pdf(monkeypatch):
+    """Jul 2025+ resources bundle a .pdf (narrative report) and a .xlsx
+    (the data) inside one .zip. The .pdf-only resource has no data at all
+    and must be skipped rather than attempted."""
+    from collectors import nbs_cpi_state as nbs
+    import io
+    import json
+    import zipfile
+
+    xlsx_bytes = _make_cpi_workbook(title_row=1, old_era_header=False)
+    zip_buf = io.BytesIO()
+    with zipfile.ZipFile(zip_buf, "w") as z:
+        z.writestr("CPI_OCTOBER_2025.pdf", b"%PDF-fake")
+        z.writestr("cpi_1New_October2025.xlsx", xlsx_bytes)
+
+    resources = {"resources": [
+        {"title": "October 2025 CPI Report", "filename": "CPI_OCTOBER_2025.zip", "url": "http://x/zip"},
+        {"title": "October 2025 CPI Report", "filename": "CPI_OCTOBER_2025.pdf", "url": "http://x/pdf"},
+    ]}
+
+    def fake_get(url, timeout=90.0):
+        if url == nbs.RESOURCES_URL:
+            return json.dumps(resources).encode()
+        if url == "http://x/zip":
+            return zip_buf.getvalue()
+        raise AssertionError(f"the .pdf-only resource must never be fetched, got {url}")
+
+    monkeypatch.setattr(nbs, "_get", fake_get)
+    rows = list(nbs.NBSCPIStateConnector().fetch())
+
+    by_id = {(r["indicator_id"], r["obs_date"]): r["value"] for r in rows}
+    assert by_id[("nbs_cpi_lagos_food", "2024-11-01")] == pytest.approx(140.0)
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner
