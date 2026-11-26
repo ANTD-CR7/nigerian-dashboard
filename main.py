@@ -593,6 +593,14 @@ INDICATORS = {
     "dmo_total_domestic_debt_ngn": {"name": "Total Domestic Debt (NGN)", "unit": "Naira Millions", "source": "DMO", "frequency": "quarterly", "period_months": 3},
     "dmo_total_public_debt_usd": {"name": "Total Public Debt (USD)", "unit": "USD Millions", "source": "DMO", "frequency": "quarterly", "period_months": 3},
     "dmo_total_public_debt_ngn": {"name": "Total Public Debt (NGN)", "unit": "Naira Millions", "source": "DMO", "frequency": "quarterly", "period_months": 3},
+    # FMDQ NIBOR (Nigerian Interbank Offered Rate), daily, back to Feb
+    # 2022. Confirmed distinct from CBN's own interbank-rate ids (FMDQ is
+    # NIBOR's actual benchmark administrator; different values, different
+    # tenors).
+    "fmdq_nibor_on": {"name": "NIBOR (Overnight)", "unit": "Percent (%)", "source": "FMDQ", "frequency": "daily", "period_months": 1},
+    "fmdq_nibor_1m": {"name": "NIBOR (1 Month)", "unit": "Percent (%)", "source": "FMDQ", "frequency": "daily", "period_months": 1},
+    "fmdq_nibor_3m": {"name": "NIBOR (3 Month)", "unit": "Percent (%)", "source": "FMDQ", "frequency": "daily", "period_months": 1},
+    "fmdq_nibor_6m": {"name": "NIBOR (6 Month)", "unit": "Percent (%)", "source": "FMDQ", "frequency": "daily", "period_months": 1},
 }
 
 

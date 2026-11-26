@@ -1451,6 +1451,128 @@ def test_dmo_connector_skips_unparseable_resource_without_aborting(monkeypatch):
     }
 
 
+def _make_nibor_workbook(date_header="DATE", rows=None):
+    """Builds a minimal NIBOR workbook matching FMDQ's confirmed layout
+    (Tenor / Rate (%) / Change (%) / date column, header name drifted
+    from "Updated Time" in 2022 to "DATE" now)."""
+    import datetime
+    import io
+    import openpyxl
+
+    rows = rows if rows is not None else [
+        ("O/N", 20.2083, -0.0417, datetime.datetime(2026, 11, 24, 14, 0)),
+        ("1M", 20.175, -0.1107, datetime.datetime(2026, 11, 24, 14, 0)),
+        ("3M", 20.2917, -0.0583, datetime.datetime(2026, 11, 24, 14, 0)),
+        ("6M", 20.4083, 0.0297, datetime.datetime(2026, 11, 24, 14, 0)),
+    ]
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(["Tenor", "Rate (%)", "Change (%)", date_header, "."])
+    for row in rows:
+        ws.append(list(row) + ["<i></i>"])
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+def test_fmdq_nibor_parses_both_header_eras_and_drops_time_of_day():
+    """Header text drifted from "Updated Time" (2022) to "DATE" (2026) --
+    both must parse, and a time-of-day component on the date cell must be
+    dropped (the date, not the timestamp, is what's stored)."""
+    from collectors.fmdq_nibor import _parse_nibor_file
+
+    for header in ("DATE", "Updated Time"):
+        raw = _make_nibor_workbook(date_header=header)
+        rows = list(_parse_nibor_file(raw))
+        assert rows == [
+            ("O/N", "2026-11-24", 20.2083),
+            ("1M", "2026-11-24", 20.175),
+            ("3M", "2026-11-24", 20.2917),
+            ("6M", "2026-11-24", 20.4083),
+        ]
+
+
+def test_fmdq_nibor_connector_skips_unrecognized_tenor(monkeypatch):
+    """A tenor label outside the known panel (O/N, 1M, 3M, 6M) must be
+    skipped, never guessed at."""
+    import datetime
+
+    from collectors import fmdq_nibor as fmdq
+
+    raw = _make_nibor_workbook(rows=[
+        ("O/N", 20.0, 0.0, datetime.datetime(2026, 11, 24)),
+        ("9M", 21.0, 0.0, datetime.datetime(2026, 11, 24)),  # not in TENOR_MAP
+    ])
+
+    monkeypatch.setattr(fmdq, "_iter_resources", lambda lookback_days: iter(["http://x/file.xlsx"]))
+    monkeypatch.setattr(fmdq, "_get", lambda url, **kwargs: raw)
+
+    rows = list(fmdq.FMDQNIBORConnector().fetch())
+    assert len(rows) == 1
+    assert rows[0]["indicator_id"] == "fmdq_nibor_on"
+
+
+def test_fmdq_iter_resources_stops_at_lookback_window(monkeypatch):
+    """Pagination must stop once a page's attachments are entirely older
+    than the lookback window, and must NOT stop when lookback_days=None
+    (the full-history backfill)."""
+    import datetime
+    import json
+
+    from collectors import fmdq_nibor as fmdq
+
+    today = datetime.date.today()
+    pages = {
+        1: [
+            {"source_url": "http://x/p1a.xlsx", "date": today.isoformat()},
+            {"source_url": "http://x/p1b.xlsx", "date": (today - datetime.timedelta(days=1)).isoformat()},
+        ],
+        2: [
+            {"source_url": "http://x/p2a.xlsx", "date": (today - datetime.timedelta(days=30)).isoformat()},
+        ],
+        3: [],
+    }
+
+    def fake_get(url, **kwargs):
+        page = int(url.rsplit("page=", 1)[1])
+        return json.dumps(pages.get(page, [])).encode()
+
+    monkeypatch.setattr(fmdq, "_get", fake_get)
+
+    bounded = list(fmdq._iter_resources(lookback_days=14))
+    assert bounded == ["http://x/p1a.xlsx", "http://x/p1b.xlsx"]  # stops before page 2
+
+    unbounded = list(fmdq._iter_resources(lookback_days=None))
+    assert unbounded == ["http://x/p1a.xlsx", "http://x/p1b.xlsx", "http://x/p2a.xlsx"]  # goes through page 2, stops on empty page 3
+
+
+def test_fmdq_nibor_connector_skips_unparseable_file_without_aborting(monkeypatch):
+    """One bad/unparseable daily file must not abort the whole run."""
+    from collectors import fmdq_nibor as fmdq
+
+    def fake_iter_resources(lookback_days):
+        yield "http://x/bad.xlsx"
+        yield "http://x/good.xlsx"
+
+    def fake_get(url, **kwargs):
+        if "bad" in url:
+            raise ConnectionError("simulated failure")
+        return b"good-bytes"
+
+    def fake_parse(raw):
+        if raw == b"good-bytes":
+            return iter([("O/N", "2026-11-24", 20.0)])
+        raise AssertionError("should never be called for the bad file")
+
+    monkeypatch.setattr(fmdq, "_iter_resources", fake_iter_resources)
+    monkeypatch.setattr(fmdq, "_get", fake_get)
+    monkeypatch.setattr(fmdq, "_parse_nibor_file", fake_parse)
+
+    rows = list(fmdq.FMDQNIBORConnector().fetch())
+    assert len(rows) == 1
+    assert rows[0]["indicator_id"] == "fmdq_nibor_on"
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner
