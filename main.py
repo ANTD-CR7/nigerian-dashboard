@@ -584,6 +584,15 @@ INDICATORS = {
     "nbs_cpi_yobe_all": {"name": "Yobe CPI (All Items)", "unit": "Index", "source": "NBS", "frequency": "monthly", "period_months": 1},
     "nbs_cpi_zamfara_food": {"name": "Zamfara CPI (Food)", "unit": "Index", "source": "NBS", "frequency": "monthly", "period_months": 1},
     "nbs_cpi_zamfara_all": {"name": "Zamfara CPI (All Items)", "unit": "Index", "source": "NBS", "frequency": "monthly", "period_months": 1},
+    # DMO Total Public Debt (quarterly, back to 2012). External+Domestic
+    # should sum to the Total; a document that doesn't reconcile is
+    # dropped entirely by the connector rather than guessed.
+    "dmo_total_external_debt_usd": {"name": "Total External Debt (USD)", "unit": "USD Millions", "source": "DMO", "frequency": "quarterly", "period_months": 3},
+    "dmo_total_external_debt_ngn": {"name": "Total External Debt (NGN)", "unit": "Naira Millions", "source": "DMO", "frequency": "quarterly", "period_months": 3},
+    "dmo_total_domestic_debt_usd": {"name": "Total Domestic Debt (USD)", "unit": "USD Millions", "source": "DMO", "frequency": "quarterly", "period_months": 3},
+    "dmo_total_domestic_debt_ngn": {"name": "Total Domestic Debt (NGN)", "unit": "Naira Millions", "source": "DMO", "frequency": "quarterly", "period_months": 3},
+    "dmo_total_public_debt_usd": {"name": "Total Public Debt (USD)", "unit": "USD Millions", "source": "DMO", "frequency": "quarterly", "period_months": 3},
+    "dmo_total_public_debt_ngn": {"name": "Total Public Debt (NGN)", "unit": "Naira Millions", "source": "DMO", "frequency": "quarterly", "period_months": 3},
 }
 
 

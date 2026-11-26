@@ -1294,6 +1294,163 @@ def test_nbs_cpi_state_connector_extracts_xlsx_from_zip_and_skips_pdf(monkeypatc
     assert by_id[("nbs_cpi_lagos_food", "2024-11-01")] == pytest.approx(140.0)
 
 
+def test_dmo_select_debt_figures_2014_variant():
+    """2014's layout combines External+Domestic-FGN into an orphaned
+    "Sub-Total" (no domestic/external keyword of its own) before a
+    separate States-domestic line and the real Grand-Total -- domestic
+    must be the SUM of both domestic-labeled lines, and the orphaned
+    sub-total must not be mistaken for the grand total."""
+    from collectors.dmo_public_debt import _labeled_rows, _select_debt_figures
+
+    table = [
+        ["A.", "External Debt Stock (FGN + States)", "9,377.11", "1,460,297.92"],
+        [None, "Domestic Debt Stock (FGN Only)", "47,653.61", "7,421,097.30"],
+        [None, "Sub-Total", "57,030.73", "8,881,395.22"],
+        ["B.", "", "", ""],
+        [None, "Domestic Debt of States*", "9,963.72", "1,551,650.13"],
+        ["C.", "", "", ""],
+        [None, "Grand-Total (A+B)", "66,994.45", "10,433,045.35"],
+    ]
+    rows = _labeled_rows(table)
+    usd, ngn = _select_debt_figures(rows)
+    assert usd == pytest.approx((9377.11, 57617.33, 66994.45))
+    assert ngn == pytest.approx((1460297.92, 8972747.43, 10433045.35))
+
+
+def test_dmo_select_debt_figures_2018_variant_no_double_count():
+    """2018's "D. Sub-Total" line is ALREADY the summed domestic total --
+    summing it together with the FGN-only and States-only lines it's
+    itself derived from would double-count."""
+    from collectors.dmo_public_debt import _labeled_rows, _select_debt_figures
+
+    table = [
+        ["A. External Debt (FGN +States + FCT )", "", "22,083.44", "", "", "6,750,907.61", ""],
+        ["B. Domestic Debt (FGN Only)", "39,749.55", None, None, "12,151,437.66", None, None],
+        ["C. Domestic Debt (States + FCT)", "", "", "", "", "", ""],
+        [None, None, "11,374.95", None, None, "3,477,321.00", None],
+        ["D. Sub-Total — Domestic Debt (FGN + States + FCT)", "51,124.50", None, None, "15,628,758.66", None, None],
+        ["E. Total (A+D)", "", "", "", "", "", ""],
+        [None, None, "73,207.94", None, None, "22,379,666.27", None],
+    ]
+    rows = _labeled_rows(table)
+    usd, ngn = _select_debt_figures(rows)
+    assert usd == pytest.approx((22083.44, 51124.50, 73207.94))
+    assert ngn == pytest.approx((6750907.61, 15628758.66, 22379666.27))
+
+
+def test_dmo_select_debt_figures_modern_variant_skips_fgn_states_sublines():
+    """2022/2026's layout gives each total a % column and FGN-only/States
+    sub-lines under it -- the sub-lines (no "external"/"domestic"/"total"
+    keyword of their own) must be skipped, not summed into anything."""
+    from collectors.dmo_public_debt import _labeled_rows, _select_debt_figures
+
+    table = [
+        ["", "Debt Category", "Amount Outstanding\n(US$'M)", "Amount Outstanding\n(N'M)", "% of Total"],
+        ["A.", "Total External Debt", "54,523.57", "75,198,046.27", "45.09%"],
+        ["", "FGN Only", "47,690.77", "65,774,356.36", "39.44%"],
+        ["", "States & FCT", "6,832.80", "9,423,689.91", "5.65%"],
+        ["B.", "Total Domestic Debt", "66,409.14", "91,590,433.92", "54.91%"],
+        ["", "FGN Only", "63,080.16", "86,999,153.24", "52.16%"],
+        ["", "States & FCT", "3,328.98", "4,591,280.68", "2.75%"],
+        ["C.", "Total Public Debt(A+B)", "120,932.71", "166,788,480.19", "100%"],
+    ]
+    rows = _labeled_rows(table)
+    usd, ngn = _select_debt_figures(rows)
+    assert usd == pytest.approx((54523.57, 66409.14, 120932.71))
+    assert ngn == pytest.approx((75198046.27, 91590433.92, 166788480.19))
+
+
+def test_dmo_select_debt_figures_handles_redundant_external_subline():
+    """Some quarters (e.g. Sept 2025) print a redundant "External Debt"
+    sub-line with no FGN/States split -- it repeats the same keyword as
+    "A. Total External Debt" and must not be mistaken for a genuine
+    second external figure."""
+    from collectors.dmo_public_debt import _labeled_rows, _select_debt_figures
+
+    table = [
+        ["", "Debt Category", "Amount Outstanding\n(US$'M)", "Amount Outstanding\n(N'M)", "% of Total"],
+        ["A.", "Total External Debt", "48,462.93", "71,475,552.31", "46.63%"],
+        ["", "External Debt", "48,462.93", "71,475,552.31", "46.63%"],
+        ["B.", "Total Domestic Debt", "55,474.75", "81,816,930.05", "53.37%"],
+        ["", "FGN Only", "52,760.64", "77,814,027.86", "50.76%"],
+        ["", "States & FCT", "2,714.11", "4,002,902.19", "2.61%"],
+        ["C.", "Total Public Debt(A+B)", "103,937.68", "153,292,482.36", "100%"],
+    ]
+    rows = _labeled_rows(table)
+    usd, ngn = _select_debt_figures(rows)
+    assert usd == pytest.approx((48462.93, 55474.75, 103937.68))
+    assert ngn == pytest.approx((71475552.31, 81816930.05, 153292482.36))
+
+
+def test_dmo_select_debt_figures_drops_when_identity_fails():
+    """A document whose external+domestic doesn't reconcile to its stated
+    grand total must be dropped entirely, never guessed."""
+    from collectors.dmo_public_debt import _select_debt_figures
+
+    rows = [
+        ("a. total external debt", 100.0, 1000.0),
+        ("b. total domestic debt", 100.0, 1000.0),
+        ("c. total public debt(a+b)", 999.0, 9999.0),  # doesn't reconcile
+    ]
+    assert _select_debt_figures(rows) is None
+
+
+def test_dmo_parse_date_handles_multiple_formats():
+    from collectors.dmo_public_debt import _parse_date
+
+    assert _parse_date("NIGERIA'S TOTAL PUBLIC DEBT AS AT JUNE 30, 2026") == "2026-06-30"
+    assert _parse_date("Nigeria's Public Debt Stock as at 31st March, 2015") == "2015-03-31"
+    assert _parse_date("no date in here at all") is None
+
+
+def test_dmo_iter_resources_pagination_stops_when_no_new_links(monkeypatch):
+    from collectors import dmo_public_debt as dmo
+
+    pages = {
+        0: b'<a href="/20-q1">x</a><a href="/19-q0">x</a>',
+        20: b'<a href="/19-q0">x</a>',  # no new links -- pagination must stop
+    }
+
+    def fake_get(url, referer, **kwargs):
+        limitstart = int(url.rsplit("=", 1)[1])
+        return pages[limitstart]
+
+    monkeypatch.setattr(dmo, "_get", fake_get)
+    resources = list(dmo._iter_resources())
+    assert resources == [("20", "q1"), ("19", "q0")]
+
+
+def test_dmo_connector_skips_unparseable_resource_without_aborting(monkeypatch):
+    """One bad/unparseable quarterly document must not abort the whole
+    run -- the other, good, documents must still be yielded."""
+    from collectors import dmo_public_debt as dmo
+
+    def fake_iter_resources():
+        yield "1", "bad-doc"
+        yield "2", "good-doc"
+
+    def fake_get(url, referer, **kwargs):
+        if "1-bad-doc" in url:
+            raise ConnectionError("simulated failure")
+        return b"good-doc-bytes"
+
+    def fake_parse(raw):
+        if raw == b"good-doc-bytes":
+            return "2026-06-30", ((1.0, 2.0, 3.0), (10.0, 20.0, 30.0))
+        raise AssertionError("should never be called for the bad doc")
+
+    monkeypatch.setattr(dmo, "_iter_resources", fake_iter_resources)
+    monkeypatch.setattr(dmo, "_get", fake_get)
+    monkeypatch.setattr(dmo, "_parse_debt_document", fake_parse)
+
+    rows = list(dmo.DMOPublicDebtConnector().fetch())
+    assert len(rows) == 6
+    assert {r["indicator_id"] for r in rows} == {
+        "dmo_total_external_debt_usd", "dmo_total_domestic_debt_usd", "dmo_total_public_debt_usd",
+        "dmo_total_external_debt_ngn", "dmo_total_domestic_debt_ngn", "dmo_total_public_debt_ngn",
+    }
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner
