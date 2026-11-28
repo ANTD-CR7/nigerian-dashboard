@@ -1,7 +1,17 @@
-fastapi==0.115.0
+# fastapi==0.115.0 pinned starlette<0.39.0 and python-multipart==0.0.12,
+# which carried 14 known CVEs between them (verified via pip-audit against
+# the PyPI/OSV advisory database) -- including one that blocks Starlette's
+# entire async event loop on a large file upload (PYSEC-2026-1941), not
+# just a memory-pressure DoS. fastapi==0.133.0 is the earliest release that
+# drops the starlette<1.0.0 ceiling entirely, letting pip resolve a fully
+# patched starlette/python-multipart. Tested: full suite (124 tests) green
+# against a from-scratch install of this exact pin set, plus a real
+# uvicorn boot + live request smoke test, before applying here.
+fastapi==0.133.0
+starlette==1.10.0
+python-multipart==0.0.34
 uvicorn[standard]==0.30.6
 supabase==2.7.4
 httpx==0.27.2
-python-multipart==0.0.12
 openpyxl==3.1.5
 pdfplumber==0.11.11

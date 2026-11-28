@@ -116,26 +116,25 @@ $BODY$ LANGUAGE sql STABLE;
 -- there's deliberately no UPDATE/DELETE policy below either, so even if the
 -- GRANT were ever loosened by mistake, no policy would permit the row.
 --
--- Caveat (not solved here, by design -- out of scope for this plan): the
--- table owner and any BYPASSRLS role bypass RLS entirely. This app only
--- ever writes with the Supabase ANON key (see main.py's SUPABASE_KEY), so
--- this guarantee holds for the app's own write path. It would NOT hold if a
--- service-role key were ever introduced -- if that ever happens, this
--- comment is the reminder to revisit this lockdown.
+-- The service-role key is now this app's only write path (see the lockdown
+-- section below) -- it bypasses RLS/GRANTs entirely by design, same as the
+-- table owner, which this section's original caveat already anticipated.
 -- TRUNCATE is revoked too: Postgres grants it by default alongside the other
 -- table privileges, it is just as destructive as DELETE (wipes every row at
 -- once), and it bypasses RLS entirely by design -- no policy could stop it
 -- even if one existed. Found via live verification after the first deploy
 -- of this table; REVOKE UPDATE, DELETE alone left this gap open.
 ALTER TABLE observation_vintages ENABLE ROW LEVEL SECURITY;
-REVOKE UPDATE, DELETE, TRUNCATE ON observation_vintages FROM anon, authenticated;
-GRANT SELECT, INSERT ON observation_vintages TO anon, authenticated;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON observation_vintages FROM anon, authenticated;
+GRANT SELECT ON observation_vintages TO anon, authenticated;
 
 DROP POLICY IF EXISTS vintages_select ON observation_vintages;
-DROP POLICY IF EXISTS vintages_insert ON observation_vintages;
+DROP POLICY IF EXISTS vintages_insert ON observation_vintages;  -- live on this table before this change (verified via pg_policies); must be dropped explicitly, not just left uncreated
 CREATE POLICY vintages_select ON observation_vintages FOR SELECT USING (true);
-CREATE POLICY vintages_insert ON observation_vintages FOR INSERT WITH CHECK (true);
--- No UPDATE or DELETE policy exists at all -- those commands are denied outright.
+-- No INSERT/UPDATE/DELETE policy exists at all for anon/authenticated --
+-- those commands are denied outright. Writes come only from the
+-- service-role key (collectors/runner.py, project/database/seed/load_seed.py,
+-- main.py's store_observation()), which bypasses this layer entirely.
 
 -- One-time backfill: every existing observations row becomes a vintage,
 -- marked is_backfill = true since recorded_at here is only an approximation
@@ -151,3 +150,90 @@ WHERE NOT EXISTS (
       AND v.obs_date = o.obs_date
       AND v.is_backfill = true
 );
+
+-- ============================================================
+-- LOCKDOWN -- indicators, data_sources, observations (audit findings #1,
+-- #2, #10, #107). These three tables never got the RLS/GRANT treatment
+-- observation_vintages got above -- verified live via Supabase's Security
+-- Advisor and pg_class/information_schema.role_table_grants: RLS was
+-- disabled and anon held SELECT, INSERT, UPDATE, DELETE and TRUNCATE on
+-- all three, unrestricted. anon becomes read-only here, same as vintages
+-- above; all writes (collectors/runner.py, project/database/seed/
+-- load_seed.py, main.py's store_observation()) move to a service-role key,
+-- which bypasses this layer entirely by design.
+-- ============================================================
+
+ALTER TABLE indicators ENABLE ROW LEVEL SECURITY;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON indicators FROM anon, authenticated;
+GRANT SELECT ON indicators TO anon, authenticated;
+DROP POLICY IF EXISTS indicators_select ON indicators;
+CREATE POLICY indicators_select ON indicators FOR SELECT USING (true);
+
+ALTER TABLE data_sources ENABLE ROW LEVEL SECURITY;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON data_sources FROM anon, authenticated;
+GRANT SELECT ON data_sources TO anon, authenticated;
+DROP POLICY IF EXISTS data_sources_select ON data_sources;
+CREATE POLICY data_sources_select ON data_sources FOR SELECT USING (true);
+
+ALTER TABLE observations ENABLE ROW LEVEL SECURITY;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON observations FROM anon, authenticated;
+GRANT SELECT ON observations TO anon, authenticated;
+DROP POLICY IF EXISTS observations_select ON observations;
+CREATE POLICY observations_select ON observations FOR SELECT USING (true);
+
+-- Verification (run after applying, expect zero rows / rejected commands):
+--   select relname, relrowsecurity from pg_class
+--     where relname in ('indicators','data_sources','observations','observation_vintages');
+--   -- all four should show relrowsecurity = true
+--   select table_name, grantee, privilege_type from information_schema.role_table_grants
+--     where table_schema = 'public' and grantee in ('anon','authenticated')
+--     and table_name in ('indicators','data_sources','observations','observation_vintages');
+--   -- only SELECT should appear per table/grantee
+
+-- ============================================================
+-- ROOT CAUSE -- this project's own schema-level default privileges, not
+-- just these four tables' individual grants, are why this happened at all.
+-- Verified live via pg_default_acl: Supabase's project template sets
+-- ALTER DEFAULT PRIVILEGES for schema public granting anon/authenticated
+-- the full arwdDxtm set (insert/select/update/delete/truncate/references/
+-- trigger/maintain) on every TABLE created by the postgres or
+-- supabase_admin role -- i.e. every table created in the ordinary way in
+-- this project. This is almost certainly how indicators/data_sources/
+-- observations ended up wide open above, and why observation_vintages
+-- needed its own one-off manual lockdown after creation rather than being
+-- safe by default. Without this, any future table (migrations, new
+-- features) silently reopens the exact same hole on day one.
+--
+-- Narrows the *default* down to what every table above is already given
+-- explicitly (SELECT only) -- this changes what new tables start with, not
+-- any existing grant (those are handled per-table above).
+--
+-- Only FOR ROLE postgres, not supabase_admin: verified via pg_auth_members
+-- that postgres (the role the Supabase SQL Editor connects as, and the one
+-- that actually creates this project's own tables -- including every
+-- CREATE TABLE in this file) is not a member of supabase_admin, so it has
+-- no permission to alter that role's default privileges; the statement
+-- would just fail. supabase_admin is Supabase's own internal platform
+-- role, not the path this project's tables are created through, so that
+-- default isn't this project's risk surface to fix.
+-- ============================================================
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLES FROM anon, authenticated;
+
+-- Verification (expect postgres's anon/authenticated entries to no longer
+-- include INSERT/UPDATE/DELETE/TRUNCATE; supabase_admin's entry is
+-- Supabase's own platform default and is expected to still show them):
+--   select defaclrole::regrole, defaclacl from pg_default_acl
+--     where defaclnamespace = 'public'::regnamespace and defaclobjtype = 'r';
+
+-- ------------------------------------------------------------
+-- Security Advisor WARN (function_search_path_mutable), found during the
+-- same live audit as the RLS lockdown above: observations_as_of had no
+-- search_path pinned. It's SECURITY INVOKER and read-only (a SELECT from
+-- observation_vintages), so this was not an active write/RLS-bypass risk --
+-- but an unpinned search_path is how a same-named object earlier in the
+-- resolution order could hijack an unqualified reference inside a function,
+-- so it's fixed here while touching this file for the same reason.
+-- ------------------------------------------------------------
+ALTER FUNCTION observations_as_of(VARCHAR, TIMESTAMPTZ) SET search_path = public, pg_temp;

@@ -46,8 +46,35 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "P
 # Both are OFF by default: with NPE_API_KEYS unset the API stays fully open, as
 # it is today. Set a comma-separated NPE_API_KEYS to require an X-API-Key header
 # on /api/v1 routes. NPE_RATE_LIMIT_PER_MIN caps requests per IP per minute.
+#
+# _rate_state only ever grew before this fix -- no eviction, no cap. Combined
+# with the old --forwarded-allow-ips="*" (removed; see render.yaml/Procfile),
+# a caller could claim a fresh fake IP on every request, turning this into an
+# unbounded-memory primitive rather than just a bypassed limit. Even with
+# that spoofing vector closed, many genuinely distinct real clients can
+# still grow this dict over the life of a long-running process, so it's
+# bounded unconditionally: a periodic sweep drops stale entries, and a hard
+# cap resets the whole table as a last resort if growth ever outpaces the
+# sweep (a brief false reset of everyone's count, not a memory leak).
 _rate_state: dict = {}
 _rate_lock = threading.Lock()
+_rate_last_sweep = 0.0
+_RATE_SWEEP_INTERVAL = 60.0   # how often to look for stale entries
+_RATE_STALE_AFTER = 120.0    # 2x the rate-limit window
+_RATE_STATE_MAX_ENTRIES = 50_000  # last-resort safety valve between sweeps
+
+
+def _sweep_rate_state(now: float) -> None:
+    global _rate_last_sweep
+    if len(_rate_state) > _RATE_STATE_MAX_ENTRIES:
+        _rate_state.clear()
+        _rate_last_sweep = now
+        return
+    if now - _rate_last_sweep < _RATE_SWEEP_INTERVAL:
+        return
+    for ip in [k for k, (window_start, _) in _rate_state.items() if now - window_start > _RATE_STALE_AFTER]:
+        del _rate_state[ip]
+    _rate_last_sweep = now
 
 
 def _allowed_keys() -> set:
@@ -61,6 +88,18 @@ def _rate_limit_per_min() -> int:
         return 120
 
 
+# CSV upload endpoints (validate/ingest) call `await file.read()` with no
+# size cap. Starlette's multipart form parser buffers the *entire* body
+# into the UploadFile (spooling to disk past its internal threshold)
+# before our handler ever runs, so bounding what we read afterward doesn't
+# stop an attacker from first making the process spool an arbitrarily
+# large body. The only point early enough to reject an oversized upload is
+# before Starlette parses the body at all -- i.e. here, from the
+# declared Content-Length, in middleware.
+_MAX_CSV_UPLOAD_BYTES = 2 * 1024 * 1024  # 2 MiB: generous for an observations CSV
+_CSV_UPLOAD_PATHS = {"/api/v1/validate/csv", "/api/v1/ingest/csv"}
+
+
 @app.middleware("http")
 async def gate(request: Request, call_next):
     path = request.url.path
@@ -70,6 +109,7 @@ async def gate(request: Request, call_next):
             ip = request.client.host if request.client else "?"
             now = time.time()
             with _rate_lock:
+                _sweep_rate_state(now)
                 window_start, count = _rate_state.get(ip, (now, 0))
                 if now - window_start >= 60:
                     window_start, count = now, 0
@@ -82,6 +122,18 @@ async def gate(request: Request, call_next):
         if keys and request.headers.get("x-api-key") not in keys:
             return JSONResponse(status_code=401,
                                 content={"detail": "Missing or invalid API key. Send it in the X-API-Key header."})
+        if path in _CSV_UPLOAD_PATHS:
+            content_length = request.headers.get("content-length")
+            try:
+                too_big = content_length is None or int(content_length) > _MAX_CSV_UPLOAD_BYTES
+            except ValueError:
+                too_big = True
+            if too_big:
+                return JSONResponse(
+                    status_code=413,
+                    content={"detail": f"Upload too large or missing Content-Length. "
+                                        f"Limit is {_MAX_CSV_UPLOAD_BYTES} bytes."},
+                )
         # Validate date params up front so a malformed value returns a clean 422
         # instead of reaching the database and surfacing a 500.
         for param in ("start", "end"):
@@ -99,20 +151,33 @@ async def gate(request: Request, call_next):
         response.headers.setdefault("Cache-Control", "public, max-age=300")
     return response
 
-# Credentials read from the environment when set (Render dashboard / local .env),
-# falling back to the existing anon key so this never breaks a deploy that hasn't
-# been given env vars yet. This is a public anon key gated by Supabase RLS, not a
-# secret -- it is also shipped client-side in every frontend page already.
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://fjsytcmcxapfbrwvawmu.supabase.co")
-SUPABASE_KEY = os.environ.get(
-    "SUPABASE_KEY",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw",
-)
+# Credentials read from the environment (Render dashboard / local .env). No
+# hardcoded fallback: audit finding #1/#107 found this exact anon key
+# hardcoded in 20+ files with RLS disabled on the tables it could write to.
+# RLS is now on (see project/database/setup.sql's LOCKDOWN section) and this
+# key is read-only going forward -- a missing env var should fail loudly,
+# not silently resurrect a since-rotated key.
+SUPABASE_URL = os.environ["SUPABASE_URL"]
+SUPABASE_KEY = os.environ["SUPABASE_KEY"]
 # Demo-safe by default: ingestion endpoints validate and normalize but do not
 # write to the live database unless this is explicitly enabled.
 ALLOW_DATA_WRITES = os.environ.get("ALLOW_DATA_WRITES", "false").lower() == "true"
+# The service-role key: the only credential allowed to write (see
+# store_observation() below). Bypasses RLS/GRANTs entirely by design, so it
+# is never the same key as SUPABASE_KEY above and never has a hardcoded
+# fallback. Writes are silently disabled (demo-safe) if this isn't set, even
+# when ALLOW_DATA_WRITES=true.
+SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase_write: Client | None = (
+    create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY) if SUPABASE_SERVICE_KEY else None
+)
+# What store_observation() actually does, not just what was asked for: a
+# truthful status flag for the endpoints below that report it externally.
+# ALLOW_DATA_WRITES=true with no service key configured is still demo-safe
+# in practice, and callers checking this flag deserve to know that.
+WRITES_ACTUALLY_ENABLED = ALLOW_DATA_WRITES and supabase_write is not None
 
 # Metadata for the indicators exposed as single time series through the
 # analytics/export/ingestion endpoints below.
@@ -136,8 +201,8 @@ INDICATORS = {
     "nfem_total_turnover": {"name": "NFEM Total Turnover", "unit": "USD", "source": "CBN", "frequency": "daily", "period_months": 1},
     "nfem_interbank_turnover": {"name": "NFEM Interbank Turnover", "unit": "USD", "source": "CBN", "frequency": "daily", "period_months": 1},
     "currency_circulation_full": {"name": "Currency in Circulation", "unit": "Naira Millions", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_total_assets": {"name": "CBN Total Assets", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_total_liabilities": {"name": "CBN Total Liabilities", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_total_assets": {"name": "CBN Total Assets", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_total_liabilities": {"name": "CBN Total Liabilities", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "cbn_annual_total_assets": {"name": "CBN Total Assets (Annual)", "unit": "Naira Millions", "source": "CBN", "frequency": "annual", "period_months": 12},
     # CBN Five Year Financial Statements (frozen source, 1960-2012).
     # cbn_annual_ext_reserve/cbn_annual_cin_c/cbn_annual_surplus/
@@ -181,27 +246,39 @@ INDICATORS = {
     # Nov 2023). cbn_gold/cbn_currency_issued had live data from the
     # original ETL but no INDICATORS entry at all (same gap pattern
     # found repeatedly this session).
-    "cbn_gold": {"name": "Gold", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_convertible_currencies": {"name": "Convertible Currencies", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_imf_gold_tranche": {"name": "IMF Gold Tranche", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_sdr_holdings": {"name": "Special Drawing Rights (Holdings)", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_total_external_reserve": {"name": "Total External Reserve", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_fed_govt_securities": {"name": "Federal Government Securities (Holdings)", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_other_securities": {"name": "Other Securities", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_rediscount_advances": {"name": "Rediscount & Advances", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_other_assets": {"name": "Other Assets", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_fixed_assets": {"name": "Fixed Assets", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_capital_subscribed": {"name": "Capital Subscribed", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_general_reserves": {"name": "General Reserves", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_other_reserves": {"name": "Other Reserves", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_total_capitalization": {"name": "Total Capitalization", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_instruments_outstanding": {"name": "CBN Instruments (Outstanding)", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_currency_issued": {"name": "Currency In Circulation", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_govt_deposits": {"name": "Federal & State Govts. Deposits", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_bankers_deposits": {"name": "Bankers Deposits", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_other_deposits": {"name": "Other Deposits", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_total_deposits": {"name": "Total Deposits", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
-    "cbn_other_liabilities": {"name": "Other Liabilities", "unit": "Naira", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    #
+    # Unit for this whole block (and cbn_total_assets/cbn_total_liabilities
+    # above) was "Naira" -- wrong by a factor of 1000, cross-validated 3
+    # ways against the live data: cbn_total_assets ~N81tn (matches CBN's
+    # real ~N87tn total assets); cbn_currency_issued ~N3.348tn in Nov 2023
+    # matches currency_circulation_full's independently-sourced N3,347,716
+    # million for the same month to within 0.01%; cbn_capital_subscribed is
+    # a constant 5,000,000 which is exactly CBN's statutory N5,000,000,000
+    # authorised capital (CBN Act 2007 s.9) read as thousands. The
+    # /api/v1/cbn-balance-sheet endpoint already said "Naira Thousands" for
+    # the same 4 series -- this INDICATORS block disagreed with its own
+    # endpoint (#5/#40/#79/#111/#135).
+    "cbn_gold": {"name": "Gold", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_convertible_currencies": {"name": "Convertible Currencies", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_imf_gold_tranche": {"name": "IMF Gold Tranche", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_sdr_holdings": {"name": "Special Drawing Rights (Holdings)", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_total_external_reserve": {"name": "Total External Reserve", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_fed_govt_securities": {"name": "Federal Government Securities (Holdings)", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_other_securities": {"name": "Other Securities", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_rediscount_advances": {"name": "Rediscount & Advances", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_other_assets": {"name": "Other Assets", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_fixed_assets": {"name": "Fixed Assets", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_capital_subscribed": {"name": "Capital Subscribed", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_general_reserves": {"name": "General Reserves", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_other_reserves": {"name": "Other Reserves", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_total_capitalization": {"name": "Total Capitalization", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_instruments_outstanding": {"name": "CBN Instruments (Outstanding)", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_currency_issued": {"name": "Currency In Circulation", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_govt_deposits": {"name": "Federal & State Govts. Deposits", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_bankers_deposits": {"name": "Bankers Deposits", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_other_deposits": {"name": "Other Deposits", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_total_deposits": {"name": "Total Deposits", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
+    "cbn_other_liabilities": {"name": "Other Liabilities", "unit": "Naira Thousands", "source": "CBN", "frequency": "monthly", "period_months": 1},
     "wb_inflation": {"name": "Inflation, Consumer Prices (World Bank)", "unit": "Percent (%)", "source": "World Bank", "frequency": "annual", "period_months": 12},
     "wb_gdp_growth": {"name": "GDP Growth, Annual (World Bank)", "unit": "Percent (%)", "source": "World Bank", "frequency": "annual", "period_months": 12},
     "wb_gdp_usd": {"name": "GDP (current US$), World Bank", "unit": "USD", "source": "World Bank", "frequency": "annual", "period_months": 12},
@@ -601,6 +678,13 @@ INDICATORS = {
     "fmdq_nibor_1m": {"name": "NIBOR (1 Month)", "unit": "Percent (%)", "source": "FMDQ", "frequency": "daily", "period_months": 1},
     "fmdq_nibor_3m": {"name": "NIBOR (3 Month)", "unit": "Percent (%)", "source": "FMDQ", "frequency": "daily", "period_months": 1},
     "fmdq_nibor_6m": {"name": "NIBOR (6 Month)", "unit": "Percent (%)", "source": "FMDQ", "frequency": "daily", "period_months": 1},
+    # Budget Office of the Federation, quarterly, back to 2009. Only
+    # Revenue and Fiscal Deficit -- the two headline figures robust
+    # against this report's row-label drift across years (confirmed by
+    # direct inspection of 2018/2021/2026 samples before scoping down
+    # from a 5-metric pilot to these 2).
+    "budgetoffice_revenue_actual": {"name": "FGN Revenue (Actual, Quarterly)", "unit": "Naira Billions", "source": "Budget Office", "frequency": "quarterly", "period_months": 3},
+    "budgetoffice_fiscal_deficit_actual": {"name": "FGN Fiscal Deficit (Actual, Quarterly)", "unit": "Naira Billions", "source": "Budget Office", "frequency": "quarterly", "period_months": 3},
 }
 
 
@@ -663,7 +747,15 @@ def _paginate(make_request, page_size: int = _PAGE_SIZE):
     return rows
 
 
-def fetch(indicator_id, start="2020-01-01", end="2026-12-31"):
+def _resolve_end(end):
+    """None means "through today" -- never a hardcoded date that goes
+    stale. (#37: ~20 endpoints used to default end to a literal
+    2026-12-31, silently truncating data added after that date.)"""
+    return end if end is not None else date.today().isoformat()
+
+
+def fetch(indicator_id, start="2020-01-01", end=None):
+    end = _resolve_end(end)
     key = ("series", indicator_id, start, end)
     cached = _cache_get(key)
     if cached is not None:
@@ -769,7 +861,7 @@ def store_observation(payload: ObservationIn, commit: bool = False):
         "source": payload.source.upper(),
     }
 
-    if not commit or not ALLOW_DATA_WRITES:
+    if not commit or not ALLOW_DATA_WRITES or supabase_write is None:
         row["action"] = "validated"
         row["committed"] = False
         row["note"] = "Demo-safe mode: row normalized but not written to the live database."
@@ -778,7 +870,9 @@ def store_observation(payload: ObservationIn, commit: bool = False):
     # The Ledger: record this value as a permanent vintage *before* touching
     # observations. If this insert fails, the exception propagates and
     # observations is never written -- the two tables never drift apart.
-    supabase.table("observation_vintages").insert({
+    # Uses supabase_write (service-role key), not the read-only anon client --
+    # anon has no write grant on either table as of the LOCKDOWN migration.
+    supabase_write.table("observation_vintages").insert({
         "indicator_id": row["indicator_id"],
         "obs_date": row["obs_date"],
         "value": row["value"],
@@ -786,7 +880,7 @@ def store_observation(payload: ObservationIn, commit: bool = False):
     }).execute()
 
     existing = (
-        supabase.table("observations")
+        supabase_write.table("observations")
         .select("id")
         .eq("indicator_id", row["indicator_id"])
         .eq("obs_date", row["obs_date"])
@@ -795,13 +889,13 @@ def store_observation(payload: ObservationIn, commit: bool = False):
     )
 
     if existing.data:
-        supabase.table("observations").update({
+        supabase_write.table("observations").update({
             "value": row["value"],
             "source": row["source"],
         }).eq("indicator_id", row["indicator_id"]).eq("obs_date", row["obs_date"]).execute()
         row["action"] = "updated"
     else:
-        supabase.table("observations").insert(row).execute()
+        supabase_write.table("observations").insert(row).execute()
         row["action"] = "inserted"
 
     row["committed"] = True
@@ -829,7 +923,7 @@ def _rater_context(indicator_id: str) -> dict:
         return {"error": "context temporarily unavailable"}
 
 
-def analytics_for(indicator_id: str, start: str, end: str, periods: int):
+def analytics_for(indicator_id: str, start: str, end: Optional[str], periods: int):
     meta = require_indicator(indicator_id)
     rows = fetch(indicator_id, start, end)
     points = [{"obs_date": row["obs_date"], "value": float(row["value"])} for row in rows]
@@ -947,6 +1041,7 @@ def fetch_parallel(indicator_ids, start, end):
     ~9s; this cuts it to ~2-3s. Concurrency is capped at 5 — Supabase's
     PostgREST gateway terminates the HTTP/2 connection under higher
     simultaneous load (httpx.RemoteProtocolError), verified under load test."""
+    end = _resolve_end(end)
     def _one(ind):
         key = ("series", ind, start, end)
         cached = _cache_get(key)
@@ -988,8 +1083,31 @@ API_LINKS = {
 }
 
 
+def _base_url(request: Request) -> str:
+    """The request's own base URL, with the scheme corrected for display.
+
+    Render terminates TLS at its own edge and forwards to this app over
+    plain HTTP, so request.base_url's scheme would show "http://" unless
+    something restores "https://". That used to be uvicorn's own
+    --proxy-headers/--forwarded-allow-ips="*" (trusting X-Forwarded-Proto
+    at the ASGI layer) -- but that flag ALSO rewrites request.client.host
+    from the same trust, which the rate limiter then used as a per-IP key.
+    Render appends to (doesn't replace) a client-supplied X-Forwarded-For,
+    and MDN's own guidance is that no part of that header is trustworthy
+    for security purposes without a verified, fixed hop count -- which
+    Render doesn't document. So the two concerns are split instead: this
+    reads X-Forwarded-Proto directly, for display only, and nothing in
+    this codebase trusts it (or X-Forwarded-For) for identity or access
+    control.
+    """
+    base = str(request.base_url).rstrip("/")
+    if request.headers.get("x-forwarded-proto", "").lower() == "https" and base.startswith("http://"):
+        base = "https://" + base[len("http://"):]
+    return base
+
+
 def _link(request: Request, path: str) -> dict:
-    return {"href": str(request.base_url).rstrip("/") + path}
+    return {"href": _base_url(request) + path}
 
 
 def hypermedia(request: Request, self_path: str, related=None, indicator: str = None, extra: dict = None) -> dict:
@@ -1025,7 +1143,7 @@ def root(request: Request):
             "/api/v1/coverage", "/api/v1/export/{indicator_id}", "/api/v1/reconcile",
             "/api/v1/reconcile/{concept}",
         ],
-        "data_writes_enabled": ALLOW_DATA_WRITES,
+        "data_writes_enabled": WRITES_ACTUALLY_ENABLED,
         "_links": hypermedia(request, "/", related=list(API_LINKS)),
     }
 
@@ -1087,43 +1205,43 @@ def get_summary(request: Request):
 
 
 @app.get("/api/v1/gdp")
-def get_gdp(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_gdp(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default=None)):
     return {"gdp_growth": fetch("gdp_growth", start, end), "gdp_usd": fetch("gdp_usd", start, end), "unit": "Percent and USD Billions", "source": "NBS and World Bank",
             "_links": hypermedia(request, "/api/v1/gdp", indicator="gdp_growth", related=["summary", "gdp_sectors", "coverage"])}
 
 
 @app.get("/api/v1/inflation")
-def get_inflation(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_inflation(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default=None)):
     return {"headline": fetch("inflation", start, end), "food": fetch("inflation_food", start, end), "core": fetch("inflation_core", start, end), "unit": "Percent year-on-year", "source": "NBS CPI Report",
             "_links": hypermedia(request, "/api/v1/inflation", indicator="inflation", related=["summary", "coverage"])}
 
 
 @app.get("/api/v1/exchange-rate")
-def get_exchange_rate(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_exchange_rate(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default=None)):
     return {"data": fetch("exchange_rate", start, end), "unit": "Naira per USD", "source": "CBN Official Rate",
             "_links": hypermedia(request, "/api/v1/exchange-rate", indicator="exchange_rate", related=["summary", "nfem", "multicurrency", "coverage"])}
 
 
 @app.get("/api/v1/interest-rate")
-def get_interest_rate(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_interest_rate(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default=None)):
     return {"data": fetch("mpr", start, end), "unit": "Percent", "source": "CBN Monetary Policy Committee",
             "_links": hypermedia(request, "/api/v1/interest-rate", indicator="mpr", related=["summary", "coverage"])}
 
 
 @app.get("/api/v1/fx-reserves")
-def get_fx_reserves(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_fx_reserves(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default=None)):
     return {"gross": fetch("fx_reserves", start, end), "liquid": fetch("reserves_liquid", start, end), "blocked": fetch("reserves_blocked", start, end), "block_pct": fetch("reserves_block_pct", start, end), "unit": "USD Billions", "source": "CBN",
             "_links": hypermedia(request, "/api/v1/fx-reserves", indicator="fx_reserves", related=["summary", "cbn_balance_sheet", "coverage"])}
 
 
 @app.get("/api/v1/currency-circulation")
-def get_currency_circulation(request: Request, start: Optional[str] = Query(default="2002-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_currency_circulation(request: Request, start: Optional[str] = Query(default="2002-01-01"), end: Optional[str] = Query(default=None)):
     return {"data": fetch("currency_circulation_full", start, end), "unit": "Naira Millions", "source": "CBN Statistical Bulletin",
             "_links": hypermedia(request, "/api/v1/currency-circulation", indicator="currency_circulation_full", related=["summary", "cbn_balance_sheet", "coverage"])}
 
 
 @app.get("/api/v1/nfem")
-def get_nfem(request: Request, start: Optional[str] = Query(default="2024-12-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_nfem(request: Request, start: Optional[str] = Query(default="2024-12-01"), end: Optional[str] = Query(default=None)):
     fields = {
         "closing": "nfem_closing", "highest": "nfem_highest", "lowest": "nfem_lowest",
         "weighted_avg": "nfem_weighted_avg", "simple_avg": "nfem_simple_avg",
@@ -1136,7 +1254,7 @@ def get_nfem(request: Request, start: Optional[str] = Query(default="2024-12-01"
 
 
 @app.get("/api/v1/multicurrency")
-def get_multicurrency(request: Request, currency: Optional[str] = Query(default=None), start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_multicurrency(request: Request, currency: Optional[str] = Query(default=None), start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default=None)):
     currencies = ["usd", "gbp", "eur", "cny", "chf", "zar", "aed", "sar", "sdr", "cfa", "waua", "dkk", "jpy"]
     if currency and currency.lower() in currencies:
         currencies = [currency.lower()]
@@ -1147,14 +1265,14 @@ def get_multicurrency(request: Request, currency: Optional[str] = Query(default=
 
 
 @app.get("/api/v1/gdp-sectors")
-def get_gdp_sectors(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_gdp_sectors(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default=None)):
     sectors = ["gdp_agriculture", "gdp_industry", "gdp_services", "gdp_manufacturing", "gdp_telecommunicationsAndInformationServices", "gdp_construction", "gdp_trade"]
     return {"data": {s: fetch(s, start, end) for s in sectors}, "unit": "Naira Billions constant prices", "source": "NBS GDP Report",
             "_links": hypermedia(request, "/api/v1/gdp-sectors", related=["gdp", "coverage"])}
 
 
 @app.get("/api/v1/gdp-current-prices")
-def get_gdp_current_prices(request: Request, start: Optional[str] = Query(default="2010-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_gdp_current_prices(request: Request, start: Optional[str] = Query(default="2010-01-01"), end: Optional[str] = Query(default=None)):
     """Full GDP-by-sector breakdown at current (nominal) basic prices --
     distinct from /gdp-sectors, which is at constant prices."""
     ids = ["gdp_cp_agriculture", "gdp_cp_crop_production", "gdp_cp_livestock", "gdp_cp_forestry", "gdp_cp_fishing", "gdp_cp_industry", "gdp_cp_mining_and_quarrying", "gdp_cp_crude_petroleum_and_natural_gas", "gdp_cp_coal_mining", "gdp_cp_metal_ores", "gdp_cp_quarrying_and_other_minerals", "gdp_cp_manufacturing", "gdp_cp_oil_refining", "gdp_cp_cement", "gdp_cp_food_beverage_and_tobacco", "gdp_cp_textile_apparel_and_footwear", "gdp_cp_wood_and_wood_products", "gdp_cp_pulp_paper_and_paper_products", "gdp_cp_chemical_and_pharmaceutical_products", "gdp_cp_non_metallic_products", "gdp_cp_plastic_and_rubber_products", "gdp_cp_electrical_and_electronics", "gdp_cp_basic_metal_iron_and_steel", "gdp_cp_motor_vehicles_and_assembly", "gdp_cp_other_manufacturing", "gdp_cp_electricity_gas_steam_and_air_con", "gdp_cp_water_supply_sewage_waste", "gdp_cp_construction", "gdp_cp_services", "gdp_cp_trade", "gdp_cp_accommodation_and_food_services", "gdp_cp_transportation_and_storage", "gdp_cp_road_transport", "gdp_cp_rail_transport_and_pipelines", "gdp_cp_water_transport", "gdp_cp_air_transport", "gdp_cp_transport_services", "gdp_cp_post_and_courier_services", "gdp_cp_information_and_communication", "gdp_cp_telecommunications_and_information_services", "gdp_cp_publishing", "gdp_cp_motion_pictures_recording_music", "gdp_cp_broadcasting", "gdp_cp_arts_entertainment_and_recreation", "gdp_cp_finance_and_insurance", "gdp_cp_financial_institutions", "gdp_cp_insurance", "gdp_cp_real_estate", "gdp_cp_professional_sci_and_tech_services", "gdp_cp_admin_and_support_services", "gdp_cp_public_administration", "gdp_cp_education", "gdp_cp_human_health_and_social_services", "gdp_cp_other_services", "gdp_cp_basic_prices", "gdp_cp_net_taxes_on_products", "gdp_cp_market_prices"]
@@ -1166,7 +1284,7 @@ def get_gdp_current_prices(request: Request, start: Optional[str] = Query(defaul
 
 
 @app.get("/api/v1/gdp-real")
-def get_gdp_real(request: Request, start: Optional[str] = Query(default="2010-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_gdp_real(request: Request, start: Optional[str] = Query(default="2010-01-01"), end: Optional[str] = Query(default=None)):
     """Full GDP-by-sector breakdown at constant (real) basic prices --
     supersedes the partial, stale /gdp-sectors with the live source those
     7 ids were originally one-time-seeded from."""
@@ -1179,15 +1297,15 @@ def get_gdp_real(request: Request, start: Optional[str] = Query(default="2010-01
 
 
 @app.get("/api/v1/cbn-balance-sheet")
-def get_cbn_balance_sheet(request: Request, start: Optional[str] = Query(default="2005-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_cbn_balance_sheet(request: Request, start: Optional[str] = Query(default="2005-01-01"), end: Optional[str] = Query(default=None)):
     return {"total_assets": fetch("cbn_total_assets", start, end), "total_liabilities": fetch("cbn_total_liabilities", start, end), "gold": fetch("cbn_gold", start, end), "currency_issued": fetch("cbn_currency_issued", start, end), "unit": "Naira Thousands", "source": "CBN Balance Sheet",
             "_links": hypermedia(request, "/api/v1/cbn-balance-sheet", indicator="cbn_total_assets", related=["fx_reserves", "currency_circulation", "coverage"])}
 
 
 @app.get("/api/v1/analytics")
 def get_analytics(request: Request):
-    inf_data = fetch("inflation", "2020-01-01", "2026-12-31")
-    fx_data = fetch("exchange_rate", "2020-01-01", "2026-12-31")
+    inf_data = fetch("inflation", "2020-01-01", None)
+    fx_data = fetch("exchange_rate", "2020-01-01", None)
     inf_map = {d["obs_date"]: d["value"] for d in inf_data}
     fx_map = {d["obs_date"]: d["value"] for d in fx_data}
     common = sorted(set(inf_map) & set(fx_map))
@@ -1220,7 +1338,7 @@ def get_indicator_analytics(
     request: Request,
     indicator_id: str,
     start: Optional[str] = Query(default="2020-01-01"),
-    end: Optional[str] = Query(default="2026-12-31"),
+    end: Optional[str] = Query(default=None),
     forecast_periods: int = Query(default=3, ge=1, le=12),
 ):
     result = analytics_for(indicator_id, start, end, forecast_periods)
@@ -1236,7 +1354,7 @@ def get_forecast(
     request: Request,
     indicator_id: str,
     start: Optional[str] = Query(default="2020-01-01"),
-    end: Optional[str] = Query(default="2026-12-31"),
+    end: Optional[str] = Query(default=None),
     periods: int = Query(default=6, ge=1, le=24),
     confidence: float = Query(default=0.95, ge=0.5, le=0.99),
 ):
@@ -1283,7 +1401,7 @@ def get_decompose(
     request: Request,
     indicator_id: str,
     start: Optional[str] = Query(default="2020-01-01"),
-    end: Optional[str] = Query(default="2026-12-31"),
+    end: Optional[str] = Query(default=None),
 ):
     """Classical additive seasonal decomposition: value = trend + seasonal +
     residual, with a 0-1 seasonal-strength score."""
@@ -1316,7 +1434,7 @@ def get_leadlag(
     x: str = Query(..., description="Leading indicator id"),
     y: str = Query(..., description="Lagging indicator id"),
     start: Optional[str] = Query(default="2020-01-01"),
-    end: Optional[str] = Query(default="2026-12-31"),
+    end: Optional[str] = Query(default=None),
     max_lag: int = Query(default=12, ge=1, le=36),
 ):
     """Lead/lag cross-correlation between two indicators. A positive best lag
@@ -1403,7 +1521,7 @@ def ask_the_data(request: Request, body: AskRequest):
 
     context = {"available_indicator_count": len(INDICATORS), "indicators": {}}
     for iid in ids:
-        a = analytics_for(iid, "2020-01-01", "2026-12-31", 3)
+        a = analytics_for(iid, "2020-01-01", None, 3)
         if a.get("data_points"):
             context["indicators"][iid] = {
                 "name": a.get("indicator"), "unit": a.get("unit"),
@@ -1433,7 +1551,8 @@ def ask_the_data(request: Request, body: AskRequest):
 
 
 @app.get("/api/v1/coverage")
-def get_coverage(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def get_coverage(request: Request, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default=None)):
+    end = _resolve_end(end)  # echoed in the response below -- must be the resolved date, not None
     indicators = []
     total_observations = 0
     sources = set()
@@ -1472,7 +1591,7 @@ def get_coverage(request: Request, start: Optional[str] = Query(default="2020-01
 
 
 @app.get("/api/v1/export/{indicator_id}")
-def export_indicator_csv(request: Request, indicator_id: str, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default="2026-12-31")):
+def export_indicator_csv(request: Request, indicator_id: str, start: Optional[str] = Query(default="2020-01-01"), end: Optional[str] = Query(default=None)):
     require_indicator(indicator_id)
     rows = fetch(indicator_id, start, end)
     output = io.StringIO()
@@ -1483,7 +1602,7 @@ def export_indicator_csv(request: Request, indicator_id: str, start: Optional[st
 
     # A CSV body carries no JSON `_links`; hypermedia for non-JSON representations
     # goes in the RFC 8288 Link header instead, keeping the API Level 3 end to end.
-    base = str(request.base_url).rstrip("/")
+    base = _base_url(request)
     link_header = (
         f'<{base}/api/v1/export/{indicator_id}>; rel="self", '
         f'<{base}/api/v1/analytics/{indicator_id}>; rel="analytics", '
@@ -1502,7 +1621,7 @@ def export_indicator_csv(request: Request, indicator_id: str, start: Optional[st
 @app.post("/api/v1/observations")
 def append_observation(request: Request, payload: ObservationIn, commit: bool = Query(default=False)):
     stored = store_observation(payload, commit=commit)
-    return {"message": "Observation normalized successfully.", "write_enabled": ALLOW_DATA_WRITES, "observation": stored,
+    return {"message": "Observation normalized successfully.", "write_enabled": WRITES_ACTUALLY_ENABLED, "observation": stored,
             "_links": hypermedia(request, "/api/v1/observations", indicator=payload.indicator_id, related=["coverage"])}
 
 
@@ -1606,7 +1725,7 @@ async def ingest_csv(
 
     return {
         "message": "CSV file normalized successfully.",
-        "write_enabled": ALLOW_DATA_WRITES,
+        "write_enabled": WRITES_ACTUALLY_ENABLED,
         "indicator_id": indicator_id,
         "rows_processed": len(stored),
         "rows_committed": sum(1 for row in stored if row.get("committed")),

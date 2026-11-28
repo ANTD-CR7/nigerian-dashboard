@@ -91,7 +91,7 @@ def test_store_observation_writes_vintage_before_observation(monkeypatch):
             order.append(name)
             return _Query(name)
 
-    monkeypatch.setattr(main, "supabase", _SB())
+    monkeypatch.setattr(main, "supabase_write", _SB())
     payload = main.ObservationIn(indicator_id="inflation", obs_date="2025-01-01", value=34.8)
     result = main.store_observation(payload, commit=True)
 
@@ -119,11 +119,33 @@ def test_store_observation_vintage_failure_blocks_observations_write(monkeypatch
                 return _FailingVintageQuery()
             raise AssertionError("observations must not be touched if the vintage insert failed")
 
-    monkeypatch.setattr(main, "supabase", _SB())
+    monkeypatch.setattr(main, "supabase_write", _SB())
     payload = main.ObservationIn(indicator_id="inflation", obs_date="2025-01-01", value=34.8)
     with pytest.raises(RuntimeError):
         main.store_observation(payload, commit=True)
     assert order == ["observation_vintages"]
+
+
+def test_store_observation_stays_demo_safe_without_a_service_key(monkeypatch):
+    """ALLOW_DATA_WRITES=true alone must not be enough to write -- without
+    SUPABASE_SERVICE_KEY set, supabase_write is None (audit finding #1/#107
+    fix: anon is read-only, writes need the service-role key), and this must
+    degrade to the normal demo-safe response, not crash on a None client."""
+    monkeypatch.setattr(main, "ALLOW_DATA_WRITES", True)
+    monkeypatch.setattr(main, "supabase_write", None)
+    payload = main.ObservationIn(indicator_id="inflation", obs_date="2025-01-01", value=34.8)
+    result = main.store_observation(payload, commit=True)
+    assert result["committed"] is False
+    assert result["action"] == "validated"
+
+
+def test_writes_actually_enabled_reflects_the_service_key_too():
+    """The externally-reported write-status flag must not just echo
+    ALLOW_DATA_WRITES -- a deploy with the flag on but no service key
+    configured is still demo-safe in practice (audit finding #1/#107:
+    the write path needs both), and callers checking this flag deserve
+    the truth, not just the config intent."""
+    assert main.WRITES_ACTUALLY_ENABLED == (main.ALLOW_DATA_WRITES and main.supabase_write is not None)
 
 
 def test_analytics_for_handles_empty_series(monkeypatch):
@@ -1573,6 +1595,123 @@ def test_fmdq_nibor_connector_skips_unparseable_file_without_aborting(monkeypatc
     assert rows[0]["indicator_id"] == "fmdq_nibor_on"
 
 
+def test_budget_office_select_revenue_and_deficit_2018_labels():
+    """2018's row labels ("TOTAL RETAINED REVENUE", "Fiscal Deficit") are
+    different text from 2026's, but the "A" / "deficit" selection rules
+    must still find them, and column 6 must still be the actual value."""
+    from collectors.budget_office import _select_revenue_and_deficit
+
+    rows = [
+        ["S/No", "Item", "BUDGET", None, None, "ACTUAL", None, "VARIANCE", None],
+        ["A", "TOTAL RETAINED REVENUE", "5,084.40", "7,165.87", "1,791.47", "974.51", "806.64", "(984.83)", "(54.97)"],
+        ["17", "Total Recurrent Expenditure 2018", "4,832.27", "5,720.31", "1,430.08", "877.14", "1,298.67", "(131.41)", "(9.19)"],
+        ["28", "Fiscal Deficit", "(2,356.78)", "(1,954.47)", "(488.61)", "(71.65)", "( 593.17)", "(104.55)", "2 1.40"],
+    ]
+    revenue, deficit = _select_revenue_and_deficit(rows)
+    assert revenue == pytest.approx(806.64)
+    assert deficit == pytest.approx(-593.17)
+
+
+def test_budget_office_select_revenue_and_deficit_2026_labels():
+    """2026's labels ("AGGREGATE FEDERAL GOVERNMENT REVENUE", "Aggregate
+    Fiscal Deficit") differ from 2018's, and the deficit value uses a
+    leading minus sign instead of parens -- both conventions must parse."""
+    from collectors.budget_office import _select_revenue_and_deficit
+
+    rows = [
+        ["S/No", "ITEMS", "BUDGET", None, None, "ACTUAL", None, None, None],
+        ["A", "AGGREGATE FEDERAL GOVERNMENT REVENUE", "40,889.76", "36,866.68", "9,216.67", "4,954.33", "5,075.43", "-4,141.24", "(44.93)"],
+        ["33", "Aggregate Fiscal Deficit", "-7,426.48", "-31,456.63", "-7,864.16", "-3,769.59", "-4,686.82", "-3,177.34", "40.40"],
+    ]
+    revenue, deficit = _select_revenue_and_deficit(rows)
+    assert revenue == pytest.approx(5075.43)
+    assert deficit == pytest.approx(-4686.82)
+
+
+def test_budget_office_find_table_page_skips_table_of_contents():
+    """The "LIST OF TABLES" table-of-contents page also mentions "Table
+    3.9" and "expenditure and fiscal" in its entry title -- the real
+    table page (the one with an actual extractable table) must win, not
+    whichever page the text search hits first."""
+    from collectors.budget_office import _find_table_page
+
+    class FakePage:
+        def __init__(self, text, tables):
+            self._text = text
+            self._tables = tables
+
+        def extract_text(self):
+            return self._text
+
+        def extract_tables(self):
+            return self._tables
+
+    class FakePDF:
+        pages = [
+            FakePage("LIST OF TABLES\nTable 3.9: FGN Budget Expenditure and Fiscal Account ... 48", []),
+            FakePage("Table 3.9: FGN Budget Expenditure and Fiscal Account as at March 2026", [[["A", "REVENUE"]]]),
+        ]
+
+    page, text = _find_table_page(FakePDF())
+    assert page is FakePDF.pages[1]
+    assert "as at March 2026" in text
+
+
+def test_budget_office_get_raises_on_truncated_download(monkeypatch):
+    """Confirmed on the live server: a download can report HTTP 200
+    success while silently delivering fewer bytes than its own declared
+    Content-Disposition size= -- this must be treated as a failure to
+    retry, not a silent success."""
+    import io
+    import urllib.request
+
+    from collectors import budget_office as bo
+
+    class FakeResponse:
+        headers = {"Content-Disposition": 'attachment; filename="x.pdf"; size=100'}
+
+        def read(self):
+            return b"short"  # far fewer than the declared 100 bytes
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setattr(urllib.request, "urlopen", lambda req, timeout: FakeResponse())
+    with pytest.raises(ValueError, match="truncated"):
+        bo._get_once("http://x/file.pdf", timeout=10.0)
+
+
+def test_budget_office_connector_skips_unparseable_document_without_aborting(monkeypatch):
+    """One bad/unparseable/truncated document must not abort the whole
+    run -- the other, good, documents must still be yielded."""
+    from collectors import budget_office as bo
+
+    def fake_iter_resources():
+        yield "http://x/bad.pdf"
+        yield "http://x/good.pdf"
+
+    def fake_get(url, **kwargs):
+        if "bad" in url:
+            raise ConnectionError("simulated failure")
+        return b"good-bytes"
+
+    def fake_parse(raw):
+        if raw == b"good-bytes":
+            return "2026-03-31", 5075.43, -4686.82
+        raise AssertionError("should never be called for the bad document")
+
+    monkeypatch.setattr(bo, "_iter_resources", fake_iter_resources)
+    monkeypatch.setattr(bo, "_get", fake_get)
+    monkeypatch.setattr(bo, "_parse_bir_document", fake_parse)
+
+    rows = list(bo.BudgetOfficeConnector().fetch())
+    assert len(rows) == 2
+    assert {r["indicator_id"] for r in rows} == {"budgetoffice_revenue_actual", "budgetoffice_fiscal_deficit_actual"}
+
+
 def test_collector_runner_writes_demo_safe_snapshot(tmp_path):
     from collectors.base import Connector
     from collectors import runner
@@ -1596,7 +1735,7 @@ def test_collector_runner_upsert_writes_vintage_before_observation(monkeypatch):
 
     monkeypatch.setenv("NPE_COLLECT_WRITE", "true")
     monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
-    monkeypatch.setenv("SUPABASE_KEY", "test-key")
+    monkeypatch.setenv("SUPABASE_SERVICE_KEY", "test-service-key")
 
     order = []
 
@@ -1634,7 +1773,7 @@ def test_collector_runner_upsert_chunks_large_batches(monkeypatch):
 
     monkeypatch.setenv("NPE_COLLECT_WRITE", "true")
     monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
-    monkeypatch.setenv("SUPABASE_KEY", "test-key")
+    monkeypatch.setenv("SUPABASE_SERVICE_KEY", "test-service-key")
 
     calls = []  # (table_name, batch_size) in call order
 
@@ -1767,6 +1906,35 @@ def test_rate_limit_returns_429(monkeypatch):
     assert codes[0] != 429  # first few allowed
 
 
+def test_sweep_rate_state_prunes_stale_entries(monkeypatch):
+    """_rate_state used to only ever grow -- no eviction, no cap. A caller
+    claiming a fresh IP every request (the old X-Forwarded-For spoofing
+    vector, now closed separately) would have grown this dict without
+    bound. Stale entries (older than 2x the rate window) must be pruned
+    on the periodic sweep, regardless of how they got there."""
+    main._rate_state.clear()
+    monkeypatch.setattr(main, "_rate_last_sweep", 0.0)
+    now = 10_000.0
+    main._rate_state["stale-ip"] = (now - main._RATE_STALE_AFTER - 1, 5)
+    main._rate_state["fresh-ip"] = (now - 1, 2)
+    main._sweep_rate_state(now)
+    assert "stale-ip" not in main._rate_state
+    assert "fresh-ip" in main._rate_state
+
+
+def test_sweep_rate_state_hard_cap_resets_table(monkeypatch):
+    """If growth ever outpaces the periodic sweep (e.g. a burst within one
+    sweep interval), the hard cap is a last-resort safety valve: a full
+    reset is a brief false reset of everyone's count, not a memory leak."""
+    main._rate_state.clear()
+    monkeypatch.setattr(main, "_rate_last_sweep", 0.0)
+    now = 10_000.0
+    for i in range(main._RATE_STATE_MAX_ENTRIES + 1):
+        main._rate_state[f"ip-{i}"] = (now, 1)
+    main._sweep_rate_state(now)
+    assert len(main._rate_state) == 0
+
+
 def test_malformed_date_param_returns_422_not_500(monkeypatch):
     monkeypatch.delenv("NPE_API_KEYS", raising=False)
     monkeypatch.setenv("NPE_RATE_LIMIT_PER_MIN", "1000")
@@ -1787,10 +1955,14 @@ def test_get_reads_carry_cache_headers(monkeypatch):
 # --- HATEOAS / Richardson Maturity Model Level 3 ---
 
 class _FakeRequest:
-    """Minimal stand-in for fastapi.Request exposing only base_url, which is
-    all hypermedia() reads. Avoids spinning up a real server for unit tests."""
-    def __init__(self, base="https://api.example.com/"):
+    """Minimal stand-in for fastapi.Request exposing base_url and headers,
+    which is all hypermedia()/_base_url() read. Avoids spinning up a real
+    server for unit tests. headers is a plain dict: Starlette's Headers
+    and dict both support .get(key, default), so _base_url()'s
+    request.headers.get("x-forwarded-proto", "") works against either."""
+    def __init__(self, base="https://api.example.com/", headers=None):
         self.base_url = base
+        self.headers = headers or {}
 
 
 def test_hypermedia_always_includes_self_and_docs():
@@ -1798,6 +1970,25 @@ def test_hypermedia_always_includes_self_and_docs():
     assert links["self"]["href"] == "https://api.example.com/api/v1/summary"
     assert links["index"]["href"] == "https://api.example.com/"
     assert links["docs"]["href"] == "https://api.example.com/docs"
+
+
+def test_base_url_restores_https_from_the_forwarded_proto_header():
+    """Render terminates TLS at its own edge and forwards over plain HTTP,
+    so request.base_url shows http:// unless something restores https://.
+    This now happens by reading X-Forwarded-Proto directly in _base_url()
+    -- not via uvicorn's --forwarded-allow-ips (removed; see render.yaml),
+    which also would have made request.client.host spoofable via
+    X-Forwarded-For for the rate limiter."""
+    req = _FakeRequest(base="http://api.example.com/", headers={"x-forwarded-proto": "https"})
+    assert main._base_url(req) == "https://api.example.com"
+
+
+def test_base_url_leaves_scheme_alone_without_the_header():
+    """No X-Forwarded-Proto (e.g. local dev, or a client port scanning
+    without going through Render's edge at all) -- base_url is used as-is,
+    never forced to https behind the caller's back."""
+    req = _FakeRequest(base="http://api.example.com/")
+    assert main._base_url(req) == "http://api.example.com"
 
 
 def test_hypermedia_root_omits_redundant_index():
@@ -2041,6 +2232,81 @@ def test_validate_csv_rejects_nan_and_infinity():
     assert "finite" in reasons
 
 
+def _csv_upload_client(monkeypatch):
+    monkeypatch.delenv("NPE_API_KEYS", raising=False)
+    monkeypatch.setenv("NPE_RATE_LIMIT_PER_MIN", "1000")
+    main._rate_state.clear()
+    return TestClient(main.app)
+
+
+def _oversized_csv_text():
+    row = "2024-01-01,1\n"
+    rows_needed = main._MAX_CSV_UPLOAD_BYTES // len(row) + 1000
+    text = "obs_date,value\n" + (row * rows_needed)
+    assert len(text.encode("utf-8")) > main._MAX_CSV_UPLOAD_BYTES
+    return text
+
+
+def test_validate_csv_rejects_upload_over_the_size_cap(monkeypatch):
+    client = _csv_upload_client(monkeypatch)
+    r = client.post(
+        "/api/v1/validate/csv",
+        data={"indicator_id": "inflation"},
+        files={"file": ("t.csv", _oversized_csv_text(), "text/csv")},
+    )
+    assert r.status_code == 413
+
+
+def test_ingest_csv_rejects_upload_over_the_size_cap(monkeypatch):
+    client = _csv_upload_client(monkeypatch)
+    r = client.post(
+        "/api/v1/ingest/csv",
+        data={"indicator_id": "inflation"},
+        files={"file": ("t.csv", _oversized_csv_text(), "text/csv")},
+    )
+    assert r.status_code == 413
+
+
+def test_coverage_echoes_todays_date_as_end_when_unspecified(monkeypatch):
+    """Regression for #37: /api/v1/coverage used to echo back the literal
+    "2026-12-31" default forever; it must report the real resolved date."""
+    monkeypatch.delenv("NPE_API_KEYS", raising=False)
+    monkeypatch.setenv("NPE_RATE_LIMIT_PER_MIN", "1000")
+    main._rate_state.clear()
+    monkeypatch.setattr(main, "fetch", lambda *a, **k: [])
+    client = TestClient(main.app)
+    r = client.get("/api/v1/coverage")
+    assert r.status_code == 200
+    assert r.json()["end"] == date.today().isoformat()
+
+
+def test_validate_csv_accepts_upload_under_the_size_cap(monkeypatch):
+    client = _csv_upload_client(monkeypatch)
+    r = client.post(
+        "/api/v1/validate/csv",
+        data={"indicator_id": "inflation"},
+        files={"file": ("t.csv", "obs_date,value\n2024-01-01,28.9\n", "text/csv")},
+    )
+    assert r.status_code == 200
+    assert r.json()["rows_valid"] == 1
+
+
+def test_cbn_balance_sheet_indicators_are_in_naira_thousands_not_naira():
+    """Regression for #5/#40/#79/#111/#135: these were labelled plain
+    "Naira" (wrong by 1000x) despite being the same CBN Statement of
+    Assets & Liabilities series the /api/v1/cbn-balance-sheet endpoint
+    already correctly labelled "Naira Thousands". Cross-validated against
+    real CBN figures (cbn_total_assets ~N81tn matches CBN's real ~N87tn
+    total assets; cbn_currency_issued matches currency_circulation_full
+    for the same month to within 0.01%; cbn_capital_subscribed's constant
+    5,000,000 is exactly CBN's statutory N5,000,000,000 authorised capital
+    read as thousands)."""
+    for iid in ("cbn_total_assets", "cbn_total_liabilities", "cbn_gold",
+                "cbn_currency_issued", "cbn_govt_deposits", "cbn_bankers_deposits",
+                "cbn_capital_subscribed"):
+        assert main.INDICATORS[iid]["unit"] == "Naira Thousands", iid
+
+
 def test_observation_in_rejects_nan():
     with pytest.raises(ValidationError):
         main.ObservationIn(indicator_id="inflation", obs_date=date(2025, 1, 1), value=float("nan"))
@@ -2114,6 +2380,32 @@ def test_fetch_uses_cache(monkeypatch):
     b = main.fetch("inflation", "2024-01-01", "2024-12-31")
     assert a == b
     assert calls["n"] == 1  # second call served from cache
+    main._CACHE.clear()
+
+
+def test_fetch_defaults_end_to_today_not_a_stale_hardcoded_date(monkeypatch):
+    """Regression for #37: end used to default to a literal 2026-12-31
+    across ~20 endpoints, silently truncating data added after that date.
+    end=None must resolve to today, not any fixed string."""
+    main._CACHE.clear()
+    seen = {}
+    class _Q:
+        def select(self, *a): return self
+        def eq(self, *a): return self
+        def gte(self, *a): return self
+        def lte(self, *a, **kw):
+            seen["end"] = a[-1] if a else kw.get("obs_date")
+            return self
+        def order(self, *a): return self
+        def range(self, *a): return self
+        def execute(self):
+            class R: data = []
+            return R()
+    class _SB:
+        def table(self, *a): return _Q()
+    monkeypatch.setattr(main, "supabase", _SB())
+    main.fetch("inflation", "2024-01-01", None)
+    assert seen["end"] == date.today().isoformat()
     main._CACHE.clear()
 
 
