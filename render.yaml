@@ -4,9 +4,25 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    # --proxy-headers + --forwarded-allow-ips=* so request.base_url honours
-    # Render's X-Forwarded-Proto and the HATEOAS _links come out as https://
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
+    # --no-proxy-headers (audit red-team finding, not in AUDIT_FINDINGS.md's
+    # original list): uvicorn's ProxyHeadersMiddleware is ON BY DEFAULT and
+    # trusts X-Forwarded-Proto/X-Forwarded-For from 127.0.0.1 even with no
+    # flags at all (uvicorn/config.py: proxy_headers=True,
+    # forwarded_allow_ips="127.0.0.1" by default). Render's edge terminates
+    # TLS and forwards to this app over loopback, so 127.0.0.1 is plausibly
+    # the real connection source in production too -- meaning the default
+    # is not a safe fallback here. Render also appends to (doesn't replace)
+    # a client-supplied X-Forwarded-For, so a caller could put any IP it
+    # wants first in that header and have ProxyHeadersMiddleware rewrite
+    # request.client.host to it. The rate limiter (main.py's _rate_state)
+    # keyed on request.client.host, making this a trivial per-request
+    # rate-limit bypass regardless of --forwarded-allow-ips scope. Disabling
+    # the middleware outright is the only fix that doesn't depend on
+    # guessing Render's internal IP ranges. Scheme-correction for HATEOAS
+    # _links (the original reason the old flags existed) now happens inside
+    # main.py's _base_url(), which reads X-Forwarded-Proto directly for
+    # display only -- never for identity or access control.
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT --no-proxy-headers
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0

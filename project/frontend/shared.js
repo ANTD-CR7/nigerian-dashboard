@@ -11,6 +11,34 @@
  *   3b191f211c44c1286fd5ec5cf9ddb867988c33da3ea228040c9a7b53226c6966
  */
 
+/* ─── Clickjacking defense ───────────────────────────────────────────────
+   GitHub Pages serves this entire site with no way to set an
+   X-Frame-Options or Content-Security-Policy frame-ancestors response
+   header -- there is no server config to change on this host, so no
+   header-level fix is possible here. (A frame-ancestors value inside a
+   <meta> tag is explicitly ignored by browsers per the CSP spec -- it is
+   not a working substitute, so this isn't done either.) This client-side
+   fallback -- try to break out to the top frame, or blank the page if a
+   sandboxed iframe blocks that -- is weaker than a real header, but it's
+   the only mitigation available without adding external infrastructure
+   (e.g. a CDN proxy in front of GitHub Pages) in front of this site.
+   embed.html is deliberately unaffected: it does not load shared.js,
+   since its entire purpose is to BE iframed on other sites. */
+(function () {
+  if (window.top === window.self) return;
+  try {
+    window.top.location = window.self.location.href;
+  } catch (e) {
+    document.body.innerHTML = '';
+    var warn = document.createElement('div');
+    warn.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;' +
+      'justify-content:center;background:#0d0f18;color:#f5f0e8;' +
+      'font-family:"IBM Plex Mono",monospace;text-align:center;padding:24px;z-index:999999;';
+    warn.textContent = "This page can't be displayed inside another site's frame.";
+    document.body.appendChild(warn);
+  }
+})();
+
 /* ─── Privacy-friendly analytics (OPT-IN) ───────────────────────────────
    Off by default: no cookies, no tracking, nothing sent. To turn it on, sign
    up for a free GoatCounter account (goatcounter.com), then paste your count
@@ -490,10 +518,16 @@ function npeCategory(id) {
   return 'Other';
 }
 
-/* Some CBN series are stored in scaled Naira but labelled just "NGN": the
-   monthly balance sheet is in NGN thousands, the annual series in NGN millions,
-   currency-in-circulation in NGN millions. These overrides return the multiplier
-   back to base Naira so values display honestly (and adaptively K/M/B/T). */
+/* Some CBN series are stored in scaled Naira. main.py's INDICATORS unit
+   field used to say just "Naira" for the monthly balance sheet group
+   (cbn_total_assets/cbn_gold/cbn_govt_deposits/cbn_bankers_deposits/
+   cbn_currency_issued) -- wrong by 1000x, fixed to "Naira Thousands"
+   after cross-validating against real CBN figures (#5/#40/#79/#111/#135).
+   This id-based override predates that fix and is kept as a second,
+   independent path to the same multiplier rather than removed, so a
+   future metadata regression doesn't silently go unscaled again. These
+   overrides return the multiplier back to base Naira so values display
+   honestly (and adaptively K/M/B/T). */
 function npeScale(id) {
   if (/^cbn_annual/.test(id)) return { mul: 1e6 };                                   // NGN millions → Naira
   if (/^(cbn_total|cbn_gold|cbn_govt|cbn_bankers|cbn_currency_issued)/.test(id)) return { mul: 1e3 }; // NGN thousands → Naira
@@ -933,6 +967,21 @@ function attachChartTools(canvasId, opts) {
   if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(bar, anchor.nextSibling);
   else card.appendChild(bar);
 }
+
+/* Every page's "To" date filter (flt-end / pearson-end / bf-to) ships with a
+ * hardcoded value="2026-12-31" in its HTML (#37: it breaks in Jan 2027 --
+ * clicking Apply with the untouched default would silently cap every query
+ * at that date forever, hiding all newer data). Reset any date input still
+ * holding that stale placeholder to today's real date before the user can
+ * interact with it. Runs before the ?from=/?to= restore below, which still
+ * wins if a shared link is present. */
+(function () {
+  var STALE_DEFAULT = '2026-12-31';
+  var today = new Date().toISOString().slice(0, 10);
+  document.querySelectorAll('input[type="date"]').forEach(function (input) {
+    if (input.value === STALE_DEFAULT) input.value = today;
+  });
+})();
 
 /* Restore a shared view: ?from=&to= set the date filter, ?view=analyst flips the dial. */
 (function () {

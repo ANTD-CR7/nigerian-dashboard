@@ -19,8 +19,15 @@ jobs:
           echo "Render API responded: HTTP $code"
 
       - name: Ping Supabase
+        # Read-only ping (SELECT ... LIMIT 1), so the public anon key is the
+        # right credential -- but it belongs in a secret, not hardcoded in a
+        # committed workflow file (audit finding #1/#107: this exact key was
+        # hardcoded in 20+ files). One secret here means rotation is a single
+        # update, not a repo-wide find/replace.
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           curl -s "https://fjsytcmcxapfbrwvawmu.supabase.co/rest/v1/observations?indicator_id=eq.inflation&limit=1" \
-            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw" \
-            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
             && echo "Supabase is alive"

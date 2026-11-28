@@ -8,9 +8,14 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v3
+      # Pinned to a commit SHA, not a mutable tag: this job has
+      # contents: write and runs on every push to main with no human
+      # review (auto-publishes project/frontend/ to production). A
+      # compromised floating @v3 tag on either action would get
+      # write access to this repo and its production deploy.
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847 # v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./project/frontend

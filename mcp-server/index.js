@@ -28,7 +28,7 @@ function toolResult(data) {
 
 const dateRange = {
   start: z.string().optional().describe("Start date, ISO 8601 (e.g. 2020-01-01). Defaults to the dataset's earliest date for this indicator."),
-  end: z.string().optional().describe("End date, ISO 8601 (e.g. 2026-12-31). Defaults to the latest available date.")
+  end: z.string().optional().describe("End date, ISO 8601 (e.g. 2025-12-31). Defaults to today.")
 };
 
 const server = new McpServer({

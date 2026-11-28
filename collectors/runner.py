@@ -43,6 +43,7 @@ from .cbn_five_year_statement import CBNFiveYearStatementConnector
 from .nbs_cpi_state import NBSCPIStateConnector
 from .dmo_public_debt import DMOPublicDebtConnector
 from .fmdq_nibor import FMDQNIBORConnector
+from .budget_office import BudgetOfficeConnector
 from .sources_scaffold import CBNConnector, NBSConnector
 
 DEFAULT_CONNECTORS = [
@@ -52,7 +53,7 @@ DEFAULT_CONNECTORS = [
     CBNExchangeRatesConnector(), CBNNFEMConnector(), CBNFinancialDataConnector(), CBNOMOConnector(),
     CBNNominalGDPConnector(), CBNRealGDPConnector(), CBNInflationConnector(), CBNIntPaymentsConnector(),
     CBNMonthlyAvgFXConnector(), CBNReservesConnector(), CBNAssetsLiabilitiesConnector(), CBNFiveYearStatementConnector(),
-    NBSCPIStateConnector(), DMOPublicDebtConnector(), FMDQNIBORConnector(),
+    NBSCPIStateConnector(), DMOPublicDebtConnector(), FMDQNIBORConnector(), BudgetOfficeConnector(),
     CBNConnector(), NBSConnector(),
 ]
 
@@ -125,11 +126,16 @@ def _chunked(rows, size=500):
 
 def _upsert(rows) -> int:
     """Upsert observations into Supabase. Guarded twice: requires the explicit
-    flag AND credentials; otherwise it is a no-op."""
+    flag AND credentials; otherwise it is a no-op.
+
+    Uses SUPABASE_SERVICE_KEY, not SUPABASE_KEY: anon is read-only as of the
+    LOCKDOWN migration in project/database/setup.sql (audit finding #1/#107
+    -- this previously wrote with the anon key while RLS was disabled on
+    every table it touched)."""
     if os.environ.get("NPE_COLLECT_WRITE", "").lower() != "true":
         return 0
     url = os.environ.get("SUPABASE_URL")
-    key = os.environ.get("SUPABASE_KEY")
+    key = os.environ.get("SUPABASE_SERVICE_KEY")
     if not url or not key:
         return 0
     try:

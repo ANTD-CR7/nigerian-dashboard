@@ -16,10 +16,13 @@ PURPOSE:
 
 HOW TO RUN:
     pip install supabase
-    set SUPABASE_URL and SUPABASE_KEY as environment variables, then:
+    set SUPABASE_URL and SUPABASE_SERVICE_KEY as environment variables, then:
         python project/database/seed/load_seed.py
 
     Run project/database/setup.sql first if the tables don't exist yet.
+    SUPABASE_SERVICE_KEY is the service-role key (Supabase dashboard ->
+    Settings -> API), never the anon key -- anon is read-only as of the
+    LOCKDOWN migration in setup.sql (audit finding #1/#107).
 """
 
 import csv
@@ -30,11 +33,11 @@ from supabase import create_client, Client
 
 SEED_DIR = Path(__file__).parent
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://fjsytcmcxapfbrwvawmu.supabase.co")
-SUPABASE_KEY = os.environ.get(
-    "SUPABASE_KEY",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqc3l0Y21jeGFwZmJyd3Zhd211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTcxOTgsImV4cCI6MjA5MTQ3MzE5OH0.0lGkBdBsY7bQGu4jlHQA0MKm54dd51QwJTdeill_ADw",
-)
+# No hardcoded fallback: this used to default to the anon key, which was
+# hardcoded here with RLS disabled on every table it could write to (audit
+# finding #1/#107). A missing env var should fail loudly instead.
+SUPABASE_URL = os.environ["SUPABASE_URL"]
+SUPABASE_SERVICE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
 
 
 def read_csv(name):
@@ -48,7 +51,7 @@ def chunked(rows, size=500):
 
 
 def main():
-    client: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    client: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
     data_sources = read_csv("data_sources.csv")
     client.table("data_sources").upsert(data_sources, on_conflict="code").execute()
