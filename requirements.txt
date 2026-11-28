@@ -3,12 +3,17 @@
 # the PyPI/OSV advisory database) -- including one that blocks Starlette's
 # entire async event loop on a large file upload (PYSEC-2026-1941), not
 # just a memory-pressure DoS. fastapi==0.133.0 is the earliest release that
-# drops the starlette<1.0.0 ceiling entirely, letting pip resolve a fully
-# patched starlette/python-multipart. Tested: full suite (124 tests) green
-# against a from-scratch install of this exact pin set, plus a real
-# uvicorn boot + live request smoke test, before applying here.
+# drops the starlette<1.0.0 ceiling entirely (now just starlette>=0.40.0),
+# letting pip resolve a fully patched starlette on its own -- deliberately
+# NOT hard-pinned to one exact version: starlette 1.8+ requires Python
+# >=3.11, so a single exact pin can't satisfy this project's own CI matrix
+# (3.10, 3.11, 3.12) at once, which is exactly the bug a hard pin of
+# starlette==1.10.0 caused here before this comment was corrected (caught
+# by CI failing on the 3.10 leg, not caught locally since that machine was
+# on Python 3.13). Tested: full suite green against a from-scratch install
+# of this exact pin set, plus a real uvicorn boot + live request smoke
+# test, before applying here.
 fastapi==0.133.0
-starlette==1.10.0
 python-multipart==0.0.34
 uvicorn[standard]==0.30.6
 supabase==2.7.4
