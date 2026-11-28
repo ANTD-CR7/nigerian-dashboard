@@ -3,20 +3,37 @@
 # the PyPI/OSV advisory database) -- including one that blocks Starlette's
 # entire async event loop on a large file upload (PYSEC-2026-1941), not
 # just a memory-pressure DoS. fastapi==0.133.0 is the earliest release that
-# drops the starlette<1.0.0 ceiling entirely (now just starlette>=0.40.0),
-# letting pip resolve a fully patched starlette on its own -- deliberately
-# NOT hard-pinned to one exact version: starlette 1.8+ requires Python
-# >=3.11, so a single exact pin can't satisfy this project's own CI matrix
-# (3.10, 3.11, 3.12) at once, which is exactly the bug a hard pin of
-# starlette==1.10.0 caused here before this comment was corrected (caught
-# by CI failing on the 3.10 leg, not caught locally since that machine was
-# on Python 3.13). Tested: full suite green against a from-scratch install
-# of this exact pin set, plus a real uvicorn boot + live request smoke
-# test, before applying here.
+# drops the starlette<1.0.0 ceiling entirely (now just starlette>=0.40.0,
+# python-multipart>=0.0.18) -- deliberately NOT hard-pinning either one to
+# an exact version: both projects' newest releases (starlette 1.8+,
+# python-multipart 0.0.33+) require Python >=3.11, so a single exact pin
+# can't satisfy this project's own CI matrix (3.10, 3.11, 3.12) at once.
+# Exact pins here (starlette==1.10.0, then python-multipart==0.0.34) broke
+# CI twice for exactly this reason -- each "worked" locally only because
+# that machine runs Python 3.13, and was never caught until a clean
+# install ran on 3.10/3.11/3.12. Letting pip resolve both against fastapi's
+# own minimums gets a correctly patched, Python-version-appropriate
+# version on every supported interpreter instead. Tested: full suite green
+# against a from-scratch install of this exact pin set, plus a real
+# uvicorn boot + live request smoke test, before applying here.
 fastapi==0.133.0
-python-multipart==0.0.34
+# Plain fastapi (no "standard"/"all" extra) does NOT pull python-multipart
+# in at all -- it's conditioned on those extras in fastapi's own metadata
+# -- but main.py's CSV upload endpoints (File/UploadFile) need it at
+# runtime regardless. >=0.0.18 is a floor, not an exact pin, for the same
+# cross-Python-version reason as starlette above; it already excludes the
+# vulnerable 0.0.12.
+python-multipart>=0.0.18
 uvicorn[standard]==0.30.6
 supabase==2.7.4
 httpx==0.27.2
 openpyxl==3.1.5
-pdfplumber==0.11.11
+# pdfplumber==0.11.11 requires Pillow>=13.0.0, which only has wheels for
+# Python >=3.11 -- unresolvable on this project's own 3.10 CI leg
+# (pre-existing on main since the DMO connector added this dependency,
+# not introduced by this PR, but it blocks this PR's CI too since both
+# share the same requirements.txt). 0.11.10 requires Pillow>=12.2.0
+# instead, which has 3.10/3.11/3.12-compatible wheels, and is otherwise
+# the same connector-facing API (table extraction, used by the DMO and
+# Budget Office connectors).
+pdfplumber==0.11.10
